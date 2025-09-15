@@ -30,6 +30,7 @@ body{
 
 .input-group{
     margin-bottom: 20px;
+    position: relative; /* necesario para posicionar el botón */
 }
 
 .input-group label{
@@ -76,4 +77,22 @@ body{
     color: #000000;
     cursor: pointer;
     text-decoration: underline;
+}
+
+.btn-toggle-pass {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 4px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-toggle-pass:focus {
+  outline: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
 }
