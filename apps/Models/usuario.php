@@ -225,51 +225,42 @@ class usuario
     }
 
     // ===== OBTENER USUARIO POR CAMPO =====
-public static function obtenerPor(string $campo, $valor): ?usuario
-{
-    // Lista de campos válidos para evitar inyecciones
-    $camposValidos = ['IdUsuario','Nombre','Apellido','Email','Rol'];
-    if (!in_array($campo, $camposValidos)) {
-        throw new Exception("Campo no válido: $campo");
-    }
-
+public static function obtenerPor(string $campo, $valor): ?usuario {
     $conexionDB = new ClaseConexion();
     $conn = $conexionDB->getConexion();
 
-    $sql = "SELECT * FROM Usuario WHERE $campo = ?";
-    $stmt = $conn->prepare($sql);
-
-    // Determinar tipo de dato para bind_param
-    if (is_int($valor)) {
-        $stmt->bind_param('i', $valor);
-    } else {
-        $stmt->bind_param('s', $valor);
-    }
-
+    $stmt = $conn->prepare("SELECT * FROM Usuario WHERE $campo = ?");
+    $stmt->bind_param('s', $valor);
     $stmt->execute();
     $resultado = $stmt->get_result();
     $fila = $resultado->fetch_assoc();
 
-    $stmt->close();
-    $conn->close();
-
-    if ($fila) {
-        return new usuario(
-            $fila['IdUsuario'],
-            $fila['Nombre'],
-            $fila['Apellido'],
-            $fila['Email'],
-            $fila['ContrasenaHash'],
-            $fila['FotoPerfil'],
-            $fila['Descripcion'],
-            $fila['FechaRegistro'],
-            $fila['EstadoCuenta'],
-            $fila['UltimoAcceso'],
-            $fila['Rol']
-        );
+    if (!$fila) {
+        return null;
     }
 
-    return null;
+    // Determinar rol dinámicamente
+    $IdUsuario = $fila['IdUsuario'];
+    $rol = 'Cliente'; // valor por defecto
+    if ($conn->query("SELECT 1 FROM Proveedor WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
+        $rol = 'Proveedor';
+    } elseif ($conn->query("SELECT 1 FROM Administrador WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
+        $rol = 'Administrador';
+    }
+
+    return new usuario(
+        $fila['IdUsuario'],
+        $fila['Nombre'],
+        $fila['Apellido'],
+        $fila['Email'],
+        $fila['ContrasenaHash'],
+        $fila['FotoPerfil'],
+        $fila['Descripcion'],
+        $fila['FechaRegistro'],
+        $fila['EstadoCuenta'],
+        $fila['UltimoAcceso'],
+        $rol
+    );
 }
 
 

@@ -126,3 +126,30 @@ form button:hover {
         padding: 15px;
     }
 }
+/* Campos de contacto se ven igual que los demás, solo estilos extra para separar */
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+textarea,
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* Opcional: separar sección contacto */
+form label[for="Telefono"],
+form label[for="Direccion"],
+form label[for="RedesSociales"] {
+    margin-top: 25px;
+    color: #555;
+}
