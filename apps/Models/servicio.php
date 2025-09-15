@@ -1,114 +1,96 @@
 <?php
+require_once "ConexionDB.php"; // Ajustá la ruta según tu proyecto
+
 class Servicio {
     public $IdServicio;
-    public $Titulo;
+    public $Nombre;
     public $Descripcion;
-    public $Precio;
-    public $divisa;
     public $FechaPublicacion;
-    public $IdUsuario;
-    public $Fotos = []; // Array de fotos
+    public $Estado;
+    public $IdProveedor;
+    public $Fotos = []; // Array de URLs de fotos
 
     private static $conexion;
 
-    public function __construct($IdServicio, $Titulo, $Descripcion, $Precio, $divisa, $FechaPublicacion, $IdUsuario, $Fotos = []) {
+    public function __construct($IdServicio, $Nombre, $Descripcion, $FechaPublicacion, $Estado, $IdProveedor, $Fotos = []) {
         $this->IdServicio = $IdServicio;
-        $this->Titulo = $Titulo;
+        $this->Nombre = $Nombre;
         $this->Descripcion = $Descripcion;
-        $this->Precio = $Precio;
-        $this->divisa = $divisa;
         $this->FechaPublicacion = $FechaPublicacion;
-        $this->IdUsuario = $IdUsuario;
+        $this->Estado = $Estado;
+        $this->IdProveedor = $IdProveedor;
         $this->Fotos = $Fotos;
     }
 
+    // Conexión usando ClaseConexion
     public static function conectar() {
         if (!isset(self::$conexion)) {
-            $host = "localhost";
-            $usuario = "tu_usuario";
-            $contrasena = "tu_contrasena";
-            $base_de_datos = "tu_base_de_datos";
-
-            self::$conexion = new mysqli($host, $usuario, $contrasena, $base_de_datos);
-            if (self::$conexion->connect_error) {
-                die("Error de conexión: " . self::$conexion->connect_error);
-            }
+            $db = new ClaseConexion();
+            self::$conexion = $db->getConexion();
         }
     }
 
-    // Obtener todos los servicios con sus fotos
+    // Obtener todos los servicios
     public static function obtenerTodos() {
         self::conectar();
-
-        // Primero traemos todos los servicios
-        $sql = "SELECT * FROM servicios ORDER BY FechaPublicacion DESC";
+        $sql = "SELECT * FROM servicio ORDER BY FechaPublicacion DESC";
         $resultado = self::$conexion->query($sql);
+
+        if (!$resultado) {
+            die("Error en la consulta de servicio: " . self::$conexion->error);
+        }
+
         $servicios = [];
 
-        if ($resultado->num_rows > 0) {
-            while ($fila = $resultado->fetch_assoc()) {
-                $idServicio = $fila['IdServicio'];
+        while ($fila = $resultado->fetch_assoc()) {
+            $idServicio = $fila['IdServicio'];
 
-                // Traer todas las fotos del servicio
-                $sqlFotos = "SELECT Foto FROM fotos WHERE IdServicio = $idServicio";
-                $resFotos = self::$conexion->query($sqlFotos);
-                $fotosArray = [];
-                if ($resFotos->num_rows > 0) {
-                    while ($fotoFila = $resFotos->fetch_assoc()) {
-                        $fotosArray[] = $fotoFila['Foto'];
-                    }
+            // Traer todas las fotos de este servicio
+            $sqlFotos = "SELECT Foto FROM fotos WHERE IdServicio = $idServicio";
+            $resFotos = self::$conexion->query($sqlFotos);
+            $fotosArray = [];
+            if ($resFotos && $resFotos->num_rows > 0) {
+                while ($fotoFila = $resFotos->fetch_assoc()) {
+                    $fotosArray[] = $fotoFila['Foto'];
                 }
-
-                $servicio = new Servicio(
-                    $fila['IdServicio'],
-                    $fila['Titulo'],
-                    $fila['Descripcion'],
-                    $fila['Precio'],
-                    $fila['divisa'],
-                    $fila['FechaPublicacion'],
-                    $fila['IdUsuario'],
-                    $fotosArray
-                );
-                $servicios[] = $servicio;
             }
+
+            $servicio = new Servicio(
+                $fila['IdServicio'],
+                $fila['Nombre'],
+                $fila['Descripcion'],
+                $fila['FechaPublicacion'],
+                $fila['Estado'],
+                $fila['IdProveedor'],
+                $fotosArray
+            );
+
+            $servicios[] = $servicio;
         }
 
         return $servicios;
     }
 
-    // Método para obtener una foto aleatoria
+    // Retorna una foto aleatoria del servicio
     public function getFotoAleatoria() {
         if (!empty($this->Fotos)) {
             return $this->Fotos[array_rand($this->Fotos)];
         }
-        return 'https://picsum.photos/300/200?random=' . rand(1,100);
+        // Foto genérica si no hay fotos
+        return 'https://picsum.photos/300/200?random=' . rand(1, 100);
     }
 
-    public static function obtenerFotos($IdServicio) {
-    self::conectar();
-
-    $sql = "SELECT Foto FROM fotos WHERE IdServicio = ?";
-    $stmt = self::$conexion->prepare($sql);
-    $stmt->bind_param("i", $IdServicio);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-
-    $fotos = [];
-    if ($resultado->num_rows > 0) {
-        while ($fila = $resultado->fetch_assoc()) {
-            $fotos[] = $fila['Foto'];
-        }
+    // Retorna todas las fotos del servicio
+    public function getTodasFotos() {
+        return $this->Fotos;
     }
 
-    $stmt->close();
-    return $fotos;
-}
-
-    // Getters básicos
-    public function getTitulo() { return $this->Titulo; }
+    // Getters
+    public function getIdServicio() { return $this->IdServicio; }
+    public function getNombre() { return $this->Nombre; }
     public function getDescripcion() { return $this->Descripcion; }
-    public function getPrecio() { return $this->Precio; }
-    public function getDivisa() { return $this->divisa; }
-
+    public function getFechaPublicacion() { return $this->FechaPublicacion; }
+    public function getEstado() { return $this->Estado; }
+    public function getIdProveedor() { return $this->IdProveedor; }
 }
 ?>
