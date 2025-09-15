@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <style>
+    .admin-nav {
+      display: flex;
+      gap: 0.7rem;
+      justify-content: center;
+      margin: 1.2rem 0;
+      flex-wrap: wrap;
+    }
+    .admin-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 75px;
+      height: 45px;
+      background: #ffe4ec;
+      border: 2px solid #b6b6f7;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(182,182,247,0.10);
+      font-size: 0.92rem;
+      color: #6d6d8c;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.2px;
+    }
+    .admin-btn:hover {
+      background: #c6f7e2;
+      color: #3a5a40;
+      box-shadow: 0 4px 16px rgba(182,182,247,0.18);
+      border-color: #a0c4ff;
+    }
+    @media (max-width: 600px) {
+      .admin-nav { flex-direction: column; gap: 0.5rem; }
+      .admin-btn { width: 80vw; min-width: 80px; }
+    }
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla Publicar Oficio</title>
+  <link rel="stylesheet" href="../../public/CSS/pantalla.css">
+  <style>
+    #adminModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5);
+      justify-content: center; align-items: center;
+    }
+    #adminModal .modal-content {
+      background: #fff; padding: 2rem; border-radius: 8px; text-align: center;
+      min-width: 300px;
+    }
+    #adminModal input[type="password"] { width: 80%; padding: 0.5rem; margin: 1rem 0; }
+    #adminModal button { margin: 0 0.5rem; }
+  </style>
+  <script>
+    const ADMIN_PASSWORD = 'admin123';
+    function goToAdminPanel(e) {
+      e.preventDefault();
+      document.getElementById('adminModal').style.display = 'flex';
+      document.getElementById('adminPassInput').value = '';
+      document.getElementById('adminPassInput').focus();
+      document.getElementById('adminError').textContent = '';
+    }
+    function closeAdminModal() {
+      document.getElementById('adminModal').style.display = 'none';
+    }
+    function checkAdminPassword() {
+      const pass = document.getElementById('adminPassInput').value;
+      if(pass === ADMIN_PASSWORD) {
+        window.location.href = 'PANTALLA_ADMIN.html';
+      } else {
+        document.getElementById('adminError').textContent = 'Contraseña incorrecta';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('adminPassInput').addEventListener('keydown', function(e) {
+        if(e.key === 'Enter') { checkAdminPassword(); }
+      });
+    });
+  </script>
+</head>
+<body>
+  <div id="adminModal">
+    <div class="modal-content">
+      <h3>Contraseña de Administrador</h3>
+      <input type="password" id="adminPassInput" placeholder="Contraseña" autocomplete="off">
+      <div id="adminError" style="color:red;min-height:1.5em;"></div>
+      <button onclick="checkAdminPassword()">Entrar</button>
+      <button onclick="closeAdminModal()">Cancelar</button>
+    </div>
+  </div>
+  <header class="header">
+  <div class="admin-nav">
+    <a class="admin-btn" href="PANTALLA_PUBLICAR.html">Publicar Oficio</a>
+    <a class="admin-btn" href="PANTALLA_CONTRATAR.html">Contratar Oficio</a>
+    <a class="admin-btn" href="#" onclick="goToAdminPanel(event)">Panel Administrador</a>
+    <a class="admin-btn" href="../public/index.html">Cerrar sesión</a>
+  </div>
+    <div class="logo">
+      <h1>CONTRATA YA</h1>
+    </div>
+    <nav class="nav">
+  <a href="PANTALLA.html">Inicio</a>
+  <a href="PANTALLA_CONTRATAR.html">Contratar Oficio</a>
+  <a href="PANTALLA_PUBLICAR.html">Publicar Oficio</a>
+  <a href="#" onclick="goToAdminPanel(event)">Panel Administrador</a>
+  <a href="#">Mi Perfil</a>
+  <a href="#" onclick="mostrarMensajeria(event)">Mensajes</a>
+  </nav>
+  </header>
+  <section class="hero">
+    <div class="hero-content">
+      <h2>Publica tu Oficio</h2>
+      <p>Completa el formulario para ofrecer tus servicios en nue plataforma.</p>
+    </div>
+  </section>
+  <section class="grid-section">
+    <h2>Formulario de Publicación</h2>
+    <form class="card" style="max-width:400px;margin:auto;">
+      <label for="oficio">Oficio:</label>
+      <input type="text" id="oficio" name="oficio" required style="margin-bottom:1rem;">
+      <label for="descripcion">Descripción:</label>
+      <textarea id="descripcion" name="descripcion" rows="3" required style="margin-bottom:1rem;"></textarea>
+      <label for="ubicacion">Ubicación:</label>
+      <input type="text" id="ubicacion" name="ubicacion" required style="margin-bottom:1rem;">
+      <label for="contacto">Contacto:</label>
+      <input type="text" id="contacto" name="contacto" required style="margin-bottom:1rem;">
+      <button class="feature-btn" type="submit">Publicar</button>
+    </form>
+  </section>
+  <footer class="footer">
+
+  <div id="mensajeriaModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); justify-content:center; align-items:center;">
+    <div style="background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.12); padding:1.5rem; min-width:320px; max-width:90vw;">
+      <h3 style="color:#007bff; margin-bottom:1rem;">Mensajería</h3>
+      <div id="mensajes" style="min-height:60px; margin-bottom:1rem; background:#f8f9fa; border-radius:6px; border:1px solid #e0e0e0; padding:0.7rem; font-size:0.97rem; max-height:120px; overflow-y:auto;"></div>
+      <input type="text" id="destinatarioInput" placeholder="Para: usuario@ejemplo.com" style="width:65%; padding:0.4rem; border-radius:5px; border:1px solid #b6b6f7; margin-bottom:0.5rem;">
+      <input type="text" id="mensajeInput" placeholder="Escribe un mensaje..." style="width:65%; padding:0.4rem; border-radius:5px; border:1px solid #b6b6f7;">
+      <button type="button" onclick="enviarMensaje()" style="padding:0.4rem 1rem; border-radius:5px; background:#007bff; color:#fff; border:none; margin-left:0.5rem;">Enviar</button>
+      <button type="button" onclick="cerrarMensajeria()" style="margin-left:1rem; background:#eee; color:#333; border-radius:5px; border:none; padding:0.4rem 1rem;">Cerrar</button>
+    </div>
+  </div>
+  <footer class="footer">
+    <p>&copy; CONTRATA YA 2025 - Todos los derechos reservados</p>
+  </footer>
+  <script>
+    function mostrarMensajeria(e) {
+      e.preventDefault();
+      document.getElementById('mensajeriaModal').style.display = 'flex';
+    }
+    function cerrarMensajeria() {
+      document.getElementById('mensajeriaModal').style.display = 'none';
+    }
+    function enviarMensaje() {
+      const input = document.getElementById('mensajeInput');
+      const destinatario = document.getElementById('destinatarioInput');
+      const mensajes = document.getElementById('mensajes');
+      if(input.value.trim() !== '' && destinatario.value.trim() !== '') {
+        const nuevo = document.createElement('div');
+        nuevo.innerHTML = '<b>Para: ' + destinatario.value + '</b><br>' + input.value;
+        nuevo.style.marginBottom = '0.5rem';
+        nuevo.style.background = '#e7f3ff';
+        nuevo.style.borderRadius = '6px';
+        nuevo.style.padding = '0.5rem';
+        mensajes.appendChild(nuevo);
+        input.value = '';
+        mensajes.scrollTop = mensajes.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>

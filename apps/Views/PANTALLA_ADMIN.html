@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Panel Administrador</title>
+        <link rel="stylesheet" href="../public/CSS/style2.css">
+        <style>
+            .admin-nav {
+                display: flex;
+                gap: 0.7rem;
+                justify-content: center;
+                margin: 1.2rem 0;
+                flex-wrap: wrap;
+            }
+            .admin-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 75px;
+                height: 45px;
+                background: #ffe4ec;
+                border: 2px solid #b6b6f7;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(182,182,247,0.10);
+                font-size: 0.92rem;
+                color: #6d6d8c;
+                text-decoration: none;
+                font-weight: 500;
+                transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+                letter-spacing: 0.2px;
+            }
+            .admin-btn:hover {
+                background: #c6f7e2;
+                color: #3a5a40;
+                box-shadow: 0 4px 16px rgba(182,182,247,0.18);
+                border-color: #a0c4ff;
+            }
+            .admin-section {
+                background: #f8f9fa;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                padding: 1.5rem 1.2rem;
+                margin: 1.5rem auto;
+                max-width: 500px;
+            }
+            .admin-section h3 {
+                margin-top: 0;
+                color: #7a5c00;
+            }
+            .admin-section input, .admin-section button {
+                margin: 0.3rem 0.2rem;
+                padding: 0.4rem 0.7rem;
+                border-radius: 6px;
+                border: 1px solid #b6b6f7;
+            }
+            .admin-section button {
+                background: #ffe4ec;
+                color: #6d6d8c;
+                border: 1px solid #b6b6f7;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.2s, color 0.2s;
+            }
+            .admin-section button:hover {
+                background: #c6f7e2;
+                color: #3a5a40;
+            }
+        </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Bienvenido, Administrador</h1>
+        <nav>
+            <div class="admin-nav">
+                <a class="admin-btn" href="../public/index.html">Cerrar sesión</a>
+                <a class="admin-btn" href="PANTALLA_PUBLICAR.html">Ir a Publicar<br>(Proveedor)</a>
+                <a class="admin-btn" href="PANTALLA_CONTRATAR.html">Ir a Contratar<br>(Cliente)</a>
+            </div>
+        </nav>
+        <section>
+            <h2>Gestión de la plataforma</h2>
+            <div class="admin-section">
+                <h3>Ver servicios</h3>
+                <ul id="servicios-lista">
+                    <li>Electricista - Instalación de lámparas <span style="color:#bfa100;font-weight:bold;">(En proceso)</span></li>
+                    <li>Plomero - Reparación de cañerías <span style="color:#bfa100;font-weight:bold;">(En proceso)</span></li>
+                    <li>Jardinero - Corte de césped <span style="color:#bfa100;font-weight:bold;">(En proceso)</span></li>
+                </ul>
+            </div>
+            <div class="admin-section">
+                <h3>Buscar servicios</h3>
+                <input type="text" id="buscar-servicio" placeholder="Buscar por nombre o tipo">
+                <button>Buscar</button>
+            </div>
+            <div class="admin-section">
+                <h3>Añadir administrador</h3>
+                <input type="text" id="nuevo-admin" placeholder="Email del nuevo admin">
+                <button>Añadir</button>
+            </div>
+            <div class="admin-section">
+                <h3>Buscar usuarios</h3>
+                <input type="text" id="buscar-usuario" placeholder="Nombre, email o rol">
+                <button>Buscar</button>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
