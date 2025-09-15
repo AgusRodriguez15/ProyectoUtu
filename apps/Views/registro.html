@@ -31,24 +31,22 @@
                 <input type="password" id="ContrasenaHash" name="ContrasenaHash" required>
             </div>
 
-
             <div class="input-group">
-                <label for="ContrasenaHash">Contraseña</label>
-                <input type="password" id="ContrasenaHash" name="ContrasenaHash" required>
+                <label for="ConfirmarContrasena">Confirmar Contraseña</label>
+                <input type="password" id="ConfirmarContrasena" name="ConfirmarContrasena" required>
             </div>
-
 
             <div class="input-group">
                 <label for="Rol">¿Qué deseas hacer?</label>
                 <select id="Rol" name="Rol" required>
                     <option value="">Selecciona una opción</option>
-                    <option value="publicar">Proveedor</option>
-                    <option value="contratar">Cliente</option>
+                    <option value="Proveedor">Proveedor</option>
+                    <option value="Cliente">Cliente</option>
+
                 </select>
             </div>
 
             <div class="input-group" id="admin_password_group" style="display:none;">
-                <!-- Campo de contraseña de administrador si se necesita -->
             </div>
 
             <div class="registro">
@@ -58,7 +56,6 @@
             <button type="submit" class="login-btn">Registrarse</button>
         </form>
     </div>
-    <script src="/proyecto/public/JS/registro.js"></script>
     <script src="/proyecto/public/JS/botonContraseña.js"></script>
 </body>
 </html>
