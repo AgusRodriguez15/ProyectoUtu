@@ -34,3 +34,4 @@ class accion
 	public function getIdUsuarioAdministrador() { return $this->IdUsuarioAdministrador; }
 	public function setIdUsuarioAdministrador($IdUsuarioAdministrador) { $this->IdUsuarioAdministrador = $IdUsuarioAdministrador; }
 }
+?>
