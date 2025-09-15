@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/../Models/usuario.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -27,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($datos['ContrasenaHash'] !== ($_POST['ConfirmarContrasena'] ?? '')) {
         die("Error: Las contraseñas no coinciden");
     }
-
 
     // Validar rol
     $rolesValidos = [
@@ -66,17 +66,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ok = $usuario->registrarUsuario($_POST['AniosExperiencia'] ?? null);
 
     if ($ok) {
+        // Guardar ID en sesión
+        $_SESSION['IdUsuario'] = $usuario->getIdUsuario();
+
         // Redirección según rol
         switch ($usuario->getRol()) {
             case usuario::ROL_CLIENTE:
-                header("Location: /proyecto/apps/Views/PANTALLA_CONTRATAR.html");
+                header("Location: /proyecto/apps/Views/PANTALLA_CONTRATAR.php");
                 break;
             case usuario::ROL_PROVEEDOR:
-                header("Location: /proyecto/apps/Views/PANTALLA_PUBLICAR.html");
+                header("Location: /proyecto/apps/Views/PANTALLA_PUBLICAR.php");
                 break;
             case usuario::ROL_ADMIN:
             default:
-                header("Location: /proyecto/public/index.html");
+                header("Location: /proyecto/public/index.php");
         }
         exit;
     } else {

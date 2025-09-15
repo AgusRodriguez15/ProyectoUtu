@@ -1,0 +1,128 @@
+/* Contenedor principal del perfil */
+.perfil-container {
+    max-width: 800px;
+    margin: 30px auto;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Header del perfil con foto y nombre */
+.perfil-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.perfil-header img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #007bff;
+}
+
+/* Nombre principal */
+.perfil-header h2 {
+    font-size: 1.8em;
+    color: #333;
+}
+
+/* Información del perfil */
+.perfil-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    line-height: 1.5;
+}
+
+.perfil-info div strong {
+    color: #007bff;
+}
+
+/* Botón de editar perfil */
+.perfil-boton-editar {
+    margin-top: 20px;
+}
+
+.perfil-boton-editar a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+}
+
+.perfil-boton-editar a:hover {
+    background-color: #0056b3;
+}
+
+/* Formulario de edición */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+form label {
+    font-weight: bold;
+    color: #333;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="file"],
+form textarea {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+form button {
+    width: fit-content;
+    padding: 10px 20px;
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+form button:hover {
+    background-color: #218838;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .perfil-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .perfil-header img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .perfil-container {
+        padding: 15px;
+    }
+}

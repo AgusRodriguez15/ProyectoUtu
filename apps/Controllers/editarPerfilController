@@ -1,0 +1,42 @@
+<?php
+session_start();
+require_once __DIR__ . '/../Models/usuario.php';
+
+if (!isset($_SESSION['IdUsuario'])) {
+    header("Location: login_usuario.php");
+    exit;
+}
+
+$usuarioModel = new usuario('', '', '', '', '', '', '', '', '', '', '');
+$usuario = $usuarioModel->obtenerPorId($_SESSION['IdUsuario']);
+
+if (!$usuario) {
+    die("Usuario no encontrado");
+}
+
+// Ahora $usuario es un objeto, podés usar los setters
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Actualizar datos mediante setters
+    $usuario->setNombre($_POST['Nombre'] ?? $usuario->getNombre());
+    $usuario->setApellido($_POST['Apellido'] ?? $usuario->getApellido());
+    $usuario->setEmail($_POST['Email'] ?? $usuario->getEmail());
+    $usuario->setDescripcion($_POST['Descripcion'] ?? $usuario->getDescripcion());
+
+    // Subir foto
+    if (!empty($_FILES['FotoPerfil']['tmp_name'])) {
+        $rutaDestino = __DIR__ . '/../../public/uploads/' . basename($_FILES['FotoPerfil']['name']);
+        move_uploaded_file($_FILES['FotoPerfil']['tmp_name'], $rutaDestino);
+        $usuario->setFotoPerfil('/proyecto/public/uploads/' . basename($_FILES['FotoPerfil']['name']));
+    }
+
+    // Guardar cambios en la base de datos
+    if ($usuario->guardar()) {
+        header("Location: perfilUsuario.php");
+        exit;
+    } else {
+        die("Error al actualizar perfil.");
+    }
+}
+?>

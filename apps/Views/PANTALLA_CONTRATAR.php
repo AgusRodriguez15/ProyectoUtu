@@ -18,9 +18,8 @@ $servicios = Servicio::obtenerTodos();
             <h1>Plataforma de Oficios</h1>
         </div>
         <nav class="nav">
-            <a href="#">Inicio</a>
             <a href="#">Servicios</a>
-            <a href="#">Mi Perfil</a>
+            <a href="perfilUsuario.php">Mi Perfil</a>
             <a href="#">Mensajes</a>
         </nav>
     </header>

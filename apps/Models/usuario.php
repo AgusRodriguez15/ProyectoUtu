@@ -50,42 +50,110 @@ class usuario
     }
 
     // ===== GETTERS =====
-    public function getIdUsuario(): ?int { return $this->IdUsuario; }
-    public function getNombre(): string { return $this->Nombre; }
-    public function getApellido(): string { return $this->Apellido; }
-    public function getEmail(): string { return $this->Email; }
-    public function getContrasenaHash(): string { return $this->ContrasenaHash; }
-    public function getFotoPerfil(): ?string { return $this->FotoPerfil; }
-    public function getDescripcion(): ?string { return $this->Descripcion; }
-    public function getFechaRegistro(): ?string { return $this->FechaRegistro; }
-    public function getEstadoCuenta(): ?string { return $this->EstadoCuenta; }
-    public function getUltimoAcceso(): ?string { return $this->UltimoAcceso; }
-    public function getRol(): string { return $this->Rol; }
-    public function getIdUbicacion(): ?int { return $this->IdUbicacion; }
+    public function getIdUsuario(): ?int
+    {
+        return $this->IdUsuario;
+    }
+    public function getNombre(): string
+    {
+        return $this->Nombre;
+    }
+    public function getApellido(): string
+    {
+        return $this->Apellido;
+    }
+    public function getEmail(): string
+    {
+        return $this->Email;
+    }
+    public function getContrasenaHash(): string
+    {
+        return $this->ContrasenaHash;
+    }
+    public function getFotoPerfil(): ?string
+    {
+        return $this->FotoPerfil;
+    }
+    public function getDescripcion(): ?string
+    {
+        return $this->Descripcion;
+    }
+    public function getFechaRegistro(): ?string
+    {
+        return $this->FechaRegistro;
+    }
+    public function getEstadoCuenta(): ?string
+    {
+        return $this->EstadoCuenta;
+    }
+    public function getUltimoAcceso(): ?string
+    {
+        return $this->UltimoAcceso;
+    }
+    public function getRol(): string
+    {
+        return $this->Rol;
+    }
+    public function getIdUbicacion(): ?int
+    {
+        return $this->IdUbicacion;
+    }
 
     // ===== SETTERS =====
-    public function setNombre(string $Nombre): void { $this->Nombre = $Nombre; }
-    public function setApellido(string $Apellido): void { $this->Apellido = $Apellido; }
-    public function setEmail(string $Email): void { $this->Email = $Email; }
-    public function setContrasenaHash(string $ContrasenaHash): void { $this->ContrasenaHash = $ContrasenaHash; }
-    public function setFotoPerfil(?string $FotoPerfil): void { $this->FotoPerfil = $FotoPerfil; }
-    public function setDescripcion(?string $Descripcion): void { $this->Descripcion = $Descripcion; }
-    public function setFechaRegistro(?string $FechaRegistro): void { $this->FechaRegistro = $FechaRegistro; }
-    public function setEstadoCuenta(?string $EstadoCuenta): void { $this->EstadoCuenta = $EstadoCuenta; }
-    public function setUltimoAcceso(?string $UltimoAcceso): void { $this->UltimoAcceso = $UltimoAcceso; }
-    public function setRol(string $Rol): void { $this->Rol = $Rol; }
-    public function setIdUbicacion(?int $IdUbicacion): void { $this->IdUbicacion = $IdUbicacion; }
+    public function setNombre(string $Nombre): void
+    {
+        $this->Nombre = $Nombre;
+    }
+    public function setApellido(string $Apellido): void
+    {
+        $this->Apellido = $Apellido;
+    }
+    public function setEmail(string $Email): void
+    {
+        $this->Email = $Email;
+    }
+    public function setContrasenaHash(string $ContrasenaHash): void
+    {
+        $this->ContrasenaHash = $ContrasenaHash;
+    }
+    public function setFotoPerfil(?string $FotoPerfil): void
+    {
+        $this->FotoPerfil = $FotoPerfil;
+    }
+    public function setDescripcion(?string $Descripcion): void
+    {
+        $this->Descripcion = $Descripcion;
+    }
+    public function setFechaRegistro(?string $FechaRegistro): void
+    {
+        $this->FechaRegistro = $FechaRegistro;
+    }
+    public function setEstadoCuenta(?string $EstadoCuenta): void
+    {
+        $this->EstadoCuenta = $EstadoCuenta;
+    }
+    public function setUltimoAcceso(?string $UltimoAcceso): void
+    {
+        $this->UltimoAcceso = $UltimoAcceso;
+    }
+    public function setRol(string $Rol): void
+    {
+        $this->Rol = $Rol;
+    }
+    public function setIdUbicacion(?int $IdUbicacion): void
+    {
+        $this->IdUbicacion = $IdUbicacion;
+    }
 
     // ===== SUBIR FOTO =====
     public function subirFotoPerfil(?array $archivo): void
-{
-    if ($archivo && !empty($archivo['tmp_name'])) {
-        $rutaDestino = __DIR__ . '/../../public/uploads/' . basename($archivo['name']);
-        move_uploaded_file($archivo['tmp_name'], $rutaDestino);
-        $this->FotoPerfil = '/proyecto/public/uploads/' . basename($archivo['name']);
+    {
+        if ($archivo && !empty($archivo['tmp_name'])) {
+            $rutaDestino = __DIR__ . '/../../public/uploads/' . basename($archivo['name']);
+            move_uploaded_file($archivo['tmp_name'], $rutaDestino);
+            $this->FotoPerfil = '/proyecto/public/uploads/' . basename($archivo['name']);
+        }
     }
-}
-
 
     // ===== REGISTRAR USUARIO =====
     public function registrarUsuario(?int $AniosExperiencia = null): bool
@@ -93,7 +161,6 @@ class usuario
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        // Validar campos obligatorios
         if (empty($this->Nombre) || empty($this->Apellido) || empty($this->Email) || empty($this->ContrasenaHash) || empty($this->Rol)) {
             return false;
         }
@@ -148,6 +215,8 @@ class usuario
                     $conn->query("INSERT INTO Administrador (IdUsuario) VALUES ($IdUsuario)");
                     break;
             }
+
+            $this->IdUsuario = $IdUsuario;
         }
 
         $stmt->close();
@@ -155,27 +224,128 @@ class usuario
         return $resultado;
     }
 
-    // ===== AUTENTICAR USUARIO =====
-    public static function autenticar(string $email, string $password): bool
+    // ===== OBTENER USUARIO POR ID =====
+    public function obtenerPorId(int $IdUsuario): ?usuario
+{
+    $conexionDB = new ClaseConexion();
+    $conn = $conexionDB->getConexion();
+
+    $stmt = $conn->prepare("SELECT * FROM Usuario WHERE IdUsuario = ?");
+    $stmt->bind_param('i', $IdUsuario);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $fila = $resultado->fetch_assoc();
+
+    $stmt->close();
+    $conn->close();
+
+    if ($fila) {
+        return new usuario(
+            $fila['IdUsuario'],
+            $fila['Nombre'],
+            $fila['Apellido'],
+            $fila['Email'],
+            $fila['ContrasenaHash'],
+            $fila['FotoPerfil'],
+            $fila['Descripcion'],
+            $fila['FechaRegistro'],
+            $fila['EstadoCuenta'],
+            $fila['UltimoAcceso'],
+            $fila['Rol']
+        );
+    } else {
+        return null;
+    }
+}
+
+
+    // ===== ACTUALIZAR ÚLTIMO ACCESO =====
+    public function actualizarUltimoAcceso(int $id): void
     {
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        $stmt = $conn->prepare("SELECT ContrasenaHash FROM Usuario WHERE Email = ?");
-        $stmt->bind_param('s', $email);
+        $fecha = date('Y-m-d H:i:s');
+        $stmt = $conn->prepare("UPDATE Usuario SET UltimoAcceso = ? WHERE IdUsuario = ?");
+        $stmt->bind_param('si', $fecha, $id);
         $stmt->execute();
-        $stmt->bind_result($hashedPassword);
-        $stmt->fetch();
-
-        if ($hashedPassword && password_verify($password, $hashedPassword)) {
-            $stmt->close();
-            $conn->close();
-            return true;
-        }
 
         $stmt->close();
         $conn->close();
-        return false;
     }
+    public function guardar(): bool
+{
+    if (!$this->IdUsuario) {
+        return false; // No hay usuario cargado
+    }
+
+    $conexionDB = new ClaseConexion();
+    $conn = $conexionDB->getConexion();
+
+    $stmt = $conn->prepare("
+        UPDATE Usuario
+        SET Nombre = ?, Apellido = ?, Email = ?, Descripcion = ?, FotoPerfil = ?
+        WHERE IdUsuario = ?
+    ");
+
+    $stmt->bind_param(
+        'sssssi',
+        $this->Nombre,
+        $this->Apellido,
+        $this->Email,
+        $this->Descripcion,
+        $this->FotoPerfil,
+        $this->IdUsuario
+    );
+
+    $resultado = $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    return $resultado;
 }
-?>
+
+public static function autenticar(string $email, string $password): ?usuario {
+    $conn = new ClaseConexion();
+    $db = $conn->getConexion();
+
+    $stmt = $db->prepare("
+        SELECT u.IdUsuario, u.Nombre, u.Apellido, u.Email, u.ContrasenaHash, 
+               u.FotoPerfil, u.Descripcion, u.FechaRegistro, 
+               u.EstadoCuenta, u.UltimoAcceso,
+               CASE 
+                   WHEN EXISTS (SELECT 1 FROM Proveedor p WHERE p.IdUsuario = u.IdUsuario) THEN 'Proveedor'
+                   WHEN EXISTS (SELECT 1 FROM Cliente c WHERE c.IdUsuario = u.IdUsuario) THEN 'Cliente'
+                   WHEN EXISTS (SELECT 1 FROM Administrador a WHERE a.IdUsuario = u.IdUsuario) THEN 'Administrador'
+                   ELSE NULL
+               END as Rol
+        FROM Usuario u
+        WHERE Email = ?
+    ");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        if (password_verify($password, $row['ContrasenaHash'])) {
+            return new usuario(
+                $row['IdUsuario'],
+                $row['Nombre'],
+                $row['Apellido'],
+                $row['Email'],
+                $row['ContrasenaHash'],
+                $row['FotoPerfil'],
+                $row['Descripcion'],
+                $row['FechaRegistro'],
+                $row['EstadoCuenta'],
+                $row['UltimoAcceso'],
+                $row['Rol']
+            );
+        }
+    }
+
+    return null;
+}
+
+
+}
