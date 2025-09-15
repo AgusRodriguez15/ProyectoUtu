@@ -5,59 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pantalla Publicar Oficio</title>
   <link rel="stylesheet" href="../../public/CSS/estilos_generales.css">
-  <script>
-    const ADMIN_PASSWORD = 'admin123';
-    function goToAdminPanel(e) {
-      e.preventDefault();
-      document.getElementById('adminModal').style.display = 'flex';
-      document.getElementById('adminPassInput').value = '';
-      document.getElementById('adminPassInput').focus();
-      document.getElementById('adminError').textContent = '';
-    }
-    function closeAdminModal() {
-      document.getElementById('adminModal').style.display = 'none';
-    }
-    function checkAdminPassword() {
-      const pass = document.getElementById('adminPassInput').value;
-      if(pass === ADMIN_PASSWORD) {
-        window.location.href = 'PANTALLA_ADMIN.html';
-      } else {
-        document.getElementById('adminError').textContent = 'Contraseña incorrecta';
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('adminPassInput').addEventListener('keydown', function(e) {
-        if(e.key === 'Enter') { checkAdminPassword(); }
-      });
-    });
-  </script>
 </head>
 <body>
-  <div id="adminModal" class="modal">
-    <div class="modal-content">
-      <h3>Contraseña de Administrador</h3>
-      <input type="password" id="adminPassInput" placeholder="Contraseña" autocomplete="off">
-      <div id="adminError" class="error-text"></div>
-      <button onclick="checkAdminPassword()">Entrar</button>
-      <button onclick="closeAdminModal()">Cancelar</button>
-    </div>
-  </div>
+
 
   <header class="header">
-    <div class="admin-nav">
-      <a class="admin-btn" href="PANTALLA_PUBLICAR.html">Publicar Oficio</a>
-      <a class="admin-btn" href="PANTALLA_CONTRATAR.html">Contratar Oficio</a>
-      <a class="admin-btn" href="#" onclick="goToAdminPanel(event)">Panel Administrador</a>
-      <a class="admin-btn" href="../public/index.html">Cerrar sesión</a>
-    </div>
+    
     <div class="logo">
       <h1>CONTRATA YA</h1>
     </div>
     <nav class="nav">
-      <a href="PANTALLA.html">Inicio</a>
-      <a href="PANTALLA_CONTRATAR.html">Contratar Oficio</a>
-      <a href="PANTALLA_PUBLICAR.html">Publicar Oficio</a>
-      <a href="#" onclick="goToAdminPanel(event)">Panel Administrador</a>
+      <a href="proyecto/apps/Views/PANTALLA_PUBLICAR.html">Inicio</a>
       <a href="#">Mi Perfil</a>
       <a href="#" onclick="mostrarMensajeria(event)">Mensajes</a>
     </nav>

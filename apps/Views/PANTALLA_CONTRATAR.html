@@ -28,19 +28,12 @@
             require_once '../../apps/Controllers/servicioController.php';
             $servicios = ServicioController::obtenerServicios();
             if (!empty($servicios)) {
-                foreach ($servicios as $servicio) {
-                    echo '<div class="card" data-oficio="' . htmlspecialchars($servicio->getTitulo()) . '">';
-                    echo '<h3>' . htmlspecialchars($servicio->getTitulo()) . '</h3>';
-                    echo '<p>' . htmlspecialchars($servicio->getDescripcion()) . '</p>';
-                    echo '<p>Precio: ' . htmlspecialchars($servicio->getPrecio()) . ' ' . htmlspecialchars($servicio->getDivisa()) . '</p>';
-                    echo '</div>';
-                }
             } else {
                 echo '<p>No hay servicios disponibles en este momento.</p>';
             }
         ?>
     </section>
 
-    <script src="script.js"></script>
+    
 </body>
 </html>
