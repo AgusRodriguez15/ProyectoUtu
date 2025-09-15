@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 3. Redirect to the appropriate dashboard on success
         // You would need to retrieve the user's role from the database here to redirect correctly.
         // For simplicity, we'll redirect to a generic page for now.
-        header("Location: /proyecto/apps/Views/PANTALLA_CONTRATAR.html");
+        header("Location: /proyecto/apps/Views/PANTALLA_CONTRATAR.php   ");
         exit;
     } else {
         // 4. Handle failed login
