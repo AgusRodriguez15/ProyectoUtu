@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="../../public/CSS/style_system.css">
 </head>
 <body>
-    <header>
-        
-    </header>
+    <header></header>
 
     <div id="adminModal" class="modal">
         <div class="modal-content">
@@ -27,25 +25,17 @@
 
     <section class="cards-container">
         <?php
-            // Incluimos el controlador para poder llamar a su método
             require_once '../../apps/Controllers/servicioController.php';
-
-            // Obtenemos la lista de servicios llamando al controlador
             $servicios = ServicioController::obtenerServicios();
-
-            // Verificamos si se obtuvieron servicios
             if (!empty($servicios)) {
-                // Iteramos sobre cada servicio de la lista
                 foreach ($servicios as $servicio) {
-                    // Generamos una tarjeta HTML para cada servicio
                     echo '<div class="card" data-oficio="' . htmlspecialchars($servicio->getTitulo()) . '">';
-                    echo '    <h3>' . htmlspecialchars($servicio->getTitulo()) . '</h3>';
-                    echo '    <p>' . htmlspecialchars($servicio->getDescripcion()) . '</p>';
-                    echo '    <p>Precio: ' . htmlspecialchars($servicio->getPrecio()) . ' ' . htmlspecialchars($servicio->getDivisa()) . '</p>';
+                    echo '<h3>' . htmlspecialchars($servicio->getTitulo()) . '</h3>';
+                    echo '<p>' . htmlspecialchars($servicio->getDescripcion()) . '</p>';
+                    echo '<p>Precio: ' . htmlspecialchars($servicio->getPrecio()) . ' ' . htmlspecialchars($servicio->getDivisa()) . '</p>';
                     echo '</div>';
                 }
             } else {
-                // Si no hay servicios, mostramos un mensaje
                 echo '<p>No hay servicios disponibles en este momento.</p>';
             }
         ?>
