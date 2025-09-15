@@ -224,14 +224,28 @@ class usuario
         return $resultado;
     }
 
-    // ===== OBTENER USUARIO POR ID =====
-    public function obtenerPorId(int $IdUsuario): ?usuario
+    // ===== OBTENER USUARIO POR CAMPO =====
+public static function obtenerPor(string $campo, $valor): ?usuario
 {
+    // Lista de campos válidos para evitar inyecciones
+    $camposValidos = ['IdUsuario','Nombre','Apellido','Email','Rol'];
+    if (!in_array($campo, $camposValidos)) {
+        throw new Exception("Campo no válido: $campo");
+    }
+
     $conexionDB = new ClaseConexion();
     $conn = $conexionDB->getConexion();
 
-    $stmt = $conn->prepare("SELECT * FROM Usuario WHERE IdUsuario = ?");
-    $stmt->bind_param('i', $IdUsuario);
+    $sql = "SELECT * FROM Usuario WHERE $campo = ?";
+    $stmt = $conn->prepare($sql);
+
+    // Determinar tipo de dato para bind_param
+    if (is_int($valor)) {
+        $stmt->bind_param('i', $valor);
+    } else {
+        $stmt->bind_param('s', $valor);
+    }
+
     $stmt->execute();
     $resultado = $stmt->get_result();
     $fila = $resultado->fetch_assoc();
@@ -253,9 +267,9 @@ class usuario
             $fila['UltimoAcceso'],
             $fila['Rol']
         );
-    } else {
-        return null;
     }
+
+    return null;
 }
 
 

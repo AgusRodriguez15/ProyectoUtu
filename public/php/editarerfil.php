@@ -7,8 +7,11 @@ if (!isset($_SESSION['IdUsuario'])) {
     exit;
 }
 
-$usuarioModel = new usuario('', '', '', '', '', '', '', '', '', '', '');
-$usuario = $usuarioModel->obtenerPorId($_SESSION['IdUsuario']);
+// Obtener usuario como objeto
+$usuario = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
+if (!$usuario) {
+    die("Usuario no encontrado");
+}
 ?>
 
 <!DOCTYPE html>
@@ -24,22 +27,27 @@ $usuario = $usuarioModel->obtenerPorId($_SESSION['IdUsuario']);
 
 <form action="editarPerfilController.php" method="POST" enctype="multipart/form-data">
     <label>Nombre:</label>
-    <input type="text" name="Nombre" value="<?= htmlspecialchars($usuario['Nombre'] ?? '') ?>" required><br>
+    <input type="text" name="Nombre" value="<?= htmlspecialchars($usuario->getNombre()) ?>" required><br>
 
     <label>Apellido:</label>
-    <input type="text" name="Apellido" value="<?= htmlspecialchars($usuario['Apellido'] ?? '') ?>" required><br>
+    <input type="text" name="Apellido" value="<?= htmlspecialchars($usuario->getApellido()) ?>" required><br>
 
     <label>Email:</label>
-    <input type="email" name="Email" value="<?= htmlspecialchars($usuario['Email'] ?? '') ?>" required><br>
+    <input type="email" name="Email" value="<?= htmlspecialchars($usuario->getEmail()) ?>" required><br>
 
     <label>Descripción:</label>
-    <textarea name="Descripcion"><?= htmlspecialchars($usuario['Descripcion'] ?? '') ?></textarea><br>
+    <textarea name="Descripcion"><?= htmlspecialchars($usuario->getDescripcion() ?? '') ?></textarea><br>
 
     <label>Foto de Perfil:</label>
     <input type="file" name="FotoPerfil" accept="image/*"><br>
+
+    <?php if ($usuario->getFotoPerfil()): ?>
+        <img src="<?= htmlspecialchars($usuario->getFotoPerfil()) ?>" alt="Foto de perfil" width="100">
+    <?php endif; ?>
 
     <button type="submit">Guardar cambios</button>
 </form>
 
 </body>
 </html>
+?>

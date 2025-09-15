@@ -6,33 +6,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    $usuario = usuario::autenticar($email, $password);
+    // Buscar el usuario por email usando el método genérico
+    $usuario = usuario::obtenerPor('Email', $email);
 
-    if ($usuario) {
-        $_SESSION['usuario_id'] = $usuario->getIdUsuario();
-        $_SESSION['usuario_nombre'] = $usuario->getNombre();
-        $_SESSION['usuario_rol'] = $usuario->getRol();
-        $_SESSION['usuario_estado'] = $usuario->getEstadoCuenta();
+    if ($usuario && password_verify($password, $usuario->getContrasenaHash())) {
+        // Guardar ID en sesión
+        $_SESSION['IdUsuario'] = $usuario->getIdUsuario();
 
-        switch ($usuario->getRol()) {
-            case usuario::ROL_PROVEEDOR:
-                header('Location: ../Views/PANTALLA_PUBLICAR.php');
-                break;
-            case usuario::ROL_CLIENTE:
-                header('Location: ../Views/PANTALLA_CONTRATAR.php');
-                break;
-            case usuario::ROL_ADMIN:
-                header('Location: ../Views/PANTALLA_ADMIN.php');
-                break;
-            default:
-                header('Location: ../../public/index.php?error=rol');
-        }
+        // Redirigir a perfil
+        header("Location: ../Views/perfilUsuario.php");
         exit;
     } else {
-        header('Location: ../Views/login_usuario.php?error=credenciales');
+        // Redirigir con error
+        header("Location: ../Views/login_usuario.php?error=1");
         exit;
     }
-} else {
-    header('Location: ../Views/login_usuario.php');
-    exit;
 }
+?>

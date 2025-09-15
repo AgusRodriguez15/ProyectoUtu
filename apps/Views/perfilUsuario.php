@@ -2,64 +2,88 @@
 session_start();
 require_once __DIR__ . '/../Models/usuario.php';
 
-// Redirigir si no hay sesión
+// Verificar sesión
 if (!isset($_SESSION['IdUsuario'])) {
     header("Location: login_usuario.php");
     exit;
 }
 
-// Cargar usuario
-$usuarioModel = new usuario('', '', '', '', '', '', '', '', '', '', '');
-$usuario = $usuarioModel->obtenerPorId($_SESSION['IdUsuario']);
+// Obtener usuario por Id usando el método genérico
+$usuario = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
 
 if (!$usuario) {
     die("Usuario no encontrado");
+}
+
+// Inicializar variable de error
+$error = '';
+
+// Procesar formulario de edición
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $usuario->setNombre($_POST['Nombre'] ?? $usuario->getNombre());
+    $usuario->setApellido($_POST['Apellido'] ?? $usuario->getApellido());
+    $usuario->setEmail($_POST['Email'] ?? $usuario->getEmail());
+    $usuario->setDescripcion($_POST['Descripcion'] ?? $usuario->getDescripcion());
+
+    // Subir foto si se seleccionó
+    if (!empty($_FILES['FotoPerfil']['tmp_name'])) {
+        $uploadDir = __DIR__ . '/../../public/uploads/';
+        $filename = basename($_FILES['FotoPerfil']['name']);
+        $rutaDestino = $uploadDir . $filename;
+
+        if (move_uploaded_file($_FILES['FotoPerfil']['tmp_name'], $rutaDestino)) {
+            $usuario->setFotoPerfil('/proyecto/public/uploads/' . $filename);
+        } else {
+            $error = "Error al subir la foto de perfil";
+        }
+    }
+
+    // Guardar cambios
+    if (empty($error) && $usuario->guardar()) {
+        header("Location: perfilUsuario.php");
+        exit;
+    } elseif (empty($error)) {
+        $error = "No se pudo actualizar el perfil";
+    }
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Usuario</title>
-    <link rel="stylesheet" href="../../public/CSS/estilos_generales.css">
-    <link rel="stylesheet" href="../../public/CSS/pantalla.css">
     <link rel="stylesheet" href="../../public/CSS/perfil.css">
 </head>
 <body>
+    <h2>Perfil de Usuario</h2>
 
-<header class="header">
-    <div class="logo"><h1>Mi Plataforma</h1></div>
-    <nav class="nav">
-        <a href="PANTALLA_CONTRATAR.php">Servicios</a>
-        <a href="#">Mi Perfil</a>
-        <a href="#">Mensajes</a>
-    </nav>
-</header>
+    <?php if (!empty($error)) : ?>
+        <p class="error"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
 
-<div class="perfil-container">
-    <!-- Foto y nombre -->
-    <div class="perfil-header">
-        <img src="<?= htmlspecialchars($usuario->getFotoPerfil() ?? '/proyecto/public/imagenes/default.png') ?>" alt="Foto de perfil">
-        <h2><?= htmlspecialchars($usuario->getNombre() . ' ' . $usuario->getApellido()) ?></h2>
-    </div>
+    <form action="" method="POST" enctype="multipart/form-data">
+        <label>Nombre</label>
+        <input type="text" name="Nombre" value="<?= htmlspecialchars($usuario->getNombre()) ?>">
 
-    <!-- Información general -->
-    <div class="perfil-info">
-        <div><strong>Email:</strong> <?= htmlspecialchars($usuario->getEmail()) ?></div>
-        <div><strong>Descripción:</strong> <?= nl2br(htmlspecialchars($usuario->getDescripcion() ?? 'Sin descripción')) ?></div>
-        <div><strong>Estado:</strong> <?= htmlspecialchars($usuario->getEstadoCuenta()) ?></div>
-        <div><strong>Registrado:</strong> <?= htmlspecialchars($usuario->getFechaRegistro()) ?></div>
-        <div><strong>Último acceso:</strong> <?= htmlspecialchars($usuario->getUltimoAcceso() ?? 'Nunca') ?></div>
-        <div><strong>Rol:</strong> <?= htmlspecialchars($usuario->getRol()) ?></div>
-        <div><strong>Ubicación ID:</strong> <?= htmlspecialchars($usuario->getIdUbicacion() ?? '-') ?></div>
-    </div>
+        <label>Apellido</label>
+        <input type="text" name="Apellido" value="<?= htmlspecialchars($usuario->getApellido()) ?>">
 
-    <!-- Botón para editar perfil -->
-    <div class="perfil-boton-editar">
-        <a href="editarPerfil.php">Editar Perfil</a>
-    </div>
-</div>
+        <label>Email</label>
+        <input type="email" name="Email" value="<?= htmlspecialchars($usuario->getEmail()) ?>">
 
+        <label>Descripción</label>
+        <textarea name="Descripcion"><?= htmlspecialchars($usuario->getDescripcion() ?? '') ?></textarea>
+
+        <label>Foto de perfil</label>
+        <input type="file" name="FotoPerfil">
+
+        <?php if ($usuario->getFotoPerfil()) : ?>
+            <img src="<?= htmlspecialchars($usuario->getFotoPerfil()) ?>" alt="Foto de perfil" width="100">
+        <?php endif; ?>
+
+        <button type="submit">Guardar cambios</button>
+    </form>
+
+    <a href="logout.php">Cerrar sesión</a>
 </body>
 </html>
