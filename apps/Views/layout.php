@@ -8,17 +8,16 @@
 </head>
 <body>
 	<!-- Header -->
-	<header class="header">
-		<div class="logo">
-			<h1>Plataforma de Oficios</h1>
-		</div>
-		<nav class="nav">
-			<a href="/proyecto/public/index.html">Inicio</a>
-			<a href="/proyecto/apps/Controllers/servicioController.php">Servicios</a>
-			<a href="/proyecto/apps/Controllers/usuarioController.php">Mi Perfil</a>
-			<a href="/proyecto/apps/Controllers/mensajeController.php">Mensajes</a>
-		</nav>
-	</header>
+    <header class="header">
+        <div class="logo">
+            <h1>Plataforma de Oficios</h1>
+        </div>
+        <nav class="nav">
+            <a href="#">Servicios</a>
+            <a href="perfilUsuario.php">Mi Perfil</a>
+            <a href="#">Mensajes</a>
+        </nav>
+    </header>
 
 	<!-- Contenido dinámico -->
 	<main>

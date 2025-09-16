@@ -36,23 +36,32 @@ $servicios = Servicio::obtenerTodos();
         </div>
     </section>
 
-    <!-- Sección de servicios destacados (grid) -->
     <section class="grid-section">
-        <h2>Servicios Populares</h2>
-        <div class="grid-container">
-            <?php if (!empty($servicios)): ?>
-                <?php foreach ($servicios as $servicio): ?>
-                    <div class="card">
-                        <img src="<?php echo $servicio->getFotoAleatoria(); ?>" alt="<?php echo htmlspecialchars($servicio->getNombre()); ?>">
-                        <h3><?php echo htmlspecialchars($servicio->getNombre()); ?></h3>
-                        <p><?php echo htmlspecialchars($servicio->getDescripcion()); ?></p>
-                        <p><strong><?php echo $servicio->getEstado(); ?></strong></p>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p>No hay servicios para mostrar.</p>
+    <h2>Servicios Populares</h2>
+    <div class="grid-container">
+        <?php if (!empty($servicios)): ?>
+            <?php 
+            $hayDisponibles = false; 
+            foreach ($servicios as $servicio): 
+                if ($servicio->getEstado() !== 'DISPONIBLE') continue; 
+                $hayDisponibles = true;
+            ?>
+                <div class="card">
+                    <img src="<?php echo $servicio->getFotoAleatoria() ?: '/public/img/default.jpg'; ?>" 
+                         alt="<?php echo htmlspecialchars($servicio->getNombre()); ?>">
+                    <h3><?php echo htmlspecialchars($servicio->getNombre()); ?></h3>
+                    <p><?php echo htmlspecialchars($servicio->getDescripcion()); ?></p>
+                </div>
+            <?php endforeach; ?>
+
+            <?php if (!$hayDisponibles): ?>
+                <p>No hay servicios disponibles.</p>
             <?php endif; ?>
-        </div>
-    </section>
+        <?php else: ?>
+            <p>No hay servicios para mostrar.</p>
+        <?php endif; ?>
+    </div>
+</section>
+
 </body>
 </html>
