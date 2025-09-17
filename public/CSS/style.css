@@ -1,9 +1,11 @@
+/* Reset básico */
 *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Body centrado */
 body{
     font-family: Arial, Helvetica, sans-serif;
     background-color: rgb(231, 216, 195);
@@ -13,12 +15,7 @@ body{
     height: 100vh;
 }
 
-.login-form h2{
-    text-align: center;
-    margin-bottom: 20px;
-    color: #000000;
-}
-
+/* Contenedor del formulario */
 .login-form{
     position: relative;
     background-color: #ffffff;
@@ -28,9 +25,16 @@ body{
     width: 300px;
 }
 
+.login-form h2{
+    text-align: center;
+    margin-bottom: 20px;
+    color: #000000;
+}
+
+/* Grupo de inputs */
 .input-group{
     margin-bottom: 20px;
-    position: relative; /* necesario para posicionar el botón */
+    position: relative; 
 }
 
 .input-group label{
@@ -40,17 +44,50 @@ body{
     margin-bottom: 6px;
 }
 
-.input-group input:focus{
+.input-group input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #000000;
+    padding: 10px 45px 10px 10px; /* 👈 le damos espacio extra a la derecha */
+    border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
 }
 
+/* Botón ojo */
+.input-group .btn-toggle-pass {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-13%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    pointer-events: auto; /* asegura que sea clickeable */
+}
+
+
+/* Focus en input */
+.input-group input:focus{
+    border: 1px solid #000000;
+    outline: none;
+}
+
+
+.btn-toggle-pass:focus {
+    outline: 2px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+/* Botón login/registro */
 .login-btn{
     background-color: #000000;
-    color: rgb(255, 255, 255);
+    color: #ffffff;
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
@@ -63,12 +100,12 @@ body{
     background-color: #acd1b5;
 }
 
+/* Enlace de registro */
 .registro{
     position: absolute;
     margin-top: 45px;
     right: 2%;
     font-size: 12px;
-    
 }
 
 .registro button{
@@ -77,22 +114,4 @@ body{
     color: #000000;
     cursor: pointer;
     text-decoration: underline;
-}
-
-.btn-toggle-pass {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  padding: 4px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.btn-toggle-pass:focus {
-  outline: 2px solid rgba(0,0,0,0.2);
-  border-radius: 4px;
 }

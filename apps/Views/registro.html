@@ -6,7 +6,7 @@
     <title>Registrate</title>
     <link rel="stylesheet" href="/proyecto/public/CSS/style.css">
 </head>
-<body>
+<body>  
     <div class="login-container">
         <form class="login-form" action="/proyecto/apps/Controllers/usuarioController.php" method="POST">
             <h2>Registro</h2>
@@ -19,6 +19,7 @@
             <div class="input-group">
                 <label for="Apellido">Apellido</label>
                 <input type="text" id="Apellido" name="Apellido" required>
+                
             </div>
 
             <div class="input-group">
@@ -28,14 +29,15 @@
 
             <div class="input-group">
                 <label for="ContrasenaHash">Contraseña</label>
-                <input type="password" id="ContrasenaHash" name="ContrasenaHash" required>
+               <input type="password" id="ContrasenaHash" name="ContrasenaHash" required>
+
             </div>
 
-            <div class="input-group">
-                <label for="ConfirmarContrasena">Confirmar Contraseña</label>
-                <input type="password" id="ConfirmarContrasena" name="ConfirmarContrasena" required>
-            </div>
+        <div class="input-group">
+         <label for="ConfirmarContrasena">Confirmar Contraseña</label>
+         <input type="password" id="ConfirmarContrasena" name="ConfirmarContrasena" required>
 
+        </div>
             <div class="input-group">
                 <label for="Rol">¿Qué deseas hacer?</label>
                 <select id="Rol" name="Rol" required>

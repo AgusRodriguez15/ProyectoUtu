@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Insertar el botón dentro del .input-group
     const wrapper = input.parentElement;
-    wrapper.style.position = wrapper.style.position || 'relative';
     wrapper.appendChild(btn);
   });
 });
