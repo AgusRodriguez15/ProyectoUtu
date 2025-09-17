@@ -56,14 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 2. Manejo de la subida de la foto de perfil
         if (isset($_FILES['FotoPerfil']) && $_FILES['FotoPerfil']['error'] === UPLOAD_ERR_OK) {
             $nombreArchivo = basename($_FILES['FotoPerfil']['name']);
-            $rutaDestino = __DIR__ . '/../../public/uploads/' . $nombreArchivo;
+            $rutaDestino = __DIR__ . '/../../public/recursos/imagenes/perfil/' . $nombreArchivo;
             $tipoArchivo = mime_content_type($_FILES['FotoPerfil']['tmp_name']);
 
             // Validar que el archivo sea una imagen
             if (strpos($tipoArchivo, 'image/') === 0) {
                 // Mover el archivo subido
                 if (move_uploaded_file($_FILES['FotoPerfil']['tmp_name'], $rutaDestino)) {
-                    $usuario->setFotoPerfil('/proyecto/public/uploads/' . $nombreArchivo);
+                    $usuario->setFotoPerfil('/proyecto/public/recursos/imagenes/perfil/' . $nombreArchivo);
                 } else {
                     $errores[] = "Error al mover el archivo subido.";
                 }

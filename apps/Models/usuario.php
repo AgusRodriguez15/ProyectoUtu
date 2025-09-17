@@ -149,9 +149,9 @@ class usuario
     public function subirFotoPerfil(?array $archivo): void
     {
         if ($archivo && !empty($archivo['tmp_name'])) {
-            $rutaDestino = __DIR__ . '/../../public/uploads/' . basename($archivo['name']);
+            $rutaDestino = __DIR__ . '/../../public/recursos/imagenes/perfil/' . basename($archivo['name']);
             move_uploaded_file($archivo['tmp_name'], $rutaDestino);
-            $this->FotoPerfil = '/proyecto/public/uploads/' . basename($archivo['name']);
+            $this->FotoPerfil = '/proyecto/public/recursos/imagenes/perfil/' . basename($archivo['name']);
         }
     }
 

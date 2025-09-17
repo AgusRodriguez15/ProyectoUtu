@@ -1,6 +1,6 @@
 <?php
-require_once "ConexionDB.php"; // Ajustá la ruta según tu proyecto
-
+require_once "ConexionDB.php";
+require_once "Foto.php";
 class Servicio {
     public $IdServicio;
     public $Nombre;
@@ -32,53 +32,44 @@ class Servicio {
 
     // Obtener todos los servicios
     public static function obtenerTodos() {
-        self::conectar();
-        $sql = "SELECT * FROM servicio ORDER BY FechaPublicacion DESC";
-        $resultado = self::$conexion->query($sql);
+    self::conectar();
+    $sql = "SELECT * FROM servicio ORDER BY FechaPublicacion DESC";
+    $resultado = self::$conexion->query($sql);
 
-        if (!$resultado) {
-            die("Error en la consulta de servicio: " . self::$conexion->error);
-        }
-
-        $servicios = [];
-
-        while ($fila = $resultado->fetch_assoc()) {
-            $idServicio = $fila['IdServicio'];
-
-            // Traer todas las fotos de este servicio
-            $sqlFotos = "SELECT Foto FROM fotos WHERE IdServicio = $idServicio";
-            $resFotos = self::$conexion->query($sqlFotos);
-            $fotosArray = [];
-            if ($resFotos && $resFotos->num_rows > 0) {
-                while ($fotoFila = $resFotos->fetch_assoc()) {
-                    $fotosArray[] = $fotoFila['Foto'];
-                }
-            }
-
-            $servicio = new Servicio(
-                $fila['IdServicio'],
-                $fila['Nombre'],
-                $fila['Descripcion'],
-                $fila['FechaPublicacion'],
-                $fila['Estado'],
-                $fila['IdProveedor'],
-                $fotosArray
-            );
-
-            $servicios[] = $servicio;
-        }
-
-        return $servicios;
+    if (!$resultado) {
+        die("Error en la consulta de servicio: " . self::$conexion->error);
     }
 
-    // Retorna una foto aleatoria del servicio
+    $servicios = [];
+
+    while ($fila = $resultado->fetch_assoc()) {
+        $servicioTemp = new Servicio(
+            $fila['IdServicio'],
+            $fila['Nombre'],
+            $fila['Descripcion'],
+            $fila['FechaPublicacion'],
+            $fila['Estado'],
+            $fila['IdProveedor']
+        );
+
+        // Obtener fotos usando la clase Foto
+        $servicioTemp->Fotos = Foto::obtenerPorServicio($servicioTemp);
+
+        $servicios[] = $servicioTemp;
+    }
+
+    return $servicios;
+}
+
+
     public function getFotoAleatoria() {
-        if (!empty($this->Fotos)) {
-            return $this->Fotos[array_rand($this->Fotos)];
-        }
-        // Foto genérica si no hay fotos
-        return 'https://picsum.photos/300/200?random=' . rand(1, 100);
+    $rutaBase = '/proyecto/public/recursos/imagenes/servicios/'; // ajusta según tu proyecto
+    if (!empty($this->Fotos)) {
+        return $rutaBase . $this->Fotos[array_rand($this->Fotos)];
     }
+    return $rutaBase . 'default.jpg'; // foto genérica si no hay
+}
+
 
     // Retorna todas las fotos del servicio
     public function getTodasFotos() {
