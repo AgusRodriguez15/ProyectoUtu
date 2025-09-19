@@ -1,33 +1,60 @@
 <?php
-class Categoria {
-    public $IdCategoria;
-    public $Nombre;
-    public $Descripcion;
+require_once __DIR__ . '/ConexionDB.php';
 
-    public function __construct($IdCategoria, $Nombre, $Descripcion) {
-        $this->IdCategoria = $IdCategoria;
-        $this->Nombre = $Nombre;
-        $this->Descripcion = $Descripcion;
+class Categoria
+{
+    private $conexion;
+
+    public function __construct()
+    {
+        $db = new ClaseConexion(); // según tu código original
+        $this->conexion = $db->getConexion();
     }
 
-    public function getIdCategoria() {
-        return $this->IdCategoria;
+    /**
+     * Devuelve todas las IdCategoria que coincidan con un nombre exacto
+     */
+    public function obtenerIdsPorNombre(string $nombre): array
+{
+    // Usamos LIKE para buscar coincidencias parciales
+    $sql = "SELECT IdCategoria FROM Categoria WHERE Nombre LIKE ?";
+    $stmt = $this->conexion->prepare($sql);
+
+    if (!$stmt) {
+        throw new Exception("Error en prepare(): " . $this->conexion->error);
     }
 
-    public function getNombre() {
-        return $this->Nombre;
+    // 1. Agregamos comodines % antes y después del nombre de la categoría.
+    // Esto asegura que la búsqueda encuentre el término en cualquier parte del nombre.
+    $nombreBusqueda = "%" . $nombre . "%";
+
+    // 2. Vinculamos la variable de búsqueda.
+    $stmt->bind_param("s", $nombreBusqueda);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $ids[] = (int)$row['IdCategoria'];
     }
 
-    public function setNombre($Nombre) {
-        $this->Nombre = $Nombre;
-    }
+    return $ids;
+}
 
-    public function getDescripcion() {
-        return $this->Descripcion;
-    }
+    /**
+     * Devuelve todas las categorías
+     */
+    public function obtenerTodas(): array
+    {
+        $sql = "SELECT IdCategoria, Nombre, Descripcion FROM Categoria ORDER BY Nombre ASC";
+        $result = $this->conexion->query($sql);
 
-    public function setDescripcion($Descripcion) {
-        $this->Descripcion = $Descripcion;
+        $categorias = [];
+        while ($row = $result->fetch_assoc()) {
+            $categorias[] = $row;
+        }
+
+        return $categorias;
     }
 }
 ?>
