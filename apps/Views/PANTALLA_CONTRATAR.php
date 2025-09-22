@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma de Oficios</title>
-    <link rel="stylesheet" href="../../public/CSS/estilo.css">
+    <link rel="stylesheet" href="../../public/CSS/styleStart.css">
 </head>
 <body>
     <header class="header">
