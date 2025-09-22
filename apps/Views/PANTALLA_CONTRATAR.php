@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma de Oficios</title>
-    <link rel="stylesheet" href="../../public/CSS/estilos_generales.css">
-    <link rel="stylesheet" href="../../public/CSS/pantalla.css">
+    <link rel="stylesheet" href="../../public/CSS/estilo.css">
 </head>
 <body>
     <header class="header">
@@ -31,23 +30,6 @@
                     <button type="submit">Buscar</button>
                 </div>
 
-                <div class="advanced-search-menu" id="advanced-search-menu">
-                    <div class="menu-section">
-                        <h4>Categoría</h4>
-                        <select name="cat">
-                            <option value="">Todas las categorías</option>
-                            <?php foreach($categorias as $cat): ?>
-                                <option value="<?php echo htmlspecialchars($cat->Nombre); ?>"
-                                        <?php echo ($categoriaNombre == $cat->Nombre) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($cat->Nombre); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="menu-section">
-                        <h4>Ubicación</h4>
-                        <input type="text" name="ubicacion" placeholder="Ej. Montevideo">
-                    </div>
                 </div>
             </div>
         </form>
