@@ -12,10 +12,10 @@ if ($action === 'listar') {
     $result = $conexion->query($sql);
 
     while ($row = $result->fetch_assoc()) {
-        echo "<div class='mensaje'>";
-        echo "<strong>De {$row['IdUsuarioEmisor']} a {$row['IdUsuarioReceptor']}:</strong> ";
+        $clase = ($row['IdUsuarioEmisor'] == $idUsuario) ? "emisor" : "receptor";
+        echo "<div class='mensaje $clase'>";
         echo htmlspecialchars($row['Contenido']);
-        echo " <small>({$row['Fecha']})</small>";
+        echo "<small>{$row['Fecha']}</small>";
         echo "</div>";
     }
     exit;
@@ -31,4 +31,3 @@ if ($action === 'enviar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $conexion->query($sql);
     exit("OK");
 }
-?>

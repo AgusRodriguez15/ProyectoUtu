@@ -16,8 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Redirigir al único controlador
         header("Location: ../Controllers/servicioController.php");
         exit;
-    } else {
-        header("Location: ../Views/login_usuario.php?error=1");
-        exit;
+    }
+
+    else{
+        
     }
 }

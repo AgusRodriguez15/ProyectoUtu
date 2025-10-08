@@ -1,0 +1,103 @@
+/* ----- Estilos generales ----- */
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.chat-container {
+  width: 400px;
+  height: 600px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ----- Área de mensajes ----- */
+.mensajes {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ----- Estilo general de cada mensaje ----- */
+.mensaje {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  position: relative;
+  word-wrap: break-word;
+}
+
+/* ----- Mensajes enviados (emisor) ----- */
+.mensaje.emisor {
+  background: #0084ff;
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+/* ----- Mensajes recibidos (receptor) ----- */
+.mensaje.receptor {
+  background: #e5e5ea;
+  color: #000;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+
+/* ----- Fecha pequeña en el mensaje ----- */
+.mensaje small {
+  display: block;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 5px;
+}
+
+.mensaje.receptor small {
+  color: #666;
+}
+
+/* ----- Caja de entrada ----- */
+.input-box {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  background: #fafafa;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.input-box button {
+  margin-left: 8px;
+  padding: 10px 15px;
+  background: #0084ff;
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.input-box button:hover {
+  background: #006fd6;
+}

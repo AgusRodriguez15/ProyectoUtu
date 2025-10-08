@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Mensajes</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../public/CSS/style_message.css">
 </head>
 <body>
   <section class="chat-container">
@@ -22,7 +22,7 @@
 
     // Cargar mensajes como HTML desde PHP
     async function cargarMensajes() {
-      const res = await fetch("mensajesController.php?action=listar&idUsuario=1");
+      const res = await fetch("../Controllers/mensajeController.php?action=listar&idUsuario=1");
       const html = await res.text();
       mensajesDiv.innerHTML = html;
     }
@@ -32,7 +32,7 @@
       const contenido = mensajeInput.value.trim();
       if (!contenido) return;
 
-      await fetch("mensajesController.php?action=enviar", {
+      await fetch("../Controllers/mensajeController.php?action=enviar", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "IdUsuarioEmisor=1&IdUsuarioReceptor=2&Contenido=" + encodeURIComponent(contenido)
