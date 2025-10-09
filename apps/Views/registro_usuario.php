@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
         if ($stmt->execute()) {
-            header('Location: ../../index.html?registro=ok');
+        header('Location: PANTALLA_CONTRATAR.php');
             exit();
         } else {
             echo 'Error al registrar usuario: ' . $stmt->error;
