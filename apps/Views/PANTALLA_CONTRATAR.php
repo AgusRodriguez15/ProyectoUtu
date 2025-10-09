@@ -11,7 +11,7 @@
         <div class="logo"><h1>Plataforma de Oficios</h1></div>
         <nav class="nav">
             <a href="#">Servicios</a>
-            <a href="/proyecto/apps/Views/perfilUsuario.php">Mi Perfil</a>
+            <a href="/proyecto/apps/views/perfilUsuario.html">Mi Perfil</a>
             <a href="#">Mensajes</a>
         </nav>
     </header>

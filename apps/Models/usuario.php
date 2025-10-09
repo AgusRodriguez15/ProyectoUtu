@@ -352,5 +352,56 @@ public static function autenticar(string $email, string $password): ?usuario {
     return null;
 }
 
+public function guardarCompleto(array $contactos = [], array $habilidades = []): bool
+{
+    if (!$this->IdUsuario) {
+        return false; // No hay usuario cargado
+    }
+
+    // Guardar datos básicos
+    $resultado = $this->guardar();
+
+    if ($resultado) {
+        require_once __DIR__ . '/dato.php';
+        require_once __DIR__ . '/habilidad.php';
+
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        // Borrar contactos previos
+        $stmt = $conn->prepare("DELETE FROM DatosContacto WHERE IdUsuario = ?");
+        $stmt->bind_param('i', $this->IdUsuario);
+        $stmt->execute();
+        $stmt->close();
+
+        // Guardar nuevos contactos
+        foreach ($contactos as $contacto) {
+            if (!empty($contacto['tipo']) && !empty($contacto['valor'])) {
+                $dato = new dato($this->IdUsuario, $contacto['tipo'], $contacto['valor']);
+                $dato->guardar();
+            }
+        }
+
+        // Borrar habilidades previas
+        $stmt = $conn->prepare("DELETE FROM Habilidades WHERE IdUsuario = ?");
+        $stmt->bind_param('i', $this->IdUsuario);
+        $stmt->execute();
+        $stmt->close();
+
+        // Guardar nuevas habilidades
+        foreach ($habilidades as $habilidadData) {
+            if (!empty($habilidadData['nombre']) && isset($habilidadData['anios'])) {
+                $hab = new habilidad($this->IdUsuario, $habilidadData['nombre'], intval($habilidadData['anios']));
+                $hab->guardar();
+            }
+        }
+
+        $conn->close();
+    }
+
+    return $resultado;
+}
+
 
 }
+?>

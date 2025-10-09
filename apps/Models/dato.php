@@ -9,23 +9,18 @@ class dato {
     public function __construct($IdUsuario, $Tipo, $Contacto = null) {
         $this->IdUsuario = $IdUsuario;
         $this->Tipo = $Tipo;
-        $this->Contacto = $Contacto; // puede ser null
+        $this->Contacto = $Contacto;
     }
 
-    public function getIdUsuario() { return $this->IdUsuario; }
-
-    public function getTipo() { return $this->Tipo; }
-    public function setTipo($Tipo) { $this->Tipo = $Tipo; }
-
-    public function getContacto() { return $this->Contacto; }
-    public function setContacto($Contacto) { $this->Contacto = $Contacto; }
-
-    // ===== GUARDAR CONTACTO =====
     public function guardar(): bool {
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        $stmt = $conn->prepare("INSERT INTO DatosContacto (IdUsuario, Tipo, Contacto) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO Dato (IdUsuario, Tipo, Contacto) VALUES (?, ?, ?)");
+        if (!$stmt) {
+            throw new Exception("Error prepare guardar dato: " . $conn->error);
+        }
+
         $stmt->bind_param('iss', $this->IdUsuario, $this->Tipo, $this->Contacto);
 
         $resultado = $stmt->execute();
@@ -34,26 +29,15 @@ class dato {
         return $resultado;
     }
 
-    // ===== ELIMINAR CONTACTO =====
-    public function eliminar(): bool {
+    public static function obtenerPorUsuario(int $IdUsuario): array {
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        $stmt = $conn->prepare("DELETE FROM DatosContacto WHERE IdUsuario = ? AND Tipo = ? AND (Contacto = ? OR (? IS NULL AND Contacto IS NULL))");
-        $stmt->bind_param('isss', $this->IdUsuario, $this->Tipo, $this->Contacto, $this->Contacto);
+        $stmt = $conn->prepare("SELECT Tipo, Contacto FROM Dato WHERE IdUsuario = ?");
+        if (!$stmt) {
+            throw new Exception("Error prepare obtenerPorUsuario dato: " . $conn->error);
+        }
 
-        $resultado = $stmt->execute();
-        $stmt->close();
-        $conn->close();
-        return $resultado;
-    }
-
-    // ===== OBTENER CONTACTOS POR USUARIO =====
-    public static function obtenerPorUsuario($IdUsuario): array {
-        $conexionDB = new ClaseConexion();
-        $conn = $conexionDB->getConexion();
-
-        $stmt = $conn->prepare("SELECT Tipo, Contacto FROM DatosContacto WHERE IdUsuario = ?");
         $stmt->bind_param('i', $IdUsuario);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -68,3 +52,4 @@ class dato {
         return $contactos;
     }
 }
+?>

@@ -12,7 +12,7 @@ class ClaseConexion
         $this->conexion = new mysqli($this->servidor, $this->usuario, $this->contrasena, $this->baseDeDatos);
         if ($this->conexion->connect_error) 
         {
-            exit("Error de conexión: " . $this->conexion->connect_error);
+            throw new Exception("Error de conexión: " . $this->conexion->connect_error);
         }
     }
     public function getConexion()
