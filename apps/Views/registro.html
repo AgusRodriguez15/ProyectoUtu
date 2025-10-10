@@ -9,7 +9,7 @@
 <body>
 		       <div class="login-container">
 
-	<form class="login-form" action="registro_usuario.php" method="POST">
+	<form class="login-form" action="/proyecto/public/php/registro_usuario.php" method="POST">
 				<h2>Registro</h2>
 				<div class="input-group">
 					<label for="nombre">Nombre</label>
@@ -35,8 +35,8 @@
 							<label for="tipoRegistro">¿Qué deseas hacer?</label>
 							<select id="tipoRegistro" name="tipoRegistro" required>
 								<option value="">Selecciona una opción</option>
-								<option value="publicar">Proveedor</option>
-								<option value="contratar">Cliente</option>
+								<option value="Proveedor">Proveedor</option>
+								<option value="Cliente">Cliente</option>
 							</select>
 				</div>
 				<div class="input-group" id="admin_password_group" style="display:none;">
@@ -47,5 +47,10 @@
 		       </div>
 		       <button type="submit" class="login-btn">Registrarse</button>
 		   </form>
+    <script>
+        document.querySelector('.login-form').addEventListener('submit', function(e) {
+            console.log('Enviando formulario a:', this.action);
+        });
+    </script>
 </body>
 </html>

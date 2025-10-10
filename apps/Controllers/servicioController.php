@@ -1,42 +1,28 @@
 <?php
-session_start();
-require_once __DIR__ . '/../Models/Servicio.php';
-require_once __DIR__ . '/../Models/Categoria.php';
+header('Content-Type: application/json; charset=utf-8');
 
-class ServicioController
-{
-    public function index()
-    {
-        $rol = $_SESSION['RolUsuario'] ?? 'Cliente';
+require_once __DIR__ . '/../Models/Servicio.php'; // ajustá ruta según estructura real
 
-        switch ($rol) {
-            case 'Administrador':
-                include __DIR__ . '/../Views/PANTALLA_ADMIN.php';
-                break;
-            case 'Proveedor':
-                include __DIR__ . '/../Views/PANTALLA_PUBLICA.php';
-                break;
-            case 'Cliente':
-            default:
-                // Para Cliente, manejamos búsqueda y carga inicial
-                $termino = $_POST['q'] ?? null;
-                $termino = trim($termino);
+try {
+    // Capturar término de búsqueda
+    $termino = isset($_POST['q']) ? trim($_POST['q']) : '';
 
-                if ($termino) {
-                    $servicios = Servicio::buscarPorCategoriaYTitulo($termino);
-                } else {
-                    $servicios = Servicio::obtenerTodosDisponibles();
-                }
+    // Buscar servicios
+    $servicios = Servicio::buscarPorCategoriaYTitulo($termino);
 
+    // Armar respuesta para el front (solo datos necesarios)
+    $respuesta = array_map(function ($s) {
+        return [
+            'id' => $s->IdServicio,
+            'nombre' => $s->Nombre,
+            'descripcion' => $s->Descripcion,
+            'foto' => $s->getFotoServicio()
+        ];
+    }, $servicios);
 
-                include __DIR__ . '/../Views/PANTALLA_CONTRATAR.php';
-                break;
-        }
-    }
-}
+    echo json_encode($respuesta);
 
-// Ejecutar si se llama directo
-if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
-    $controller = new ServicioController();
-    $controller->index();
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
 }
