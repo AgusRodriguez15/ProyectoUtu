@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['IdUsuario'] = $usuario->getIdUsuario();
         $_SESSION['RolUsuario'] = $usuario->getRol(); // 'Cliente', 'Proveedor', 'Administrador'
 
-        // Redirigir al único controlador
-        header("Location: ../Controllers/servicioController.php");
+        // Redirigir a la página de contratación
+        header("Location: ../Views/PANTALLA_CONTRATAR.html");
         exit;
     }
 
