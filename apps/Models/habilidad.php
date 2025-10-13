@@ -16,12 +16,30 @@ class habilidad {
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        $stmt = $conn->prepare("INSERT INTO Habilidad (IdUsuario, Habilidad, AniosExperiencia) VALUES (?, ?, ?)");
+        // Usamos REPLACE INTO que funciona como un UPDATE si existe o INSERT si no existe
+        $stmt = $conn->prepare("REPLACE INTO Habilidad (IdUsuario, Habilidad, AniosExperiencia) VALUES (?, ?, ?)");
         if (!$stmt) {
             throw new Exception("Error prepare guardar habilidad: " . $conn->error);
         }
 
         $stmt->bind_param('isi', $this->IdUsuario, $this->Habilidad, $this->AniosExperiencia);
+        $resultado = $stmt->execute();
+
+        $stmt->close();
+        $conn->close();
+        return $resultado;
+    }
+
+    public static function eliminarPorUsuario(int $IdUsuario): bool {
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        $stmt = $conn->prepare("DELETE FROM Habilidad WHERE IdUsuario = ?");
+        if (!$stmt) {
+            throw new Exception("Error prepare eliminarPorUsuario habilidad: " . $conn->error);
+        }
+
+        $stmt->bind_param('i', $IdUsuario);
         $resultado = $stmt->execute();
 
         $stmt->close();

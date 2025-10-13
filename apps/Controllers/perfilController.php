@@ -23,10 +23,8 @@ try {
     error_log("Usuario obtenido: " . print_r($usuario, true));
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        // Obtener datos de contacto
+        // Solo lectura de datos cuando se carga la página
         $datos = dato::obtenerPorUsuario($usuario->getIdUsuario());
-        
-        // Obtener habilidades
         $habilidades = habilidad::obtenerPorUsuario($usuario->getIdUsuario());
 
         // Preparar la respuesta
@@ -60,10 +58,19 @@ try {
         // Guardar usuario principal
         $usuarioGuardado = $usuario->guardar();
 
+        // Antes de insertar los nuevos contactos y habilidades, eliminar los antiguos
+        // para evitar duplicados si el usuario guarda varias veces.
+        dato::eliminarPorUsuario($usuario->getIdUsuario());
+        habilidad::eliminarPorUsuario($usuario->getIdUsuario());
+
         // Guardar contactos
         if (isset($_POST['Tipos']) && isset($_POST['Contactos'])) {
             foreach ($_POST['Tipos'] as $i => $tipo) {
-                $dato = new dato($usuario->getIdUsuario(), $tipo, $_POST['Contactos'][$i]);
+                // Ignorar campos vacíos
+                $contactoValor = $_POST['Contactos'][$i] ?? '';
+                if (trim($tipo) === '' && trim($contactoValor) === '') continue;
+
+                $dato = new dato($usuario->getIdUsuario(), $tipo, $contactoValor);
                 $dato->guardar();
             }
         }
@@ -71,7 +78,10 @@ try {
         // Guardar habilidades
         if (isset($_POST['Habilidades']) && isset($_POST['Anios'])) {
             foreach ($_POST['Habilidades'] as $i => $habilidadNombre) {
-                $habilidad = new habilidad($usuario->getIdUsuario(), $habilidadNombre, $_POST['Anios'][$i]);
+                $anios = isset($_POST['Anios'][$i]) ? (int)$_POST['Anios'][$i] : 0;
+                if (trim($habilidadNombre) === '') continue; // ignorar vacíos
+
+                $habilidad = new habilidad($usuario->getIdUsuario(), $habilidadNombre, $anios);
                 $habilidad->guardar();
             }
         }

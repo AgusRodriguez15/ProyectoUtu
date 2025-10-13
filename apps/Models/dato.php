@@ -16,7 +16,8 @@ class dato {
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
 
-        $stmt = $conn->prepare("INSERT INTO Dato (IdUsuario, Tipo, Contacto) VALUES (?, ?, ?)");
+        // Usamos REPLACE INTO que funciona como un UPDATE si existe o INSERT si no existe
+        $stmt = $conn->prepare("REPLACE INTO Dato (IdUsuario, Tipo, Contacto) VALUES (?, ?, ?)");
         if (!$stmt) {
             throw new Exception("Error prepare guardar dato: " . $conn->error);
         }
@@ -24,6 +25,23 @@ class dato {
         $stmt->bind_param('iss', $this->IdUsuario, $this->Tipo, $this->Contacto);
 
         $resultado = $stmt->execute();
+        $stmt->close();
+        $conn->close();
+        return $resultado;
+    }
+
+    public static function eliminarPorUsuario(int $IdUsuario): bool {
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        $stmt = $conn->prepare("DELETE FROM Dato WHERE IdUsuario = ?");
+        if (!$stmt) {
+            throw new Exception("Error prepare eliminarPorUsuario dato: " . $conn->error);
+        }
+
+        $stmt->bind_param('i', $IdUsuario);
+        $resultado = $stmt->execute();
+
         $stmt->close();
         $conn->close();
         return $resultado;

@@ -81,8 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    let isLoadingData = false;
+
     // Función para rellenar el formulario (y sus secciones dinámicas)
     function mostrarDatos(data) {
+        if (isLoadingData) return; // Evitar múltiples cargas simultáneas
+        isLoadingData = true;
+        
         console.log('Mostrando datos:', data); // Para depuración
         
         // A. Campos estáticos
@@ -134,9 +139,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Botón de añadir (siempre se recrea)
         habilidadesDiv.innerHTML += '<button type="button" id="addHabilidad" class="btn-add">➕ Añadir Habilidad</button>';
         
-        // D. Re-adjuntar listeners a los botones dinámicos
+        // Re-adjuntar listeners a los botones dinámicos
         document.getElementById('addContacto').addEventListener('click', () => crearCampoContacto('', ''));
         document.getElementById('addHabilidad').addEventListener('click', () => crearCampoHabilidad('', ''));
+        
+        isLoadingData = false; // Permitir nuevas cargas
     }
 
     // =================================================================
