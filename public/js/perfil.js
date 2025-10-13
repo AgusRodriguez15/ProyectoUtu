@@ -125,16 +125,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // B. Contactos Dinámicos
         contactosDiv.innerHTML = ""; // Limpia el contenedor
-        if (data.contactos && data.contactos.length > 0) {
-            data.contactos.forEach(c => crearCampoContacto(c.Tipo, c.Contacto));
+        if (data.contactos && Array.isArray(data.contactos)) {
+            data.contactos.forEach(c => {
+                // Accedemos a las propiedades usando la estructura correcta del objeto
+                const tipo = c.Tipo || c.tipo || '';
+                const contacto = c.Contacto || c.contacto || '';
+                if (tipo || contacto) {
+                    crearCampoContacto(tipo, contacto);
+                }
+            });
         }
         // Botón de añadir (siempre se recrea)
         contactosDiv.innerHTML += '<button type="button" id="addContacto" class="btn-add">➕ Añadir Contacto</button>';
 
         // C. Habilidades Dinámicas
         habilidadesDiv.innerHTML = ""; // Limpia el contenedor
-        if (data.habilidades && data.habilidades.length > 0) {
-            data.habilidades.forEach(h => crearCampoHabilidad(h.Habilidad, h.AniosExperiencia));
+        if (data.habilidades && Array.isArray(data.habilidades)) {
+            data.habilidades.forEach(h => {
+                // Accedemos a las propiedades usando la estructura correcta del objeto
+                const habilidad = h.Habilidad || h.habilidad || '';
+                const anios = h.AniosExperiencia || h.aniosExperiencia || h.Anios || 0;
+                if (habilidad) {
+                    crearCampoHabilidad(habilidad, anios);
+                }
+            });
         }
         // Botón de añadir (siempre se recrea)
         habilidadesDiv.innerHTML += '<button type="button" id="addHabilidad" class="btn-add">➕ Añadir Habilidad</button>';

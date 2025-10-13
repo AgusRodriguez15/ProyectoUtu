@@ -86,9 +86,22 @@ try {
             }
         }
 
+        // Obtener los datos actualizados para devolverlos
+        $contactosActualizados = dato::obtenerPorUsuario($usuario->getIdUsuario());
+        $habilidadesActualizadas = habilidad::obtenerPorUsuario($usuario->getIdUsuario());
+
         echo json_encode([
             "success" => true,
-            "message" => "Perfil actualizado correctamente"
+            "message" => "Perfil actualizado correctamente",
+            "usuario" => [
+                "nombre" => $usuario->getNombre(),
+                "apellido" => $usuario->getApellido(),
+                "email" => $usuario->getEmail(),
+                "descripcion" => $usuario->getDescripcion(),
+                "rutaFoto" => $usuario->getFotoPerfil()
+            ],
+            "contactos" => $contactosActualizados,
+            "habilidades" => $habilidadesActualizadas
         ]);
         exit;
     }
