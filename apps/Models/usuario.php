@@ -99,6 +99,59 @@ class usuario
         return $this->IdUbicacion;
     }
 
+    // ===== MÉTODOS ESTÁTICOS =====
+    public static function obtenerRolPorEmail(string $email): ?string {
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        // Primero obtener el ID del usuario
+        $stmt = $conn->prepare("SELECT IdUsuario FROM Usuario WHERE Email = ?");
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        
+        if ($fila = $resultado->fetch_assoc()) {
+            $idUsuario = $fila['IdUsuario'];
+            $stmt->close();
+
+            // Verificar si es Proveedor
+            $stmt = $conn->prepare("SELECT 1 FROM Proveedor WHERE IdUsuario = ?");
+            $stmt->bind_param('i', $idUsuario);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                $stmt->close();
+                $conn->close();
+                return 'Proveedor';
+            }
+            $stmt->close();
+
+            // Verificar si es Cliente
+            $stmt = $conn->prepare("SELECT 1 FROM Cliente WHERE IdUsuario = ?");
+            $stmt->bind_param('i', $idUsuario);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                $stmt->close();
+                $conn->close();
+                return 'Cliente';
+            }
+            $stmt->close();
+
+            // Verificar si es Administrador
+            $stmt = $conn->prepare("SELECT 1 FROM Administrador WHERE IdUsuario = ?");
+            $stmt->bind_param('i', $idUsuario);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                $stmt->close();
+                $conn->close();
+                return 'Administrador';
+            }
+            $stmt->close();
+        }
+
+        $conn->close();
+        return null;
+    }
+
     // ===== SETTERS =====
     public function setNombre(string $Nombre): void
     {

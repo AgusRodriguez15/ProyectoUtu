@@ -1,5 +1,6 @@
 <?php
 require_once '../../apps/Models/ConexionDB.php';
+require_once '../../apps/Models/usuario.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
@@ -8,53 +9,107 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email && $password) {
         $conn = new ClaseConexion();
         $db = $conn->getConexion();
-    $stmt = $db->prepare('SELECT IdUsuario, Nombre, Apellido, Email, ContrasenaHash, EstadoCuenta FROM Usuario WHERE Email = ?');
+        
+        // Obtener datos básicos del usuario
+        $stmt = $db->prepare('SELECT IdUsuario, Nombre, Apellido, ContrasenaHash, EstadoCuenta FROM Usuario WHERE Email = ?');
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $result = $stmt->get_result();
+
+        // Obtener el rol usando el nuevo método
+        $rol = usuario::obtenerRolPorEmail($email);
+        error_log("Rol obtenido para el email $email: " . ($rol ?? 'no encontrado'));
+        
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['ContrasenaHash'])) {
+                if (!$rol) {
+                    error_log("Error: No se pudo determinar el rol para el usuario {$row['IdUsuario']}");
+                    header('Location: ../index.html?error=rol');
+                    exit();
+                }
+
                 session_start();
-                $_SESSION['usuario_id'] = $row['IdUsuario'];
+                $_SESSION['IdUsuario'] = $row['IdUsuario'];
                 $_SESSION['usuario_nombre'] = $row['Nombre'];
                 $_SESSION['usuario_estado'] = $row['EstadoCuenta'];
+                $_SESSION['usuario_rol'] = $rol;
 
                 // Consultar el rol
-                $rol = '';
+                // Verificar si la cuenta está activa
+                if ($row['EstadoCuenta'] !== 'ACTIVO') {
+                    header('Location: ../index.html?error=cuenta_inactiva');
+                    exit();
+                }
+
+                // Determinar el rol del usuario
+                $rol = null;
+                
+                // Primero verificar si es Proveedor
                 $stmtRol = $db->prepare('SELECT 1 FROM Proveedor WHERE IdUsuario = ?');
                 $stmtRol->bind_param('i', $row['IdUsuario']);
                 $stmtRol->execute();
-                $stmtRol->store_result();
-                if ($stmtRol->num_rows > 0) {
+                $resultRol = $stmtRol->get_result();
+                if ($resultRol->num_rows > 0) {
                     $rol = 'Proveedor';
-                } else {
-                    $stmtRol = $db->prepare('SELECT 1 FROM Cliente WHERE IdUsuario = ?');
-                    $stmtRol->bind_param('i', $row['IdUsuario']);
-                    $stmtRol->execute();
-                    $stmtRol->store_result();
-                    if ($stmtRol->num_rows > 0) {
-                        $rol = 'Cliente';
-                    } else {
-                        $stmtRol = $db->prepare('SELECT 1 FROM Administrador WHERE IdUsuario = ?');
-                        $stmtRol->bind_param('i', $row['IdUsuario']);
-                        $stmtRol->execute();
-                        $stmtRol->store_result();
-                        if ($stmtRol->num_rows > 0) {
-                            $rol = 'Administrador';
-                        }
-                    }
                 }
                 $stmtRol->close();
 
+                // Si no es Proveedor, verificar si es Cliente
+                if (!$rol) {
+                    $stmtRol = $db->prepare('SELECT 1 FROM Cliente WHERE IdUsuario = ?');
+                    $stmtRol->bind_param('i', $row['IdUsuario']);
+                    $stmtRol->execute();
+                    $resultRol = $stmtRol->get_result();
+                    if ($resultRol->num_rows > 0) {
+                        $rol = 'Cliente';
+                    }
+                    $stmtRol->close();
+                }
+
+                // Si no es Cliente, verificar si es Administrador
+                if (!$rol) {
+                    $stmtRol = $db->prepare('SELECT 1 FROM Administrador WHERE IdUsuario = ?');
+                    $stmtRol->bind_param('i', $row['IdUsuario']);
+                    $stmtRol->execute();
+                    $resultRol = $stmtRol->get_result();
+                    if ($resultRol->num_rows > 0) {
+                        $rol = 'Administrador';
+                    }
+                    $stmtRol->close();
+                }
+
+                // Guardar el rol en la sesión
+                $_SESSION['usuario_rol'] = $rol;
+                
+                error_log("Usuario ID: " . $row['IdUsuario'] . " - Rol detectado: " . $rol);
+
+                // Verificar si la cuenta está activa
+                if ($row['EstadoCuenta'] !== 'ACTIVO') {
+                    error_log("Intento de inicio de sesión con cuenta inactiva: {$row['IdUsuario']}");
+                    header('Location: ../index.html?error=cuenta_inactiva');
+                    exit();
+                }
+
+                // Debug log
+                error_log("Iniciando sesión - Usuario: {$row['IdUsuario']}, Nombre: {$row['Nombre']}, Rol: $rol");
+
                 // Redirigir según el rol
-                if ($rol === 'Proveedor') {
-                    header('Location: ../../apps/PANTALLA_PUBLICAR.html');
-                } elseif ($rol === 'Cliente') {
-                    header('Location: ../../apps/PANTALLA_CONTRATAR.html');
-                } elseif ($rol === 'Administrador') {
-                    header('Location: ../../apps/PANTALLA_ADMIN.html');
-                } else {
-                    header('Location: ../index.html?error=rol');
+                switch ($rol) {
+                    case 'Proveedor':
+                        error_log("Redirigiendo a proveedor: {$row['IdUsuario']}");
+                        header('Location: ../../apps/Views/PANTALLA_PUBLICAR.html');
+                        break;
+                    case 'Cliente':
+                        error_log("Redirigiendo a cliente: {$row['IdUsuario']}");
+                        header('Location: ../../apps/Views/PANTALLA_CONTRATAR.html');
+                        break;
+                    case 'Administrador':
+                        error_log("Redirigiendo a administrador: {$row['IdUsuario']}");
+                        header('Location: ../../apps/Views/PANTALLA_ADMIN.html');
+                        break;
+                    default:
+                        error_log("Error en redirección - rol no válido: $rol");
+                        header('Location: ../index.html?error=rol');
                 }
                 exit();
             } else {
