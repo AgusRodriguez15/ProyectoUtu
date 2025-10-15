@@ -10,7 +10,7 @@
 <body>
     <div class="formulario-servicio">
         <h2>Publicar Nuevo Servicio</h2>
-        <form id="formServicio" enctype="multipart/form-data">
+        <form id="formPublicarServicio" enctype="multipart/form-data">
             <div class="grupo-form">
                 <label for="titulo">Título del Servicio</label>
                 <input type="text" id="titulo" name="titulo" required 
@@ -39,13 +39,18 @@
             </div>
 
             <div class="grupo-form">
-                <label for="categoria">Categoría</label>
-                <select id="categoria" name="categoria" required>
-                    <option value="">Selecciona una categoría</option>
-                    <!-- Las categorías se cargarán dinámicamente -->
-                </select>
-                <div class="categorias" id="categoriasSeleccionadas">
-                    <!-- Aquí se mostrarán las categorías seleccionadas -->
+                <label for="categorias">Categorías (máximo 3)</label>
+                <div class="contenedor-categorias">
+                    <div class="input-container">
+                        <input type="text" id="buscarCategoria" 
+                               placeholder="Buscar y seleccionar categoría">
+                        <div id="listaCategorias" class="dropdown-categorias">
+                            <!-- Aquí se mostrarán las categorías disponibles -->
+                        </div>
+                    </div>
+                    <div id="categoriasSeleccionadas" class="lista-categorias">
+                        <!-- Aquí se mostrarán las categorías seleccionadas -->
+                    </div>
                 </div>
             </div>
 
@@ -62,13 +67,16 @@
 
             <div class="grupo-form">
                 <label>Fotos del Servicio (máximo 5)</label>
-                <input type="file" id="selectorFotos" class="selector-fotos" 
-                       accept="image/*" multiple>
-                <div class="contenedor-fotos" id="contenedorFotos">
-                    <div class="preview-foto">
-                        <button type="button" class="btn-agregar-foto" onclick="document.getElementById('selectorFotos').click()">
-                            +
-                        </button>
+                <div class="fotos-container">
+                    <div class="input-foto-container">
+                        <input type="file" id="inputFotos" name="fotos" accept="image/*" multiple>
+                        <label for="inputFotos" class="btn-agregar-foto">
+                            <span class="icono-agregar">+</span>
+                            <span class="texto-agregar">Agregar fotos</span>
+                        </label>
+                    </div>
+                    <div id="previewFotos" class="preview-container">
+                        <!-- Aquí se mostrarán las previsualizaciones -->
                     </div>
                 </div>
             </div>
@@ -77,155 +85,6 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('formServicio');
-            const selectorFotos = document.getElementById('selectorFotos');
-            const contenedorFotos = document.getElementById('contenedorFotos');
-            const selectCategoria = document.getElementById('categoria');
-            const categoriasSeleccionadas = document.getElementById('categoriasSeleccionadas');
-            let fotosSeleccionadas = [];
-
-            // Cargar categorías
-            cargarCategorias();
-
-            // Manejar selección de fotos
-            selectorFotos.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files);
-                
-                if (fotosSeleccionadas.length + files.length > 5) {
-                    alert('Máximo 5 fotos permitidas');
-                    return;
-                }
-
-                files.forEach(file => {
-                    if (!file.type.startsWith('image/')) {
-                        alert('Por favor, selecciona solo imágenes');
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const preview = crearPreviewFoto(e.target.result);
-                        contenedorFotos.insertBefore(preview, contenedorFotos.lastElementChild);
-                        fotosSeleccionadas.push(file);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            // Manejar palabras clave
-            const palabrasClaveInput = document.getElementById('palabrasClave');
-            const listaPalabrasClave = document.getElementById('listaPalabrasClave');
-            let palabrasClave = [];
-
-            palabrasClaveInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const palabra = palabrasClaveInput.value.trim();
-                    
-                    if (palabra && !palabrasClave.includes(palabra)) {
-                        if (palabrasClave.length >= 5) {
-                            alert('Máximo 5 palabras clave permitidas');
-                            return;
-                        }
-                        
-                        agregarPalabraClave(palabra);
-                        palabrasClaveInput.value = '';
-                    }
-                }
-            });
-
-            function agregarPalabraClave(palabra) {
-                palabrasClave.push(palabra);
-                
-                const div = document.createElement('div');
-                div.className = 'palabra-clave';
-                div.innerHTML = `
-                    ${palabra}
-                    <button type="button" onclick="eliminarPalabraClave(this, '${palabra}')">&times;</button>
-                `;
-                
-                listaPalabrasClave.appendChild(div);
-            }
-
-            window.eliminarPalabraClave = function(button, palabra) {
-                palabrasClave = palabrasClave.filter(p => p !== palabra);
-                button.parentElement.remove();
-            };
-
-            // Manejar envío del formulario
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                
-                // Agregar fotos al FormData
-                fotosSeleccionadas.forEach((foto, index) => {
-                    formData.append(`foto${index}`, foto);
-                });
-
-                // Agregar palabras clave al FormData
-                formData.append('palabrasClave', JSON.stringify(palabrasClave));
-
-                try {
-                    const response = await fetch('../../apps/Controllers/servicioController.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        alert('Servicio publicado exitosamente');
-                        window.location.href = '/proyecto/public/perfil.html';
-                    } else {
-                        alert(data.message || 'Error al publicar el servicio');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al publicar el servicio');
-                }
-            });
-
-            function crearPreviewFoto(src) {
-                const div = document.createElement('div');
-                div.className = 'preview-foto';
-                
-                const img = document.createElement('img');
-                img.src = src;
-                
-                const btnEliminar = document.createElement('button');
-                btnEliminar.className = 'eliminar';
-                btnEliminar.innerHTML = '×';
-                btnEliminar.onclick = () => {
-                    const index = Array.from(contenedorFotos.children).indexOf(div) - 1;
-                    fotosSeleccionadas.splice(index, 1);
-                    div.remove();
-                };
-                
-                div.appendChild(img);
-                div.appendChild(btnEliminar);
-                return div;
-            }
-
-            async function cargarCategorias() {
-                try {
-                    const response = await fetch('../../apps/Controllers/categoriaController.php');
-                    const data = await response.json();
-                    
-                    if (data.success && data.categorias) {
-                        data.categorias.forEach(categoria => {
-                            const option = document.createElement('option');
-                            option.value = categoria.IdCategoria;
-                            option.textContent = categoria.Nombre;
-                            selectCategoria.appendChild(option);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error al cargar categorías:', error);
-                }
-            }
-        });
-    </script>
+    <script src="../../public/js/publicarServicio.js"></script>
 </body>
 </html>

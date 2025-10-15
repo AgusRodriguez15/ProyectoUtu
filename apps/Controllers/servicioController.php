@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../Models/Servicio.php'; // ajustá ruta según estructura real
+require_once __DIR__ . '/../Models/Servicio.php';
 
 try {
     // Capturar término de búsqueda

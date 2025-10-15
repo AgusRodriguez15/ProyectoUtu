@@ -29,11 +29,26 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach(s => {
           const card = document.createElement("div");
           card.className = "card";
-          card.innerHTML = `
-            <img src="${s.foto}" alt="Imagen del servicio">
-            <h3>${s.nombre}</h3>
-            <p>${s.descripcion}</p>
-          `;
+          
+          // Crear el elemento img programáticamente para evitar problemas con comillas
+          const img = document.createElement('img');
+          img.src = s.foto;
+          img.alt = "Imagen del servicio";
+          img.onerror = function() {
+            // SVG simple como fallback
+            this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ccc"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%23666" font-size="20"%3ESin Imagen%3C/text%3E%3C/svg%3E';
+            this.onerror = null; // Evitar loop infinito
+          };
+          
+          const h3 = document.createElement('h3');
+          h3.textContent = s.nombre;
+          
+          const p = document.createElement('p');
+          p.textContent = s.descripcion;
+          
+          card.appendChild(img);
+          card.appendChild(h3);
+          card.appendChild(p);
           contenedor.appendChild(card);
         });
       })
