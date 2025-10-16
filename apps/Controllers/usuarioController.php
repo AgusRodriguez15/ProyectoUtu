@@ -52,12 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         null,
         null,
         null,
-        $datos['Rol']
+        $datos['Rol'],
+        !empty($datos['IdUbicacion']) ? $datos['IdUbicacion'] : null
     );
-
-    if (!empty($datos['IdUbicacion'])) {
-        $usuario->setIdUbicacion($datos['IdUbicacion']);
-    }
 
     // Subir foto de perfil
     $usuario->subirFotoPerfil($datos['FotoPerfil']);

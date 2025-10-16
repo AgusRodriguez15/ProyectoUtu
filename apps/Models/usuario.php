@@ -34,7 +34,8 @@ class usuario
         ?string $FechaRegistro,
         ?string $EstadoCuenta,
         ?string $UltimoAcceso,
-        string $Rol
+        string $Rol,
+        ?int $IdUbicacion = null
     ) {
         $this->IdUsuario = $IdUsuario;
         $this->Nombre = $Nombre;
@@ -47,6 +48,7 @@ class usuario
         $this->EstadoCuenta = $EstadoCuenta;
         $this->UltimoAcceso = $UltimoAcceso;
         $this->Rol = $Rol;
+        $this->IdUbicacion = $IdUbicacion;
     }
 
     // ===== GETTERS =====
@@ -312,7 +314,8 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
         $fila['FechaRegistro'],
         $fila['EstadoCuenta'],
         $fila['UltimoAcceso'],
-        $rol
+        $rol,
+        $fila['IdUbicacion'] ?? null
     );
 }
 
@@ -342,17 +345,18 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
 
     $stmt = $conn->prepare("
         UPDATE Usuario
-        SET Nombre = ?, Apellido = ?, Email = ?, Descripcion = ?, FotoPerfil = ?
+        SET Nombre = ?, Apellido = ?, Email = ?, Descripcion = ?, FotoPerfil = ?, IdUbicacion = ?
         WHERE IdUsuario = ?
     ");
 
     $stmt->bind_param(
-        'sssssi',
+        'sssssii',
         $this->Nombre,
         $this->Apellido,
         $this->Email,
         $this->Descripcion,
         $this->FotoPerfil,
+        $this->IdUbicacion,
         $this->IdUsuario
     );
 
@@ -370,7 +374,7 @@ public static function autenticar(string $email, string $password): ?usuario {
     $stmt = $db->prepare("
         SELECT u.IdUsuario, u.Nombre, u.Apellido, u.Email, u.ContrasenaHash, 
                u.FotoPerfil, u.Descripcion, u.FechaRegistro, 
-               u.EstadoCuenta, u.UltimoAcceso,
+               u.EstadoCuenta, u.UltimoAcceso, u.IdUbicacion,
                CASE 
                    WHEN EXISTS (SELECT 1 FROM Proveedor p WHERE p.IdUsuario = u.IdUsuario) THEN 'Proveedor'
                    WHEN EXISTS (SELECT 1 FROM Cliente c WHERE c.IdUsuario = u.IdUsuario) THEN 'Cliente'
@@ -397,7 +401,8 @@ public static function autenticar(string $email, string $password): ?usuario {
                 $row['FechaRegistro'],
                 $row['EstadoCuenta'],
                 $row['UltimoAcceso'],
-                $row['Rol']
+                $row['Rol'],
+                $row['IdUbicacion'] ?? null
             );
         }
     }

@@ -40,6 +40,24 @@ form textarea {
     box-sizing: border-box;
 }
 
+/* Sección de ubicación */
+.ubicacion-group {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+}
+
+.ubicacion-group label {
+    margin-top: 10px;
+}
+
+.ubicacion-group label:first-child {
+    margin-top: 0;
+}
+
 form textarea {
     height: 100px;
     resize: vertical;

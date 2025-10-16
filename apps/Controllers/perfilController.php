@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../Models/usuario.php';
 require_once __DIR__ . '/../Models/dato.php';
 require_once __DIR__ . '/../Models/habilidad.php';
+require_once __DIR__ . '/../Models/ubicacion.php';
 
 session_start();
 
@@ -27,6 +28,20 @@ try {
         $datos = dato::obtenerPorUsuario($usuario->getIdUsuario());
         $habilidades = habilidad::obtenerPorUsuario($usuario->getIdUsuario());
 
+        // Obtener ubicación si existe
+        $ubicacionData = null;
+        if ($usuario->getIdUbicacion()) {
+            $ubicacion = ubicacion::obtenerPorId($usuario->getIdUbicacion());
+            if ($ubicacion) {
+                $ubicacionData = [
+                    'pais' => $ubicacion->getPais(),
+                    'ciudad' => $ubicacion->getCiudad(),
+                    'calle' => $ubicacion->getCalle(),
+                    'numero' => $ubicacion->getNumero()
+                ];
+            }
+        }
+
         // Preparar la respuesta
         echo json_encode([
             'success' => true,
@@ -37,6 +52,7 @@ try {
                 'descripcion' => $usuario->getDescripcion(),
                 'rutaFoto' => $usuario->getFotoPerfil()
             ],
+            'ubicacion' => $ubicacionData,
             'contactos' => $datos,
             'habilidades' => $habilidades
         ]);
@@ -49,6 +65,32 @@ try {
         $usuario->setApellido($_POST['Apellido'] ?? $usuario->getApellido());
         $usuario->setEmail($_POST['Email'] ?? $usuario->getEmail());
         $usuario->setDescripcion($_POST['Descripcion'] ?? $usuario->getDescripcion());
+
+        // Manejar ubicación
+        if (!empty($_POST['Pais']) || !empty($_POST['Ciudad']) || !empty($_POST['Calle']) || !empty($_POST['Numero'])) {
+            $pais = $_POST['Pais'] ?? '';
+            $ciudad = $_POST['Ciudad'] ?? '';
+            $calle = $_POST['Calle'] ?? '';
+            $numero = !empty($_POST['Numero']) ? (int)$_POST['Numero'] : null;
+            
+            // Si el usuario ya tiene una ubicación, actualizarla
+            if ($usuario->getIdUbicacion()) {
+                $ubicacion = ubicacion::obtenerPorId($usuario->getIdUbicacion());
+                if ($ubicacion) {
+                    $ubicacion->setPais($pais);
+                    $ubicacion->setCiudad($ciudad);
+                    $ubicacion->setCalle($calle);
+                    $ubicacion->setNumero($numero);
+                    $ubicacion->guardar();
+                }
+            } else {
+                // Crear nueva ubicación
+                $nuevaUbicacion = new ubicacion(null, $pais, $ciudad, $calle, $numero);
+                if ($nuevaUbicacion->guardar()) {
+                    $usuario->setIdUbicacion($nuevaUbicacion->getIdUbicacion());
+                }
+            }
+        }
 
         // Subir foto si hay
         if (!empty($_FILES['FotoPerfil']['tmp_name'])) {
@@ -90,6 +132,20 @@ try {
         $contactosActualizados = dato::obtenerPorUsuario($usuario->getIdUsuario());
         $habilidadesActualizadas = habilidad::obtenerPorUsuario($usuario->getIdUsuario());
 
+        // Obtener ubicación actualizada
+        $ubicacionData = null;
+        if ($usuario->getIdUbicacion()) {
+            $ubicacion = ubicacion::obtenerPorId($usuario->getIdUbicacion());
+            if ($ubicacion) {
+                $ubicacionData = [
+                    'pais' => $ubicacion->getPais(),
+                    'ciudad' => $ubicacion->getCiudad(),
+                    'calle' => $ubicacion->getCalle(),
+                    'numero' => $ubicacion->getNumero()
+                ];
+            }
+        }
+
         echo json_encode([
             "success" => true,
             "message" => "Perfil actualizado correctamente",
@@ -100,6 +156,7 @@ try {
                 "descripcion" => $usuario->getDescripcion(),
                 "rutaFoto" => $usuario->getFotoPerfil()
             ],
+            "ubicacion" => $ubicacionData,
             "contactos" => $contactosActualizados,
             "habilidades" => $habilidadesActualizadas
         ]);

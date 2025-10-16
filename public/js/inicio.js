@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach(s => {
           const card = document.createElement("div");
           card.className = "card";
+          card.style.cursor = "pointer"; // Mostrar que es clickeable
           
           // Crear el elemento img programáticamente para evitar problemas con comillas
           const img = document.createElement('img');
@@ -45,6 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
           
           const p = document.createElement('p');
           p.textContent = s.descripcion;
+          
+          // Hacer click en toda la tarjeta
+          card.onclick = function() {
+            // Guardar el ID del servicio en sessionStorage
+            sessionStorage.setItem('servicioId', s.id);
+            // Redirigir a la página de detalle del servicio
+            window.location.href = '../../apps/Views/detalleServicio.html';
+          };
           
           card.appendChild(img);
           card.appendChild(h3);

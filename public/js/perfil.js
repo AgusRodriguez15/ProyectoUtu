@@ -95,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const campos = {
                 "nombre": data.usuario.nombre,
                 "apellido": data.usuario.apellido,
-                "email": data.usuario.email,
                 "descripcion": data.usuario.descripcion
             };
 
@@ -107,6 +106,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log(`Campo ${id} establecido a:`, valor); // Para depuración
                 } else {
                     console.error(`Elemento ${id} no encontrado`);
+                }
+            }
+            
+            // Campos de ubicación
+            if (data.ubicacion) {
+                const camposUbicacion = {
+                    "pais": data.ubicacion.pais,
+                    "ciudad": data.ubicacion.ciudad,
+                    "calle": data.ubicacion.calle,
+                    "numero": data.ubicacion.numero
+                };
+                
+                for (const [id, valor] of Object.entries(camposUbicacion)) {
+                    const elemento = document.getElementById(id);
+                    if (elemento) {
+                        elemento.value = valor || '';
+                        console.log(`Campo ubicación ${id} establecido a:`, valor);
+                    }
                 }
             }
             
