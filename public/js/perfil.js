@@ -129,9 +129,17 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Mostrar foto actual
             if (data.usuario.rutaFoto) {
-                const rutaFoto = data.usuario.rutaFoto.startsWith('http') ? 
-                    data.usuario.rutaFoto : 
-                    '../../' + data.usuario.rutaFoto.replace(/^\//, '');
+                let rutaFoto = data.usuario.rutaFoto;
+                
+                // Si la ruta empieza con /proyecto, quitarlo para usar ruta relativa
+                if (rutaFoto.startsWith('/proyecto/')) {
+                    rutaFoto = rutaFoto.replace('/proyecto/', '../../');
+                } 
+                // Si la ruta no tiene el prefijo completo, construirla
+                else if (!rutaFoto.startsWith('http')) {
+                    rutaFoto = '../../' + rutaFoto.replace(/^\//, '');
+                }
+                
                 fotoActualDiv.innerHTML = `<img src="${rutaFoto}" alt="Foto actual" style="max-width: 100px; border-radius: 50%;">`;
                 console.log('Foto establecida:', rutaFoto);
             } else {

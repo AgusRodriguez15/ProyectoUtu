@@ -51,6 +51,9 @@ try {
         }
 
         // Preparar la respuesta
+        $rutaFoto = $usuario->getFotoPerfil();
+        error_log("Ruta de foto que se enviará: " . ($rutaFoto ?? 'NULL'));
+        
         echo json_encode([
             'success' => true,
             'usuario' => [
@@ -58,7 +61,7 @@ try {
                 'apellido' => $usuario->getApellido(),
                 'email' => $usuario->getEmail(),
                 'descripcion' => $usuario->getDescripcion(),
-                'rutaFoto' => $usuario->getFotoPerfil()
+                'rutaFoto' => $rutaFoto
             ],
             'ubicacion' => $ubicacionData,
             'contactos' => $datos,
