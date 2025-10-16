@@ -134,3 +134,19 @@ img {
         padding: 15px;
     }
 }
+
+.btn-volver {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 2rem;
+  transition: background-color 0.3s;
+}
+
+.btn-volver:hover {
+  background-color: #7f8c8d;
+}

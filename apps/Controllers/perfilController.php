@@ -21,7 +21,12 @@ header('Content-Type: application/json');
 try {
     error_log("ID de usuario en sesión: " . $_SESSION['IdUsuario']);
     $usuario = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
-    error_log("Usuario obtenido: " . print_r($usuario, true));
+    
+    if (!$usuario) {
+        throw new Exception("Usuario no encontrado");
+    }
+    
+    error_log("Usuario obtenido: " . $usuario->getNombre());
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Solo lectura de datos cuando se carga la página
@@ -30,8 +35,11 @@ try {
 
         // Obtener ubicación si existe
         $ubicacionData = null;
-        if ($usuario->getIdUbicacion()) {
-            $ubicacion = ubicacion::obtenerPorId($usuario->getIdUbicacion());
+        $idUbicacion = $usuario->getIdUbicacion();
+        error_log("IdUbicacion del usuario: " . ($idUbicacion ?? 'NULL'));
+        
+        if ($idUbicacion) {
+            $ubicacion = ubicacion::obtenerPorId($idUbicacion);
             if ($ubicacion) {
                 $ubicacionData = [
                     'pais' => $ubicacion->getPais(),
