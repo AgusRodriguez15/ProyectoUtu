@@ -3,45 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma de Oficios</title>
+  <title>Gestionar Servicios - Proveedor</title>
   <link rel="stylesheet" href="../../public/CSS/styleStart.css">
 </head>
 <body>
   <header class="header">
-    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <div class="logo"><h1>🛠️ Plataforma de Oficios - Proveedor</h1></div>
     <nav class="nav">
-      <a href="#">Servicios</a>
+      <a href="PANTALLA_PUBLICAR.html" class="active">Servicios</a>
       <a href="perfilUsuario.html">Mi Perfil</a>
-      <a href="#">Mensajes</a>
-      <a href="publicarServicio.html">Publicar</a>
+      <a href="PANTALLA_MENSAJERIA.html">Mensajes</a>
     </nav>
   </header>
 
-  <!-- Hero con buscador -->
-  <section class="hero">
+  <!-- Hero para proveedores -->
+  <section class="hero hero-proveedor">
     <div class="hero-content">
-      <h2>Conecta Proveedores con Clientes</h2>
-      <p>Encuentra el servicio que necesitas o publica el tuyo</p>
-
-      <form id="buscadorForm">
-        <div class="search-container">
-          <div class="search-box">
-            <input type="text" id="search-input" placeholder="Buscar por título..." autocomplete="on">
-            <button type="submit">Buscar</button>
-          </div>
-        </div>
-      </form>
+      <h2>Gestiona tus Servicios</h2>
+      <p>Publica, edita y administra los servicios que ofreces</p>
+      
+      <div class="quick-actions">
+        <a href="publicarServicio.html" class="action-card">
+          <span class="icon">➕</span>
+          <h3>Publicar Nuevo Servicio</h3>
+          <p>Crea un nuevo servicio para ofrecer</p>
+        </a>
+        <a href="perfilUsuario.html" class="action-card">
+          <span class="icon">👤</span>
+          <h3>Actualizar Perfil</h3>
+          <p>Mejora tu perfil profesional</p>
+        </a>
+        <a href="PANTALLA_MENSAJERIA.html" class="action-card">
+          <span class="icon">💬</span>
+          <h3>Ver Mensajes</h3>
+          <p>Responde a tus clientes</p>
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- Grid de servicios -->
+  <!-- Grid de MIS servicios -->
   <section class="grid-section">
-    <h2>Servicios Populares</h2>
+    <h2>Mis Servicios Publicados</h2>
     <div id="serviciosContainer" class="grid-container">
       <!-- Se cargan dinámicamente -->
     </div>
   </section>
 
-  <script src="../../public/js/inicio.js"></script>
+  <script src="../../public/js/inicioProveedor.js"></script>
 </body>
 </html>

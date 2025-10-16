@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma de Oficios</title>
+  <title>Buscar Servicios - Cliente</title>
   <link rel="stylesheet" href="../../public/CSS/styleStart.css">
 </head>
 <body>
   <header class="header">
-    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <div class="logo"><h1>🔍 Plataforma de Oficios - Cliente</h1></div>
     <nav class="nav">
-      <a href="#">Servicios</a>
+      <a href="PANTALLA_CONTRATAR.html" class="active">Buscar Servicios</a>
       <a href="perfilUsuario.html">Mi Perfil</a>
-      <a href="#">Mensajes</a>
+      <a href="PANTALLA_MENSAJERIA.html">Mensajes</a>
     </nav>
   </header>
 
   <!-- Hero con buscador -->
   <section class="hero">
     <div class="hero-content">
-      <h2>Conecta Proveedores con Clientes</h2>
-      <p>Encuentra el servicio que necesitas o publica el tuyo</p>
+      <h2>Encuentra el Servicio que Necesitas</h2>
+      <p>Miles de proveedores profesionales listos para ayudarte</p>
 
       <form id="buscadorForm">
         <div class="search-container">
           <div class="search-box">
-            <input type="text" id="search-input" placeholder="Buscar por título..." autocomplete="on">
-            <button type="submit">Buscar</button>
+            <input type="text" id="search-input" placeholder="¿Qué servicio necesitas? (ej: plomero, electricista...)" autocomplete="on">
+            <button type="submit">🔍 Buscar</button>
           </div>
         </div>
       </form>
@@ -35,7 +35,7 @@
 
   <!-- Grid de servicios -->
   <section class="grid-section">
-    <h2>Servicios Populares</h2>
+    <h2>Servicios Disponibles</h2>
     <div id="serviciosContainer" class="grid-container">
       <!-- Se cargan dinámicamente -->
     </div>

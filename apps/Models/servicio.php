@@ -238,5 +238,41 @@ public static function buscarPorCategoriaYTitulo(?string $termino): array
 
     return $servicios;
 }
+
+// Obtener servicios por proveedor
+public static function obtenerPorProveedor(int $idProveedor): array
+{
+    self::conectar();
+
+    $sql = "SELECT * FROM Servicio WHERE IdProveedor = ? ORDER BY FechaPublicacion DESC";
+    $stmt = self::$conexion->prepare($sql);
+    
+    if (!$stmt) {
+        throw new Exception("Error en prepare(): " . self::$conexion->error);
+    }
+
+    $stmt->bind_param("i", $idProveedor);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $servicios = [];
+    while ($fila = $result->fetch_assoc()) {
+        $servicio = new Servicio(
+            $fila['IdServicio'],
+            $fila['Nombre'],
+            $fila['Descripcion'],
+            $fila['FechaPublicacion'],
+            $fila['Estado'],
+            $fila['IdProveedor']
+        );
+        
+        // Obtener fotos del servicio
+        $servicio->Fotos = Foto::obtenerPorServicio($servicio);
+        
+        $servicios[] = $servicio;
+    }
+
+    return $servicios;
+}
     
 }

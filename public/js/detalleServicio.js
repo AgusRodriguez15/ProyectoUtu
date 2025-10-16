@@ -198,9 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     document.querySelector('.btn-perfil')?.addEventListener('click', () => {
       if (servicio.proveedor?.idUsuario) {
-        // Guardar el ID del proveedor y redirigir a su perfil
-        sessionStorage.setItem('perfilUsuarioId', servicio.proveedor.idUsuario);
-        window.location.href = 'perfilUsuario.html';
+        // Redirigir al perfil público del proveedor
+        window.location.href = `../../apps/Views/verPerfil.html?id=${servicio.proveedor.idUsuario}`;
       } else {
         alert('No se puede ver el perfil en este momento');
       }

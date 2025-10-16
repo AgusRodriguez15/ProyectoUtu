@@ -54,6 +54,9 @@ try {
         $rutaFoto = $usuario->getFotoPerfil();
         error_log("Ruta de foto que se enviará: " . ($rutaFoto ?? 'NULL'));
         
+        // Obtener el rol del usuario desde la sesión
+        $rol = $_SESSION['usuario_rol'] ?? 'Cliente';
+        
         echo json_encode([
             'success' => true,
             'usuario' => [
@@ -61,7 +64,8 @@ try {
                 'apellido' => $usuario->getApellido(),
                 'email' => $usuario->getEmail(),
                 'descripcion' => $usuario->getDescripcion(),
-                'rutaFoto' => $rutaFoto
+                'rutaFoto' => $rutaFoto,
+                'rol' => $rol
             ],
             'ubicacion' => $ubicacionData,
             'contactos' => $datos,
@@ -157,6 +161,9 @@ try {
             }
         }
 
+        // Obtener el rol del usuario desde la sesión
+        $rol = $_SESSION['usuario_rol'] ?? 'Cliente';
+        
         echo json_encode([
             "success" => true,
             "message" => "Perfil actualizado correctamente",
@@ -165,7 +172,8 @@ try {
                 "apellido" => $usuario->getApellido(),
                 "email" => $usuario->getEmail(),
                 "descripcion" => $usuario->getDescripcion(),
-                "rutaFoto" => $usuario->getFotoPerfil()
+                "rutaFoto" => $usuario->getFotoPerfil(),
+                "rol" => $rol
             ],
             "ubicacion" => $ubicacionData,
             "contactos" => $contactosActualizados,
@@ -173,23 +181,6 @@ try {
         ]);
         exit;
     }
-
-    // Si no es POST → devolver datos actuales
-    $contactos = dato::obtenerPorUsuario($usuario->getIdUsuario());
-    $habilidades = habilidad::obtenerPorUsuario($usuario->getIdUsuario());
-
-    echo json_encode([
-        "success" => true,
-        "usuario" => [
-            "nombre" => $usuario->getNombre(),
-            "apellido" => $usuario->getApellido(),
-            "email" => $usuario->getEmail(),
-            "descripcion" => $usuario->getDescripcion(),
-            "rutaFoto" => $usuario->getFotoPerfil()
-        ],
-        "contactos" => $contactos,
-        "habilidades" => $habilidades
-    ]);
 
 } catch (Exception $e) {
     echo json_encode([

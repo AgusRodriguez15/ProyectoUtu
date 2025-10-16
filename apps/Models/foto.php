@@ -166,12 +166,14 @@ class Foto
         $resultado = self::$conexion->query($sql);
 
         if (!$resultado) {
-            die("Error en la consulta de fotos: " . self::$conexion->error);
+            error_log("Error en la consulta de fotos: " . self::$conexion->error);
+            return [];
         }
 
         $fotos = [];
         while ($fila = $resultado->fetch_assoc()) {
-            $fotos[] = $fila['Foto'];
+            // Devolver la ruta completa para usar en el frontend
+            $fotos[] = '/proyecto/public/recursos/imagenes/servicios/' . $fila['Foto'];
         }
 
         return $fotos;

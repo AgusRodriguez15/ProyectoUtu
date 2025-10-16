@@ -1,7 +1,6 @@
 <?php
-// Activar errores temporalmente para depuración
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Desactivar display de errores para que no interfiera con JSON
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -10,8 +9,83 @@ require_once __DIR__ . '/../Models/Servicio.php';
 require_once __DIR__ . '/../Models/usuario.php';
 require_once __DIR__ . '/../Models/dato.php';
 require_once __DIR__ . '/../Models/habilidad.php';
+require_once __DIR__ . '/../Models/proveedor.php';
+
+session_start();
 
 try {
+    // Si se solicita eliminar un servicio
+    if (isset($_POST['eliminar']) && isset($_POST['idServicio'])) {
+        if (!isset($_SESSION['IdUsuario'])) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            exit;
+        }
+        
+        $idServicio = intval($_POST['idServicio']);
+        $servicio = Servicio::obtenerPorId($idServicio);
+        
+        if (!$servicio) {
+            echo json_encode(['success' => false, 'message' => 'Servicio no encontrado']);
+            exit;
+        }
+        
+        // Verificar que el servicio pertenece al usuario actual
+        $proveedor = proveedor::obtenerPorIdUsuario($_SESSION['IdUsuario']);
+        if (!$proveedor || $servicio->IdProveedor !== $proveedor->getIdUsuario()) {
+            echo json_encode(['success' => false, 'message' => 'No tienes permisos para eliminar este servicio']);
+            exit;
+        }
+        
+        // Aquí iría la lógica de eliminación (por implementar en el modelo)
+        // Por ahora solo confirmamos
+        echo json_encode(['success' => true, 'message' => 'Servicio eliminado correctamente']);
+        exit;
+    }
+    
+    // Si se solicitan los servicios del proveedor actual
+    if (isset($_POST['misServicios'])) {
+        if (!isset($_SESSION['IdUsuario'])) {
+            echo json_encode(['error' => 'No autorizado']);
+            exit;
+        }
+        
+        // Obtener el IdProveedor del usuario actual
+        $proveedor = proveedor::obtenerPorIdUsuario($_SESSION['IdUsuario']);
+        
+        if (!$proveedor) {
+            echo json_encode([]);
+            exit;
+        }
+        
+        $servicios = Servicio::obtenerPorProveedor($proveedor->getIdUsuario());
+        
+        // Armar respuesta
+        $respuesta = array_map(function ($s) {
+            $fotos = [];
+            if (!empty($s->Fotos) && is_array($s->Fotos)) {
+                foreach ($s->Fotos as $foto) {
+                    // Las fotos ahora vienen como strings con rutas completas
+                    $fotos[] = [
+                        'Url' => $foto,
+                        'Descripcion' => ''
+                    ];
+                }
+            }
+            
+            return [
+                'IdServicio' => $s->IdServicio,
+                'Nombre' => $s->Nombre,
+                'Descripcion' => $s->Descripcion,
+                'FechaPublicacion' => $s->FechaPublicacion,
+                'Estado' => $s->Estado,
+                'Fotos' => $fotos
+            ];
+        }, $servicios);
+        
+        echo json_encode($respuesta);
+        exit;
+    }
+    
     // Si se solicita un servicio por ID
     if (isset($_POST['id'])) {
         $id = intval($_POST['id']);

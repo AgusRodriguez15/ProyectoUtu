@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Cliente</title>
+    <link rel="stylesheet" href="../../public/CSS/style_ver_perfil.css">
+</head>
+<body>
+    <button class="btn-volver" id="btnVolver">← Volver</button>
+    
+    <div class="perfil-container">
+        <!-- Sección de información del usuario -->
+        <div class="perfil-header">
+            <div class="foto-perfil" id="fotoPerfil">
+                <img src="../../public/recursos/imagenes/default/user-default.png" alt="Foto de perfil">
+            </div>
+            <div class="info-principal">
+                <h1 id="nombreCompleto">Cargando...</h1>
+                <p class="tipo-usuario cliente">Cliente</p>
+                <p id="descripcion" class="descripcion"></p>
+            </div>
+        </div>
+
+        <!-- Sección de ubicación -->
+        <div class="seccion" id="seccionUbicacion" style="display: none;">
+            <h2>📍 Ubicación</h2>
+            <div class="ubicacion-info">
+                <p><strong>País:</strong> <span id="pais"></span></p>
+                <p><strong>Ciudad:</strong> <span id="ciudad"></span></p>
+                <p><strong>Dirección:</strong> <span id="direccion"></span></p>
+            </div>
+        </div>
+
+        <!-- Sección de contactos -->
+        <div class="seccion" id="seccionContactos" style="display: none;">
+            <h2>📞 Datos de contacto</h2>
+            <div id="listaContactos" class="lista-items"></div>
+        </div>
+
+        <!-- Mensaje si no hay información -->
+        <div class="seccion" id="sinInfo" style="display: none;">
+            <p class="texto-sin-info">Este usuario aún no ha completado su perfil.</p>
+        </div>
+    </div>
+
+    <script src="../../public/js/verPerfilCliente.js"></script>
+</body>
+</html>

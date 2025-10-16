@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const formData = new FormData(form);
 
-        fetch("../../apps/controllers/perfilController.php", {
+        fetch("../../apps/Controllers/perfilController.php", {
             method: "POST",
             body: formData
         })
@@ -109,6 +109,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
             
+            // Mostrar u ocultar sección de habilidades según el rol
+            const seccionHabilidades = document.getElementById('seccionHabilidades');
+            if (data.usuario.rol === 'Proveedor') {
+                seccionHabilidades.style.display = 'block';
+            } else {
+                seccionHabilidades.style.display = 'none';
+            }
+            
             // Campos de ubicación
             if (data.ubicacion) {
                 const camposUbicacion = {
@@ -163,24 +171,28 @@ document.addEventListener("DOMContentLoaded", () => {
         // Botón de añadir (siempre se recrea)
         contactosDiv.innerHTML += '<button type="button" id="addContacto" class="btn-add">➕ Añadir Contacto</button>';
 
-        // C. Habilidades Dinámicas
-        habilidadesDiv.innerHTML = ""; // Limpia el contenedor
-        if (data.habilidades && Array.isArray(data.habilidades)) {
-            data.habilidades.forEach(h => {
-                // Accedemos a las propiedades usando la estructura correcta del objeto
-                const habilidad = h.Habilidad || h.habilidad || '';
-                const anios = h.AniosExperiencia || h.aniosExperiencia || h.Anios || 0;
-                if (habilidad) {
-                    crearCampoHabilidad(habilidad, anios);
-                }
-            });
+        // C. Habilidades Dinámicas (solo para Proveedores)
+        if (data.usuario && data.usuario.rol === 'Proveedor') {
+            habilidadesDiv.innerHTML = ""; // Limpia el contenedor
+            if (data.habilidades && Array.isArray(data.habilidades)) {
+                data.habilidades.forEach(h => {
+                    // Accedemos a las propiedades usando la estructura correcta del objeto
+                    const habilidad = h.Habilidad || h.habilidad || '';
+                    const anios = h.AniosExperiencia || h.aniosExperiencia || h.Anios || 0;
+                    if (habilidad) {
+                        crearCampoHabilidad(habilidad, anios);
+                    }
+                });
+            }
+            // Botón de añadir (siempre se recrea)
+            habilidadesDiv.innerHTML += '<button type="button" id="addHabilidad" class="btn-add">➕ Añadir Habilidad</button>';
+            
+            // Adjuntar listener al botón de añadir habilidad
+            document.getElementById('addHabilidad').addEventListener('click', () => crearCampoHabilidad('', ''));
         }
-        // Botón de añadir (siempre se recrea)
-        habilidadesDiv.innerHTML += '<button type="button" id="addHabilidad" class="btn-add">➕ Añadir Habilidad</button>';
         
-        // Re-adjuntar listeners a los botones dinámicos
+        // Re-adjuntar listeners a los botones dinámicos (contactos siempre)
         document.getElementById('addContacto').addEventListener('click', () => crearCampoContacto('', ''));
-        document.getElementById('addHabilidad').addEventListener('click', () => crearCampoHabilidad('', ''));
         
         isLoadingData = false; // Permitir nuevas cargas
     }
