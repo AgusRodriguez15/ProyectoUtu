@@ -27,19 +27,28 @@ try {
         // Obtener y validar datos del POST
         $titulo = trim($_POST['titulo'] ?? '');
         $descripcion = trim($_POST['descripcion'] ?? '');
+        $precio = isset($_POST['precio']) ? floatval($_POST['precio']) : 0;
+        $divisa = trim($_POST['divisa'] ?? 'UYU');
         
         // Validar campos obligatorios
         if (empty($titulo) || empty($descripcion)) {
             throw new Exception('El título y la descripción son obligatorios');
         }
         
-        error_log("Datos recibidos: Titulo={$titulo}, IdProveedor={$_SESSION['IdUsuario']}");
+        // Validar que el precio no sea negativo
+        if ($precio < 0) {
+            throw new Exception('El precio no puede ser negativo');
+        }
+        
+        error_log("Datos recibidos: Titulo={$titulo}, Precio={$precio}, Divisa={$divisa}, IdProveedor={$_SESSION['IdUsuario']}");
         
         // Crear el servicio usando el método crear() del modelo
         $servicio = new Servicio();
         $idServicio = $servicio->crear([
             'nombre' => $titulo,
             'descripcion' => $descripcion,
+            'precio' => $precio,
+            'divisa' => $divisa,
             'idProveedor' => $_SESSION['IdUsuario']
         ]);
         
@@ -111,10 +120,23 @@ try {
     }
     
 } catch (Exception $e) {
+    http_response_code(400); // Bad Request en lugar de 500
     error_log("Error en publicarServicioController: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
+        'error' => $e->getMessage()
+    ]);
+    exit;
+} catch (Error $e) {
+    http_response_code(500);
+    error_log("Error fatal en publicarServicioController: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error interno del servidor',
+        'error' => $e->getMessage()
     ]);
     exit;
 }

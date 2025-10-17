@@ -89,6 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   function mostrarDetalle(servicio) {
+    // Para clientes: siempre mostrar botones de contratar
+    
     // Crear galería de fotos si hay múltiples imágenes
     let galeriaHTML = '';
     if (servicio.fotos && servicio.fotos.length > 0) {
@@ -129,6 +131,17 @@ document.addEventListener("DOMContentLoaded", () => {
               📅 Publicado: ${fechaFormateada}
             </span>
           </div>
+          
+          ${servicio.precio !== undefined && servicio.precio !== null ? `
+            <div class="servicio-precio">
+              <h3>💰 Precio</h3>
+              <div class="precio-display">
+                ${servicio.precio > 0 ? 
+                  `<span class="precio-valor">$${parseFloat(servicio.precio).toLocaleString('es-UY', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${servicio.divisa || 'UYU'}</span>` 
+                  : '<span class="precio-gratuito">🆓 Servicio Gratuito</span>'}
+              </div>
+            </div>
+          ` : ''}
           
           <div class="servicio-descripcion-container">
             <h3>Descripción</h3>
@@ -177,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           
           <div class="servicio-acciones">
-            <button class="btn-primary btn-contratar">💼 Contratar Servicio</button>
+            <button class="btn-primary btn-contratar"> Contratar Servicio</button>
             <button class="btn-secondary btn-mensaje">💬 Enviar Mensaje</button>
             <button class="btn-terciary btn-perfil">👤 Ver Perfil</button>
           </div>
@@ -185,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
     
-    // Agregar event listeners a los botones
+    // Event listeners para clientes
     document.querySelector('.btn-contratar')?.addEventListener('click', () => {
       alert('Función de contratación en desarrollo');
       // Aquí puedes agregar la lógica para contratar el servicio
@@ -198,7 +211,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     document.querySelector('.btn-perfil')?.addEventListener('click', () => {
       if (servicio.proveedor?.idUsuario) {
-        // Redirigir al perfil público del proveedor
         window.location.href = `../../apps/Views/verPerfil.html?id=${servicio.proveedor.idUsuario}`;
       } else {
         alert('No se puede ver el perfil en este momento');

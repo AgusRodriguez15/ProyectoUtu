@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Servicio</title>
+  <link rel="stylesheet" href="../../public/CSS/styleDetalle.css" />
+</head>
+<body>
+  <button class="btn-volver" onclick="history.back()">← Volver</button>
+  <main class="detalle-container">
+    <div class="formulario-editar">
+      <h1>Editar Servicio</h1>
+
+      <form id="formEditarServicio">
+        <input type="hidden" id="idServicio" />
+
+        <label for="nombre">Título del Servicio</label>
+        <input type="text" id="nombre" name="nombre" required placeholder="Ingresa el título de tu servicio" />
+
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" rows="5" required placeholder="Describe tu servicio detalladamente"></textarea>
+
+        <label for="precio">Precio</label>
+        <div class="precio-divisa-container">
+          <div class="precio-container">
+            <span class="precio-simbolo">$</span>
+            <input type="number" id="precio" name="precio" step="0.01" min="0" required placeholder="1500.00 (o 0 para servicio gratuito)" />
+          </div>
+          <select id="divisa" name="divisa" class="divisa-select">
+            <option value="UYU">UYU - Peso Uruguayo</option>
+            <option value="USD">USD - Dólar Americano</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="ARS">ARS - Peso Argentino</option>
+            <option value="BRL">BRL - Real Brasileño</option>
+          </select>
+        </div>
+
+        <label>Estado del Servicio</label>
+        <div class="estado-toggle-container">
+          <span class="estado-label inactivo">🔴 NO DISPONIBLE</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="estado" name="estado">
+            <span class="slider"></span>
+          </label>
+          <span class="estado-label activo">🟢 DISPONIBLE</span>
+        </div>
+        <small class="estado-help">Desliza para activar/desactivar la visibilidad del servicio</small>
+
+        <label for="palabrasClave">Palabras Clave</label>
+        <div class="palabras-clave-container">
+          <input type="text" id="inputPalabra" placeholder="Escribe una palabra clave y presiona Enter" />
+          <div id="palabrasClaveActuales" class="palabras-tags">
+            <!-- Las palabras clave se cargan aquí dinámicamente -->
+          </div>
+          <small class="help-text">💡 Presiona Enter para agregar una palabra clave. Haz clic en ✕ para eliminar.</small>
+        </div>
+
+        <label>Fotos del Servicio</label>
+        <div id="fotosActuales" class="fotos-actuales">
+          <!-- Las fotos se cargan aquí dinámicamente -->
+        </div>
+        
+        <div class="agregar-fotos">
+          <input type="file" id="nuevasFotos" name="nuevasFotos[]" multiple accept="image/*" style="display: none;">
+          <button type="button" class="btn-agregar-foto" onclick="document.getElementById('nuevasFotos').click()">
+            <span class="icono-agregar">📷</span>
+            <span class="texto-agregar">Agregar nuevas fotos</span>
+          </button>
+          <div id="previewNuevas" class="preview-container"></div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">💾 Guardar Cambios</button>
+          <button type="button" class="btn-secundario" onclick="history.back()">✖️ Cancelar</button>
+          <button type="button" class="btn-eliminar" onclick="eliminarServicio()">🗑️ Eliminar Servicio</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="../../public/js/editarServicio.js"></script>
+</body>
+</html>

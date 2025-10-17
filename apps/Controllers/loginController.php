@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'success' => true,
             'redirect' => $ruta,
             'rol' => $rol,
-            'nombre' => $usuario->getNombre()
+            'nombre' => $usuario->getNombre(),
+            'idUsuario' => $usuario->getIdUsuario()
         ]);
         exit();
         

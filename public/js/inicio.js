@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Guardar el ID del servicio en sessionStorage
             sessionStorage.setItem('servicioId', s.id);
             // Redirigir a la página de detalle del servicio
-            window.location.href = '../../apps/Views/detalleServicio.html';
+            window.location.href = '../../apps/Views/detalleServicioCliente.html';
           };
           
           card.appendChild(img);

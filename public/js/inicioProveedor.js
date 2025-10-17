@@ -76,13 +76,14 @@ function crearTarjetaServicio(servicio) {
 
 function verServicio(idServicio) {
     sessionStorage.setItem('servicioId', idServicio);
-    window.location.href = 'detalleServicio.html';
+    window.location.href = 'detalleServicioProveedor.html';
 }
 
 function editarServicio(idServicio) {
-    // Redirigir a la página de edición (puedes crear esta página después)
-    alert(`Función de editar servicio ${idServicio} - Por implementar`);
-    // window.location.href = `editarServicio.html?id=${idServicio}`;
+    // Guardar también en sessionStorage por compatibilidad
+    sessionStorage.setItem('servicioId', idServicio);
+    // Redirigir a la página de edición
+    window.location.href = `editarServicio.html?id=${idServicio}`;
 }
 
 function confirmarEliminar(idServicio) {
@@ -99,17 +100,35 @@ function eliminarServicio(idServicio) {
         },
         body: `eliminar=true&idServicio=${idServicio}`
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+        
+        return response.text().then(text => {
+            console.log('Response text:', text);
+            
+            if (!text.trim()) {
+                throw new Error('El servidor devolvió una respuesta vacía');
+            }
+            
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw new Error('Respuesta no válida del servidor: ' + text.substring(0, 500));
+            }
+        });
+    })
     .then(data => {
-        if (data.success) {
-            alert('✅ Servicio eliminado correctamente');
-            cargarMisServicios(); // Recargar la lista
-        } else {
-            alert('❌ Error al eliminar el servicio: ' + (data.message || 'Error desconocido'));
+        console.log('Data recibida:', data);
+        if (!data.success) {
+            const errorMsg = data.message || data.error || 'Error desconocido';
+            throw new Error(errorMsg);
         }
+        alert('✅ Servicio eliminado correctamente');
+        cargarMisServicios(); // Recargar la lista
     })
     .catch(error => {
         console.error("Error:", error);
-        alert('❌ Error al eliminar el servicio');
+        alert('❌ Error al eliminar el servicio: ' + error.message);
     });
 }

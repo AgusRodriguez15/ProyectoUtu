@@ -50,9 +50,18 @@
         <button type="submit">Guardar cambios</button>
     </form>
 
-    <a href="../../public/php/logout.php">Cerrar sesión</a>
+    <a href="#" onclick="cerrarSesion(); return false;">Cerrar sesión</a>
   </div>
 
     <script src="../../public/js/perfil.js"></script>
+    <script>
+      function cerrarSesion() {
+        // Limpiar sessionStorage y localStorage
+        sessionStorage.clear();
+        localStorage.clear();
+        // Redirigir al logout del servidor
+        window.location.href = '../../public/php/logout.php';
+      }
+    </script>
 </body>
 </html>

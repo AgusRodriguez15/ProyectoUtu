@@ -202,4 +202,65 @@ class Foto
 
         return $fotos;
     }
+
+    /**
+     * Crea una nueva foto en la base de datos
+     * @param int $idServicio ID del servicio
+     * @param string $nombreArchivo Nombre del archivo de foto
+     * @return bool true si se creó correctamente
+     * @throws Exception si hay un error en la base de datos
+     */
+    public static function crear(int $idServicio, string $nombreArchivo): bool
+    {
+        self::conectar();
+        
+        $sql = "INSERT INTO Foto (IdServicio, Foto) VALUES (?, ?)";
+        $stmt = self::$conexion->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . self::$conexion->error);
+        }
+        
+        $stmt->bind_param("is", $idServicio, $nombreArchivo);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error al guardar la foto: " . $stmt->error);
+        }
+        
+        return $stmt->affected_rows > 0;
+    }
+
+    /**
+     * Elimina una foto por nombre de archivo
+     * @param int $idServicio ID del servicio
+     * @param string $nombreArchivo Nombre del archivo a eliminar
+     * @return bool true si se eliminó correctamente
+     * @throws Exception si hay un error en la base de datos
+     */
+    public static function eliminarPorNombre(int $idServicio, string $nombreArchivo): bool
+    {
+        self::conectar();
+        
+        // Eliminar archivo físico
+        $rutaArchivo = __DIR__ . '/../../public/recursos/imagenes/servicios/' . $nombreArchivo;
+        if (file_exists($rutaArchivo)) {
+            unlink($rutaArchivo);
+        }
+        
+        // Eliminar de la base de datos
+        $sql = "DELETE FROM Foto WHERE IdServicio = ? AND Foto = ?";
+        $stmt = self::$conexion->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . self::$conexion->error);
+        }
+        
+        $stmt->bind_param("is", $idServicio, $nombreArchivo);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error al eliminar la foto: " . $stmt->error);
+        }
+        
+        return $stmt->affected_rows > 0;
+    }
 }

@@ -16,7 +16,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Guardar información relevante en localStorage si es necesario
+                    // Guardar información relevante en sessionStorage
+                    sessionStorage.setItem('usuario_rol', data.rol);
+                    sessionStorage.setItem('usuario_nombre', data.nombre);
+                    sessionStorage.setItem('IdUsuario', data.idUsuario);
+                    
+                    // También en localStorage para persistencia (opcional)
                     localStorage.setItem('usuario_rol', data.rol);
                     localStorage.setItem('usuario_nombre', data.nombre);
                     

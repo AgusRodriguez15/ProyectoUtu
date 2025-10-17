@@ -121,4 +121,92 @@ class PalabraClave {
 
         return $stmt->affected_rows > 0;
     }
+
+    /**
+     * Obtiene todas las palabras clave de un servicio
+     * @param int $idServicio ID del servicio
+     * @return array Array de strings con las palabras clave
+     */
+    public static function obtenerPorServicio(int $idServicio): array
+    {
+        $db = new ClaseConexion();
+        $conexion = $db->getConexion();
+        
+        $sql = "SELECT Palabra FROM PalabraClave WHERE IdServicio = ?";
+        $stmt = $conexion->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $conexion->error);
+        }
+        
+        $stmt->bind_param("i", $idServicio);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error al obtener las palabras clave: " . $stmt->error);
+        }
+        
+        $resultado = $stmt->get_result();
+        $palabras = [];
+        
+        while ($fila = $resultado->fetch_assoc()) {
+            $palabras[] = $fila['Palabra'];
+        }
+        
+        return $palabras;
+    }
+
+    /**
+     * Elimina todas las palabras clave de un servicio
+     * @param int $idServicio ID del servicio
+     * @return bool true si se eliminaron correctamente
+     */
+    public static function eliminarPorServicio(int $idServicio): bool
+    {
+        $db = new ClaseConexion();
+        $conexion = $db->getConexion();
+        
+        $sql = "DELETE FROM PalabraClave WHERE IdServicio = ?";
+        $stmt = $conexion->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta: " . $conexion->error);
+        }
+        
+        $stmt->bind_param("i", $idServicio);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error al eliminar las palabras clave: " . $stmt->error);
+        }
+        
+        return true;
+    }
+
+    /**
+     * Actualiza las palabras clave de un servicio (elimina las existentes y agrega las nuevas)
+     * @param int $idServicio ID del servicio
+     * @param array $palabrasClave Array de strings con las nuevas palabras clave
+     */
+    public static function actualizarPorServicio(int $idServicio, array $palabrasClave): void
+    {
+        $db = new ClaseConexion();
+        $conexion = $db->getConexion();
+        
+        $conexion->begin_transaction();
+        
+        try {
+            // Eliminar palabras existentes
+            self::eliminarPorServicio($idServicio);
+            
+            // Agregar nuevas palabras si hay alguna
+            if (!empty($palabrasClave)) {
+                self::guardarPalabrasClaveServicio($idServicio, $palabrasClave);
+            }
+            
+            $conexion->commit();
+            
+        } catch (Exception $e) {
+            $conexion->rollback();
+            throw new Exception("Error al actualizar las palabras clave: " . $e->getMessage());
+        }
+    }
 }

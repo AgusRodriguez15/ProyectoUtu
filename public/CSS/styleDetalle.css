@@ -84,6 +84,31 @@
   flex-wrap: wrap;
 }
 
+/* Estilos para mostrar precio en detalle */
+.servicio-precio {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.precio-display {
+  margin-top: 0.5rem;
+}
+
+.precio-valor {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #28a745;
+}
+
+.precio-gratuito {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #17a2b8;
+}
+
 .badge {
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -334,5 +359,505 @@
   
   .galeria-fotos {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+}
+
+/* Estilos para el formulario de editar servicio */
+.formulario-editar {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.formulario-editar h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.formulario-editar label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #333;
+  font-size: 1rem;
+}
+
+.formulario-editar input[type="text"],
+.formulario-editar input[type="number"],
+.formulario-editar select,
+.formulario-editar textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.formulario-editar input:focus,
+.formulario-editar textarea:focus,
+.formulario-editar select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.formulario-editar textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.formulario-editar select {
+  cursor: pointer;
+}
+
+/* Estilos para el campo de precio con divisa */
+.precio-divisa-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.precio-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  flex: 2;
+  transition: border-color 0.3s;
+}
+
+.precio-container:focus-within {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.precio-simbolo {
+  padding: 0.8rem 0.5rem 0.8rem 0.8rem;
+  background: #f8f9fa;
+  color: #666;
+  font-weight: bold;
+  font-size: 1rem;
+  border-right: 1px solid #ddd;
+}
+
+.precio-container input[type="number"] {
+  flex: 1;
+  border: none;
+  padding: 0.8rem;
+  margin: 0;
+  outline: none;
+  font-size: 1rem;
+}
+
+.divisa-select {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: white;
+  transition: border-color 0.3s;
+}
+
+.divisa-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* Estilos para el toggle switch del estado */
+.estado-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.estado-label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.estado-label.inactivo {
+  color: #e74c3c;
+}
+
+.estado-label.activo {
+  color: #27ae60;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e74c3c;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #27ae60;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #27ae60;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.estado-help {
+  color: #666;
+  font-style: italic;
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.acciones {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primario {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primario:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-secundario {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-secundario:hover {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+.btn-eliminar {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-eliminar:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Mensaje informativo para proveedores */
+.info-proveedor {
+  background-color: #e8f4f8;
+  border-left: 4px solid #3498db;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Estilos para palabras clave */
+.palabras-clave-container {
+  margin-bottom: 1.5rem;
+}
+
+.palabras-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  min-height: 40px;
+  padding: 0.5rem;
+  border: 1px dashed #ddd;
+  border-radius: 5px;
+  background: #f8f9fa;
+}
+
+.palabra-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  background: #3498db;
+  color: white;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  gap: 0.3rem;
+}
+
+.palabra-tag .btn-eliminar-palabra {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.palabra-tag .btn-eliminar-palabra:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.help-text {
+  color: #666;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.sin-palabras {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* Estilos para manejo de fotos */
+.fotos-actuales {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+  min-height: 50px;
+}
+
+.foto-actual {
+  position: relative;
+  aspect-ratio: 1;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.foto-actual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.foto-actual .btn-eliminar-foto {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.foto-actual .btn-eliminar-foto:hover {
+  background: #e74c3c;
+  transform: scale(1.1);
+}
+
+.agregar-fotos {
+  margin: 1rem 0;
+}
+
+.btn-agregar-foto {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border: 2px dashed #28a745;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.btn-agregar-foto:hover {
+  background: #e8f5e9;
+  border-color: #1e7e34;
+}
+
+.icono-agregar {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.texto-agregar {
+  color: #495057;
+  font-weight: 500;
+}
+
+.preview-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.preview-imagen {
+  position: relative;
+  aspect-ratio: 1;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.preview-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-imagen .btn-quitar {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sin-fotos {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+/* Responsive para formulario de edición */
+@media (max-width: 768px) {
+  .formulario-editar {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .acciones {
+    flex-direction: column;
+  }
+  
+  .btn-primario,
+  .btn-secundario {
+    width: 100%;
+  }
+  
+  .fotos-actuales,
+  .preview-container {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .estado-toggle-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .precio-divisa-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .precio-container,
+  .divisa-select {
+    flex: 1;
+    width: 100%;
   }
 }

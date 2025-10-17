@@ -135,5 +135,11 @@ function mostrarPerfil(data) {
 
 function verServicio(idServicio) {
     sessionStorage.setItem('servicioId', idServicio);
-    window.location.href = 'detalleServicio.html';
+    // Determinar qué archivo usar basándose en el rol del usuario
+    const rolUsuario = sessionStorage.getItem('usuario_rol') || localStorage.getItem('usuario_rol');
+    if (rolUsuario === 'proveedor') {
+        window.location.href = 'detalleServicioProveedor.html';
+    } else {
+        window.location.href = 'detalleServicioCliente.html';
+    }
 }

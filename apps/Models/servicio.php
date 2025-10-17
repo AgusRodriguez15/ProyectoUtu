@@ -8,6 +8,8 @@ class Servicio
     public $IdServicio;
     public $Nombre;
     public $Descripcion;
+    public $Precio;
+    public $Divisa;
     public $FechaPublicacion;
     public $Estado;
     public $IdProveedor;
@@ -15,7 +17,7 @@ class Servicio
 
     private static $conexion;
 
-    public function __construct($idServicio = null, $nombre = null, $descripcion = null, $fechaPublicacion = null, $estado = null, $idProveedor = null)
+    public function __construct($idServicio = null, $nombre = null, $descripcion = null, $fechaPublicacion = null, $estado = null, $idProveedor = null, $precio = null, $divisa = 'UYU')
     {
         $db = new ClaseConexion();
         self::$conexion = $db->getConexion();
@@ -24,6 +26,8 @@ class Servicio
         $this->IdServicio = $idServicio;
         $this->Nombre = $nombre;
         $this->Descripcion = $descripcion;
+        $this->Precio = $precio;
+        $this->Divisa = $divisa;
         $this->FechaPublicacion = $fechaPublicacion;
         $this->Estado = $estado;
         $this->IdProveedor = $idProveedor;
@@ -37,18 +41,27 @@ class Servicio
      */
     public function crear(array $datos): int
     {
-        $sql = "INSERT INTO Servicio (Nombre, Descripcion, IdProveedor, FechaPublicacion, Estado) 
-                VALUES (?, ?, ?, NOW(), 'DISPONIBLE')";
+        $sql = "INSERT INTO Servicio (Nombre, Descripcion, Precio, Divisa, IdProveedor, FechaPublicacion, Estado) 
+                VALUES (?, ?, ?, ?, ?, NOW(), 'DISPONIBLE')";
         
         $stmt = self::$conexion->prepare($sql);
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . self::$conexion->error);
         }
 
-        $stmt->bind_param("ssi", 
-            $datos['nombre'],
-            $datos['descripcion'],
-            $datos['idProveedor']
+        // Crear variables para bind_param (no puede usar expresiones directamente)
+        $nombre = $datos['nombre'];
+        $descripcion = $datos['descripcion'];
+        $precio = $datos['precio'] ?? 0;
+        $divisa = $datos['divisa'] ?? 'UYU';
+        $idProveedor = $datos['idProveedor'];
+
+        $stmt->bind_param("ssdsi", 
+            $nombre,
+            $descripcion,
+            $precio,
+            $divisa,
+            $idProveedor
         );
 
         if (!$stmt->execute()) {
@@ -96,6 +109,112 @@ class Servicio
         return $stmt->affected_rows > 0;
     }
 
+    /**
+     * Actualiza campos básicos del servicio
+     */
+    public static function actualizarBasico(int $idServicio, int $idProveedor, string $nombre, string $descripcion, float $precio, string $divisa, string $estado): bool
+    {
+        self::conectar();
+
+        $sql = "UPDATE Servicio SET Nombre = ?, Descripcion = ?, Precio = ?, Divisa = ?, Estado = ? WHERE IdServicio = ? AND IdProveedor = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Error en prepare(): " . self::$conexion->error);
+        }
+
+        // s=string, d=double, i=integer
+        // Orden: Nombre, Descripcion, Precio, Divisa, Estado, IdServicio, IdProveedor
+        $stmt->bind_param("ssdssii", $nombre, $descripcion, $precio, $divisa, $estado, $idServicio, $idProveedor);
+
+        if (!$stmt->execute()) {
+            throw new Exception("Error al actualizar: " . $stmt->error);
+        }
+
+        return $stmt->affected_rows >= 0; // true aunque no cambie nada
+    }
+
+    /**
+     * Elimina un servicio por su ID y valida el propietario
+     * También elimina todas las dependencias (fotos, reservas, reseñas, palabras clave, etc.)
+     */
+    public static function eliminar(int $idServicio, int $idProveedor): bool
+    {
+        self::conectar();
+
+        // Primero eliminar todas las relaciones que no tienen ON DELETE CASCADE
+        
+        // 1. Eliminar fotos
+        $sqlFotos = "DELETE FROM Foto WHERE IdServicio = ?";
+        $stmtFotos = self::$conexion->prepare($sqlFotos);
+        if ($stmtFotos) {
+            $stmtFotos->bind_param("i", $idServicio);
+            $stmtFotos->execute();
+            $stmtFotos->close();
+        }
+        
+        // 2. Eliminar reseñas (antes de eliminar reservas porque Resena depende de Reserva)
+        $sqlResenas = "DELETE Resena FROM Resena INNER JOIN Reserva ON Resena.IdReserva = Reserva.IdReserva WHERE Reserva.IdServicio = ?";
+        $stmtResenas = self::$conexion->prepare($sqlResenas);
+        if ($stmtResenas) {
+            $stmtResenas->bind_param("i", $idServicio);
+            $stmtResenas->execute();
+            $stmtResenas->close();
+        }
+        
+        // 3. Eliminar reservas
+        $sqlReservas = "DELETE FROM Reserva WHERE IdServicio = ?";
+        $stmtReservas = self::$conexion->prepare($sqlReservas);
+        if ($stmtReservas) {
+            $stmtReservas->bind_param("i", $idServicio);
+            $stmtReservas->execute();
+            $stmtReservas->close();
+        }
+        
+        // 4. Eliminar palabras clave
+        $sqlPalabras = "DELETE FROM PalabraClave WHERE IdServicio = ?";
+        $stmtPalabras = self::$conexion->prepare($sqlPalabras);
+        if ($stmtPalabras) {
+            $stmtPalabras->bind_param("i", $idServicio);
+            $stmtPalabras->execute();
+            $stmtPalabras->close();
+        }
+        
+        // 5. Eliminar relaciones de categoría (Pertenece)
+        $sqlPertenece = "DELETE FROM Pertenece WHERE IdServicio = ?";
+        $stmtPertenece = self::$conexion->prepare($sqlPertenece);
+        if ($stmtPertenece) {
+            $stmtPertenece->bind_param("i", $idServicio);
+            $stmtPertenece->execute();
+            $stmtPertenece->close();
+        }
+        
+        // 6. Eliminar ubicaciones del servicio
+        $sqlUbicacion = "DELETE FROM UbicacionServicio WHERE IdServicio = ?";
+        $stmtUbicacion = self::$conexion->prepare($sqlUbicacion);
+        if ($stmtUbicacion) {
+            $stmtUbicacion->bind_param("i", $idServicio);
+            $stmtUbicacion->execute();
+            $stmtUbicacion->close();
+        }
+
+        // Finalmente eliminar el servicio
+        $sql = "DELETE FROM Servicio WHERE IdServicio = ? AND IdProveedor = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Error en prepare(): " . self::$conexion->error);
+        }
+
+        $stmt->bind_param("ii", $idServicio, $idProveedor);
+
+        if (!$stmt->execute()) {
+            throw new Exception("Error al eliminar: " . $stmt->error);
+        }
+        
+        $affectedRows = $stmt->affected_rows;
+        $stmt->close();
+        return $affectedRows > 0;
+    }
+
     public static function conectar()
     {
         if (!isset(self::$conexion)) {
@@ -131,8 +250,10 @@ class Servicio
         if ($fila = $resultado->fetch_assoc()) {
             $servicio = new Servicio();
             $servicio->IdServicio = $fila['IdServicio'];
-            $servicio->Nombre = $fila['Nombre'];
+            $servicio->Nombre = $fila['Nombre']; // El campo en BD se llama 'Nombre'
             $servicio->Descripcion = $fila['Descripcion'];
+            $servicio->Precio = $fila['Precio'] ?? null;
+            $servicio->Divisa = $fila['Divisa'] ?? 'UYU';
             $servicio->FechaPublicacion = $fila['FechaPublicacion'];
             $servicio->Estado = $fila['Estado'];
             $servicio->IdProveedor = $fila['IdProveedor'];
@@ -161,7 +282,9 @@ class Servicio
                 $fila['Descripcion'],
                 $fila['FechaPublicacion'],
                 $fila['Estado'],
-                $fila['IdProveedor']
+                $fila['IdProveedor'],
+                ($fila['Precio'] ?? null),
+                ($fila['Divisa'] ?? 'UYU')
             );
             $servicio->Fotos = Foto::obtenerPorServicio($servicio);
             $servicios[] = $servicio;
@@ -172,12 +295,10 @@ class Servicio
     // Obtener foto aleatoria
     public function getFotoServicio()
     {
-        // En la BD solo se guarda el nombre del archivo: 'servicio_123_abc.jpg'
-        if (!empty($this->Fotos)) {
+        // Las fotos ya vienen con la ruta completa desde Foto::obtenerPorServicio()
+        if (!empty($this->Fotos) && is_array($this->Fotos)) {
             // Si hay varias fotos, seleccionar una aleatoria
-            $nombreFoto = $this->Fotos[array_rand($this->Fotos)];
-            // Construir la ruta completa
-            return '/proyecto/public/recursos/imagenes/servicios/' . $nombreFoto;
+            return $this->Fotos[array_rand($this->Fotos)];
         }
         // SVG placeholder codificado para URL
         return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23ccc"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%23666" font-size="20"%3ESin Imagen%3C/text%3E%3C/svg%3E';
@@ -228,9 +349,11 @@ public static function buscarPorCategoriaYTitulo(?string $termino): array
             $fila['IdServicio'],
             $fila['Nombre'],
             $fila['Descripcion'],
-            $fila['FechaPublicacion'],
-            $fila['Estado'],
-            $fila['IdProveedor']
+            /* fecha */ $fila['FechaPublicacion'],
+            /* estado */ $fila['Estado'],
+            /* proveedor */ $fila['IdProveedor'],
+            /* precio */ ($fila['Precio'] ?? null),
+            /* divisa */ ($fila['Divisa'] ?? 'UYU')
         );
         $servicio->Fotos = Foto::obtenerPorServicio($servicio);
         $servicios[] = $servicio;
@@ -263,7 +386,9 @@ public static function obtenerPorProveedor(int $idProveedor): array
             $fila['Descripcion'],
             $fila['FechaPublicacion'],
             $fila['Estado'],
-            $fila['IdProveedor']
+            $fila['IdProveedor'],
+            ($fila['Precio'] ?? null),
+            ($fila['Divisa'] ?? 'UYU')
         );
         
         // Obtener fotos del servicio

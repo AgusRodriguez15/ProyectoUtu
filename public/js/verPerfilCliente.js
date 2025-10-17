@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Si no hay referrer o viene de verPerfil, ir a detalleServicio
                 const servicioId = sessionStorage.getItem('servicioId');
                 if (servicioId) {
-                    window.location.href = 'detalleServicio.html';
+                    window.location.href = 'detalleServicioCliente.html';
                 } else {
                     // Si no hay servicio, ir al inicio
                     window.location.href = 'PANTALLA_CONTRATAR.html';
