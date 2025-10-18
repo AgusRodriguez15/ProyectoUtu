@@ -135,11 +135,33 @@ function mostrarPerfil(data) {
 
 function verServicio(idServicio) {
     sessionStorage.setItem('servicioId', idServicio);
-    // Determinar qué archivo usar basándose en el rol del usuario
-    const rolUsuario = sessionStorage.getItem('usuario_rol') || localStorage.getItem('usuario_rol');
-    if (rolUsuario === 'proveedor') {
-        window.location.href = 'detalleServicioProveedor.html';
-    } else {
-        window.location.href = 'detalleServicioCliente.html';
-    }
+    
+    // Detectar el rol del usuario logueado para redirigir a la vista correcta
+    fetch('../../public/php/login_usuario.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.usuario) {
+                const rolUsuario = data.usuario.rol;
+                
+                // Guardar la vista de origen según el rol
+                if (rolUsuario === 'Cliente') {
+                    sessionStorage.setItem('vistaOrigen', 'cliente');
+                    window.location.href = 'detalleServicioCliente.html';
+                } else if (rolUsuario === 'Proveedor') {
+                    sessionStorage.setItem('vistaOrigen', 'proveedor');
+                    window.location.href = 'detalleServicioProveedor.html';
+                } else {
+                    // Fallback: ir a vista de cliente por defecto
+                    window.location.href = 'detalleServicioCliente.html';
+                }
+            } else {
+                // Si no hay sesión, ir a vista de cliente por defecto
+                window.location.href = 'detalleServicioCliente.html';
+            }
+        })
+        .catch(error => {
+            console.error('Error al detectar rol del usuario:', error);
+            // En caso de error, ir a vista de cliente por defecto
+            window.location.href = 'detalleServicioCliente.html';
+        });
 }

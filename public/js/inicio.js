@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
           card.onclick = function() {
             // Guardar el ID del servicio en sessionStorage
             sessionStorage.setItem('servicioId', s.id);
+            sessionStorage.setItem('vistaOrigen', 'cliente');
             // Redirigir a la página de detalle del servicio
             window.location.href = '../../apps/Views/detalleServicioCliente.html';
           };

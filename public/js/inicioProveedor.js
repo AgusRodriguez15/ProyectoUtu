@@ -76,6 +76,7 @@ function crearTarjetaServicio(servicio) {
 
 function verServicio(idServicio) {
     sessionStorage.setItem('servicioId', idServicio);
+    sessionStorage.setItem('vistaOrigen', 'proveedor');
     window.location.href = 'detalleServicioProveedor.html';
 }
 
