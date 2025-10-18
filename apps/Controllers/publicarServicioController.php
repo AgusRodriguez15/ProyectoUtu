@@ -60,10 +60,17 @@ try {
         
         // Guardar categorías
         if (isset($_POST['categoria']) && is_array($_POST['categoria'])) {
-            foreach ($_POST['categoria'] as $idCategoria) {
-                if (!empty($idCategoria)) {
-                    Categoria::asociarCategoriasAServicio($idServicio, [$idCategoria]);
-                    error_log("Categoría {$idCategoria} asociada al servicio {$idServicio}");
+            $categoriasValidas = array_filter($_POST['categoria'], function($id) {
+                return !empty($id) && is_numeric($id);
+            });
+            
+            if (!empty($categoriasValidas)) {
+                try {
+                    Categoria::asociarCategoriasAServicio($idServicio, $categoriasValidas);
+                    error_log("Categorías asociadas al servicio {$idServicio}: " . implode(', ', $categoriasValidas));
+                } catch (Exception $e) {
+                    error_log("Error al asociar categorías: " . $e->getMessage());
+                    throw new Exception('Error al asociar las categorías: ' . $e->getMessage());
                 }
             }
         }
