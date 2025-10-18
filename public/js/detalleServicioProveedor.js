@@ -231,6 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Botones para otros proveedores viendo el servicio
       document.querySelector('.btn-perfil')?.addEventListener('click', () => {
         if (servicio.proveedor?.idUsuario) {
+          // Guardar que venimos desde la vista de proveedor
+          sessionStorage.setItem('vistaOrigen', 'proveedor');
           window.location.href = `../../apps/Views/verPerfil.html?id=${servicio.proveedor.idUsuario}`;
         } else {
           alert('No se puede ver el perfil en este momento');

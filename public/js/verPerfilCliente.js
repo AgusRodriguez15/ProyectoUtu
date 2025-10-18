@@ -3,18 +3,70 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnVolver = document.getElementById('btnVolver');
     if (btnVolver) {
         btnVolver.addEventListener('click', () => {
-            // Intentar volver a la página anterior
-            if (document.referrer && !document.referrer.includes('verPerfil.html')) {
-                window.history.back();
-            } else {
-                // Si no hay referrer o viene de verPerfil, ir a detalleServicio
-                const servicioId = sessionStorage.getItem('servicioId');
+            console.log('=== BOTÓN VOLVER PRESIONADO ===');
+            
+            const servicioId = sessionStorage.getItem('servicioId');
+            const vistaOrigen = sessionStorage.getItem('vistaOrigen');
+            
+            console.log('ServicioId:', servicioId);
+            console.log('Vista origen:', vistaOrigen);
+            
+            // Si hay vista de origen guardada, usarla
+            if (vistaOrigen === 'cliente') {
+                console.log('Volviendo a vista de cliente');
                 if (servicioId) {
                     window.location.href = 'detalleServicioCliente.html';
                 } else {
-                    // Si no hay servicio, ir al inicio
                     window.location.href = 'PANTALLA_CONTRATAR.html';
                 }
+            } else if (vistaOrigen === 'proveedor') {
+                console.log('Volviendo a vista de proveedor');
+                if (servicioId) {
+                    window.location.href = 'detalleServicioProveedor.html';
+                } else {
+                    window.location.href = 'PANTALLA_PUBLICAR.html';
+                }
+            } else {
+                // Fallback: consultar el rol del usuario
+                console.log('No hay vista origen, consultando rol del usuario');
+                // Obtener el rol del usuario logueado
+                fetch('../../public/php/login_usuario.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.usuario) {
+                            const rolUsuario = data.usuario.rol;
+                            const servicioId = sessionStorage.getItem('servicioId');
+                            
+                            // Si el usuario logueado es un Cliente
+                            if (rolUsuario === 'Cliente') {
+                                if (servicioId) {
+                                    window.location.href = 'detalleServicioCliente.html';
+                                } else {
+                                    window.location.href = 'PANTALLA_CONTRATAR.html';
+                                }
+                            } 
+                            // Si el usuario logueado es un Proveedor
+                            else if (rolUsuario === 'Proveedor') {
+                                if (servicioId) {
+                                    window.location.href = 'detalleServicioProveedor.html';
+                                } else {
+                                    window.location.href = 'PANTALLA_PUBLICAR.html';
+                                }
+                            } 
+                            else {
+                                // Fallback: intentar volver con history.back()
+                                window.history.back();
+                            }
+                        } else {
+                            // Si no hay sesión, usar history.back()
+                            window.history.back();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener rol del usuario:', error);
+                        // En caso de error, intentar volver con history.back()
+                        window.history.back();
+                    });
             }
         });
     }

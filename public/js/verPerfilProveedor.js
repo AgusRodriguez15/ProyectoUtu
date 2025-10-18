@@ -3,18 +3,70 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnVolver = document.getElementById('btnVolver');
     if (btnVolver) {
         btnVolver.addEventListener('click', () => {
-            // Intentar volver a la página anterior
-            if (document.referrer && !document.referrer.includes('verPerfil.html')) {
-                window.history.back();
-            } else {
-                // Si no hay referrer o viene de verPerfil, ir a detalleServicio
-                const servicioId = sessionStorage.getItem('servicioId');
+            console.log('=== BOTÓN VOLVER PRESIONADO ===');
+            
+            const servicioId = sessionStorage.getItem('servicioId');
+            const vistaOrigen = sessionStorage.getItem('vistaOrigen');
+            
+            console.log('ServicioId:', servicioId);
+            console.log('Vista origen:', vistaOrigen);
+            
+            // Si hay vista de origen guardada, usarla
+            if (vistaOrigen === 'cliente') {
+                console.log('Volviendo a vista de cliente');
+                if (servicioId) {
+                    window.location.href = 'detalleServicioCliente.html';
+                } else {
+                    window.location.href = 'PANTALLA_CONTRATAR.html';
+                }
+            } else if (vistaOrigen === 'proveedor') {
+                console.log('Volviendo a vista de proveedor');
                 if (servicioId) {
                     window.location.href = 'detalleServicioProveedor.html';
                 } else {
-                    // Si no hay servicio, ir al inicio
                     window.location.href = 'PANTALLA_PUBLICAR.html';
                 }
+            } else {
+                // Fallback: consultar el rol del usuario
+                console.log('No hay vista origen, consultando rol del usuario');
+                fetch('../../public/php/login_usuario.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Usuario logueado:', data);
+                        
+                        if (data.success && data.usuario) {
+                            const rolUsuario = data.usuario.rol;
+                            console.log('Rol del usuario:', rolUsuario);
+                            
+                            if (rolUsuario === 'Cliente') {
+                                if (servicioId) {
+                                    console.log('Redirigiendo a detalleServicioCliente.html');
+                                    window.location.href = 'detalleServicioCliente.html';
+                                } else {
+                                    console.log('Redirigiendo a PANTALLA_CONTRATAR.html');
+                                    window.location.href = 'PANTALLA_CONTRATAR.html';
+                                }
+                            } else if (rolUsuario === 'Proveedor') {
+                                if (servicioId) {
+                                    console.log('Redirigiendo a detalleServicioProveedor.html');
+                                    window.location.href = 'detalleServicioProveedor.html';
+                                } else {
+                                    console.log('Redirigiendo a PANTALLA_PUBLICAR.html');
+                                    window.location.href = 'PANTALLA_PUBLICAR.html';
+                                }
+                            } else {
+                                console.log('Rol desconocido, usando history.back()');
+                                window.history.back();
+                            }
+                        } else {
+                            console.log('No hay sesión, usando history.back()');
+                            window.history.back();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener rol del usuario:', error);
+                        window.history.back();
+                    });
             }
         });
     }
