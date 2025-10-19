@@ -22,12 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Verificar si la cuenta está activa
-        if ($usuario->getEstadoCuenta() !== 'ACTIVO') {
-            $_SESSION['error'] = 'Cuenta inactiva';
-            header('Location: /proyecto/public/index.html');
-            exit;
-        }
+        // Activar cuenta al iniciar sesión (sin importar el estado anterior)
+        $usuario->cambiarEstadoCuenta(true);
+        error_log("Cuenta activada para usuario ID: " . $usuario->getIdUsuario());
 
         // Obtener el rol usando el nuevo método
         $rol = Usuario::obtenerRolPorEmail($email);
@@ -41,16 +38,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['IdUsuario'] = $usuario->getIdUsuario();
         $_SESSION['usuario_nombre'] = $usuario->getNombre();
         $_SESSION['usuario_rol'] = $rol;
+        $_SESSION['usuario_estado'] = 'ACTIVO';
         
+        // Determinar ruta de redirección según el rol
+        $ruta = '';
         switch ($rol) {
             case 'Proveedor':
-                header('Location: /proyecto/apps/Views/PANTALLA_PUBLICAR.html');
+                $ruta = '/proyecto/apps/Views/PANTALLA_PUBLICAR.html';
                 break;
             case 'Cliente':
-                 header('Location: /proyecto/apps/Views/PANTALLA_CONTRATAR.html');
+                $ruta = '/proyecto/apps/Views/PANTALLA_CONTRATAR.html';
                 break;
             case 'Administrador':
-                header('Location: /proyecto/apps/Views/PANTALLA_ADMIN.html');
+                $ruta = '/proyecto/apps/Views/PANTALLA_ADMIN.html';
                 break;
             default:
                 echo json_encode(['success' => false, 'message' => 'Rol no válido']);

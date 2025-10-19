@@ -204,9 +204,11 @@ class usuario
     public function subirFotoPerfil(?array $archivo): void
     {
         if ($archivo && !empty($archivo['tmp_name'])) {
-            $rutaDestino = __DIR__ . '/../../public/recursos/imagenes/perfil/' . basename($archivo['name']);
+            $nombreArchivo = basename($archivo['name']);
+            $rutaDestino = __DIR__ . '/../../public/recursos/imagenes/perfil/' . $nombreArchivo;
             move_uploaded_file($archivo['tmp_name'], $rutaDestino);
-            $this->FotoPerfil = '/proyecto/public/recursos/imagenes/perfil/' . basename($archivo['name']);
+            // Guardar solo el nombre del archivo, no la ruta completa
+            $this->FotoPerfil = $nombreArchivo;
         }
     }
 
@@ -334,6 +336,64 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
         $stmt->close();
         $conn->close();
     }
+
+    // ===== CAMBIAR ESTADO DE CUENTA =====
+    /**
+     * Cambia el estado de la cuenta del usuario
+     * @param bool $activo true para ACTIVO, false para INACTIVO
+     * @return bool true si se actualizó correctamente, false en caso contrario
+     */
+    public function cambiarEstadoCuenta(bool $activo): bool
+    {
+        if (!$this->IdUsuario) {
+            return false; // No hay usuario cargado
+        }
+
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        // Determinar el estado según el booleano
+        $nuevoEstado = $activo ? 'ACTIVO' : 'INACTIVO';
+
+        $stmt = $conn->prepare("UPDATE Usuario SET EstadoCuenta = ? WHERE IdUsuario = ?");
+        $stmt->bind_param('si', $nuevoEstado, $this->IdUsuario);
+        $resultado = $stmt->execute();
+
+        if ($resultado) {
+            // Actualizar el estado en el objeto actual
+            $this->EstadoCuenta = $nuevoEstado;
+        }
+
+        $stmt->close();
+        $conn->close();
+
+        return $resultado;
+    }
+
+    /**
+     * Cambia el estado de cuenta de un usuario por su ID (método estático)
+     * @param int $idUsuario ID del usuario
+     * @param bool $activo true para ACTIVO, false para INACTIVO
+     * @return bool true si se actualizó correctamente, false en caso contrario
+     */
+    public static function cambiarEstadoCuentaPorId(int $idUsuario, bool $activo): bool
+    {
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+
+        // Determinar el estado según el booleano
+        $nuevoEstado = $activo ? 'ACTIVO' : 'INACTIVO';
+
+        $stmt = $conn->prepare("UPDATE Usuario SET EstadoCuenta = ? WHERE IdUsuario = ?");
+        $stmt->bind_param('si', $nuevoEstado, $idUsuario);
+        $resultado = $stmt->execute();
+
+        $stmt->close();
+        $conn->close();
+
+        return $resultado;
+    }
+
     public function guardar(): bool
 {
     if (!$this->IdUsuario) {

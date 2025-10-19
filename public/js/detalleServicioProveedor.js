@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="proveedor-card">
               ${servicio.proveedor?.foto ? `
                 <div class="proveedor-foto">
-                  <img src="../../${servicio.proveedor.foto}" alt="Foto del proveedor" 
+                  <img src="${servicio.proveedor.foto.startsWith('/') ? servicio.proveedor.foto : `/proyecto/public/recursos/imagenes/perfil/${servicio.proveedor.foto}`}" alt="Foto del proveedor" 
                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'100\\'%3E%3Crect width=\\'100\\' height=\\'100\\' fill=\\'%23ddd\\'/%3E%3Ctext x=\\'50\\' y=\\'50\\' text-anchor=\\'middle\\' fill=\\'%23666\\' font-size=\\'40\\'%3E👤%3C/text%3E%3C/svg%3E'">
                 </div>
               ` : ''}

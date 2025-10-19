@@ -28,67 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit();
                 }
 
+                // Activar cuenta al iniciar sesión (sin importar el estado anterior)
+                usuario::cambiarEstadoCuentaPorId($row['IdUsuario'], true);
+                error_log("Cuenta activada para usuario ID: {$row['IdUsuario']}");
+
                 session_start();
                 $_SESSION['IdUsuario'] = $row['IdUsuario'];
                 $_SESSION['usuario_nombre'] = $row['Nombre'];
-                $_SESSION['usuario_estado'] = $row['EstadoCuenta'];
+                $_SESSION['usuario_estado'] = 'ACTIVO'; // Siempre ACTIVO al iniciar sesión
                 $_SESSION['usuario_rol'] = $rol;
-
-                // Consultar el rol
-                // Verificar si la cuenta está activa
-                if ($row['EstadoCuenta'] !== 'ACTIVO') {
-                    header('Location: ../index.html?error=cuenta_inactiva');
-                    exit();
-                }
-
-                // Determinar el rol del usuario
-                $rol = null;
-                
-                // Primero verificar si es Proveedor
-                $stmtRol = $db->prepare('SELECT 1 FROM Proveedor WHERE IdUsuario = ?');
-                $stmtRol->bind_param('i', $row['IdUsuario']);
-                $stmtRol->execute();
-                $resultRol = $stmtRol->get_result();
-                if ($resultRol->num_rows > 0) {
-                    $rol = 'Proveedor';
-                }
-                $stmtRol->close();
-
-                // Si no es Proveedor, verificar si es Cliente
-                if (!$rol) {
-                    $stmtRol = $db->prepare('SELECT 1 FROM Cliente WHERE IdUsuario = ?');
-                    $stmtRol->bind_param('i', $row['IdUsuario']);
-                    $stmtRol->execute();
-                    $resultRol = $stmtRol->get_result();
-                    if ($resultRol->num_rows > 0) {
-                        $rol = 'Cliente';
-                    }
-                    $stmtRol->close();
-                }
-
-                // Si no es Cliente, verificar si es Administrador
-                if (!$rol) {
-                    $stmtRol = $db->prepare('SELECT 1 FROM Administrador WHERE IdUsuario = ?');
-                    $stmtRol->bind_param('i', $row['IdUsuario']);
-                    $stmtRol->execute();
-                    $resultRol = $stmtRol->get_result();
-                    if ($resultRol->num_rows > 0) {
-                        $rol = 'Administrador';
-                    }
-                    $stmtRol->close();
-                }
-
-                // Guardar el rol en la sesión
-                $_SESSION['usuario_rol'] = $rol;
-                
-                error_log("Usuario ID: " . $row['IdUsuario'] . " - Rol detectado: " . $rol);
-
-                // Verificar si la cuenta está activa
-                if ($row['EstadoCuenta'] !== 'ACTIVO') {
-                    error_log("Intento de inicio de sesión con cuenta inactiva: {$row['IdUsuario']}");
-                    header('Location: ../index.html?error=cuenta_inactiva');
-                    exit();
-                }
 
                 // Debug log
                 error_log("Iniciando sesión - Usuario: {$row['IdUsuario']}, Nombre: {$row['Nombre']}, Rol: $rol");

@@ -25,6 +25,142 @@
     </div>
   </div>
 
+  <!-- Templates HTML -->
+  <template id="template-servicio-detalle">
+    <div class="servicio-detalle">
+      <div class="servicio-imagen">
+        <img class="imagen-principal" alt="">
+        <div class="galeria-fotos"></div>
+      </div>
+      
+      <div class="servicio-info">
+        <h1 class="servicio-nombre"></h1>
+        
+        <div class="servicio-meta">
+          <span class="badge estado"></span>
+          <span class="fecha-publicacion"></span>
+        </div>
+        
+        <div class="servicio-precio">
+          <h3>💰 Precio</h3>
+          <div class="precio-display"></div>
+        </div>
+        
+        <div class="servicio-descripcion-container">
+          <div class="tabs-container">
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="descripcion">📝 Descripción</button>
+              <button class="tab-btn" data-tab="comentarios">💬 Comentarios</button>
+            </div>
+            
+            <div class="tab-content active" id="tab-descripcion">
+              <p class="servicio-descripcion"></p>
+            </div>
+            
+            <div class="tab-content" id="tab-comentarios">
+              <div class="comentarios-section">
+                <h3>Reseñas y Comentarios</h3>
+                
+                <div class="agregar-comentario formulario-comentario">
+                  <h4>Deja tu opinión</h4>
+                  <div class="rating-input">
+                    <label>Calificación:</label>
+                    <div class="stars">
+                      <span class="star" data-rating="1">★</span>
+                      <span class="star" data-rating="2">★</span>
+                      <span class="star" data-rating="3">★</span>
+                      <span class="star" data-rating="4">★</span>
+                      <span class="star" data-rating="5">★</span>
+                    </div>
+                  </div>
+                  <textarea id="comentarioTexto" placeholder="Escribe tu comentario aquí..." rows="4"></textarea>
+                  <button class="btn-primary btn-enviar-comentario">Publicar Comentario</button>
+                </div>
+                
+                <div class="lista-comentarios" id="listaComentarios">
+                  <p class="cargando-comentarios">Cargando comentarios...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="servicio-proveedor">
+          <h3>👤 Proveedor</h3>
+          <div class="proveedor-card">
+            <div class="proveedor-foto" style="display: none;">
+              <img class="proveedor-imagen" alt="Foto del proveedor">
+            </div>
+            
+            <div class="proveedor-info">
+              <p class="proveedor-nombre"></p>
+              <p class="proveedor-descripcion" style="display: none;"></p>
+              
+              <div class="proveedor-contactos" style="display: none;">
+                <h4>📞 Datos de Contacto:</h4>
+                <ul class="contactos-lista"></ul>
+              </div>
+              
+              <div class="proveedor-habilidades" style="display: none;">
+                <h4>💼 Habilidades:</h4>
+                <div class="habilidades-tags"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="servicio-acciones">
+          <button class="btn-primary btn-contratar">🛒 Contratar Servicio</button>
+          <button class="btn-secondary btn-mensaje">💬 Enviar Mensaje</button>
+          <button class="btn-terciary btn-perfil">👤 Ver Perfil</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="template-foto-miniatura">
+    <img class="foto-miniatura" alt="Foto del servicio">
+  </template>
+
+  <template id="template-contacto-item">
+    <li><strong class="contacto-tipo"></strong> <span class="contacto-valor"></span></li>
+  </template>
+
+  <template id="template-habilidad-tag">
+    <span class="habilidad-tag"></span>
+  </template>
+
+  <template id="template-sin-comentarios">
+    <p class="sin-comentarios">Aún no hay comentarios. ¡Sé el primero en dejar uno!</p>
+  </template>
+
+  <template id="template-error-comentarios">
+    <p class="sin-comentarios">Error al cargar los comentarios</p>
+  </template>
+
+  <template id="template-ya-reseno">
+    <div class="mensaje-ya-reseno">
+      <p>
+        <strong>Ya has dejado una reseña para este servicio.</strong><br>
+        Solo se permite una reseña por usuario.
+      </p>
+    </div>
+  </template>
+
+  <template id="template-comentario-item">
+    <div class="comentario-item">
+      <div class="comentario-header">
+        <div class="usuario-info">
+          <img class="usuario-foto" alt="" src="">
+          <strong class="usuario-nombre"></strong>
+        </div>
+        <div class="comentario-rating"></div>
+      </div>
+      <p class="comentario-texto"></p>
+      <span class="comentario-fecha"></span>
+    </div>
+  </template>
+
   <script src="../../public/js/detalleServicioCliente.js"></script>
 </body>
 </html>

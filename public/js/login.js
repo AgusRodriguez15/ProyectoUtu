@@ -1,21 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script login.js cargado correctamente');
+    
     const loginForm = document.getElementById('loginForm');
+    console.log('Formulario encontrado:', loginForm);
     
     if (loginForm) {
+        console.log('Event listener agregado al formulario');
+        
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            console.log('Formulario enviado - preventDefault activado');
             
             const formData = new FormData(this);
+            console.log('FormData creado');
             
             try {
-                const response = await fetch('../../apps/Controllers/loginController.php', {
+                console.log('Enviando petición a loginController.php');
+                const response = await fetch('/proyecto/apps/Controllers/loginController.php', {
                     method: 'POST',
                     body: formData
                 });
                 
+                console.log('Respuesta recibida:', response);
                 const data = await response.json();
+                console.log('JSON parseado:', data);
                 
                 if (data.success) {
+                    console.log('Login exitoso');
+                    
                     // Guardar información relevante en sessionStorage
                     sessionStorage.setItem('usuario_rol', data.rol);
                     sessionStorage.setItem('usuario_nombre', data.nombre);
@@ -35,12 +47,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = redirectUrl;
                 } else {
                     // Mostrar mensaje de error
+                    console.error('Error en login:', data.message);
                     alert(data.message || 'Error al iniciar sesión');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error al procesar la solicitud');
+                console.error('Error en fetch:', error);
+                alert('Error al procesar la solicitud: ' + error.message);
             }
         });
+    } else {
+        console.error('ERROR: No se encontró el formulario con id="loginForm"');
     }
 });

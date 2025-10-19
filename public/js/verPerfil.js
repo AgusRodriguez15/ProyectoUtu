@@ -48,8 +48,9 @@ function mostrarPerfil(data) {
     // Foto de perfil
     if (usuario.rutaFoto) {
         let rutaFoto = usuario.rutaFoto;
-        if (rutaFoto.startsWith('/proyecto/')) {
-            rutaFoto = rutaFoto.replace('/proyecto/', '../../');
+        // Si NO empieza con /, es solo el nombre del archivo
+        if (!rutaFoto.startsWith('/')) {
+            rutaFoto = `/proyecto/public/recursos/imagenes/perfil/${rutaFoto}`;
         }
         document.querySelector('#fotoPerfil img').src = rutaFoto;
     }
