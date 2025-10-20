@@ -12,6 +12,7 @@ require_once __DIR__ . '/../Models/servicio.php';
 require_once __DIR__ . '/../Models/categoria.php';
 require_once __DIR__ . '/../Models/foto.php';
 require_once __DIR__ . '/../Models/palabraClave.php';
+require_once __DIR__ . '/../Models/ubicacion.php';
 
 session_start();
 
@@ -83,6 +84,22 @@ try {
             if (!empty($palabras)) {
                 PalabraClave::guardarPalabrasClaveServicio($idServicio, $palabras);
                 error_log("Palabras clave guardadas: " . implode(', ', $palabras));
+            }
+        }
+        
+        // Guardar ubicaciones
+        if (isset($_POST['ubicaciones']) && !empty($_POST['ubicaciones'])) {
+            $ubicaciones = json_decode($_POST['ubicaciones'], true);
+            
+            if (is_array($ubicaciones) && !empty($ubicaciones)) {
+                $ubicacionesGuardadas = 0;
+                foreach ($ubicaciones as $ubicacion) {
+                    $resultado = ubicacion::crearYAsociarAServicio($idServicio, $ubicacion);
+                    if ($resultado !== false) {
+                        $ubicacionesGuardadas++;
+                    }
+                }
+                error_log("Ubicaciones guardadas: {$ubicacionesGuardadas} de " . count($ubicaciones));
             }
         }
         

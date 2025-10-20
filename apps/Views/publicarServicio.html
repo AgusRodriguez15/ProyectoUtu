@@ -69,6 +69,39 @@
             </div>
 
             <div class="grupo-form">
+                <label>📍 Ubicaciones donde ofreces el servicio (opcional)</label>
+                <div class="contenedor-ubicaciones">
+                    <div class="formulario-ubicacion">
+                        <div class="campos-ubicacion">
+                            <div class="campo-ubicacion">
+                                <input type="text" id="paisUbicacion" 
+                                       placeholder="País (ej: Uruguay) *">
+                            </div>
+                            <div class="campo-ubicacion">
+                                <input type="text" id="ciudadUbicacion" 
+                                       placeholder="Ciudad (ej: Montevideo)">
+                            </div>
+                            <div class="campo-ubicacion">
+                                <input type="text" id="calleUbicacion" 
+                                       placeholder="Calle (ej: Av. Italia)">
+                            </div>
+                            <div class="campo-ubicacion">
+                                <input type="text" id="numeroUbicacion" 
+                                       placeholder="Número (ej: 3456)">
+                            </div>
+                        </div>
+                        <button type="button" id="btnAgregarUbicacion" class="btn-agregar-ubicacion">
+                            + Agregar Ubicación
+                        </button>
+                    </div>
+                    <div id="listaUbicaciones" class="lista-ubicaciones">
+                        <!-- Aquí se mostrarán las ubicaciones agregadas -->
+                    </div>
+                    <p class="ayuda-texto">💡 El país es obligatorio. Si especificas un campo, los campos anteriores también deben estar completos (ej: para agregar una calle, debes especificar país y ciudad).</p>
+                </div>
+            </div>
+
+            <div class="grupo-form">
                 <label>Fotos del Servicio (máximo 5)</label>
                 <div class="fotos-container">
                     <div class="input-foto-container">

@@ -189,7 +189,7 @@ class Servicio
         }
         
         // 6. Eliminar ubicaciones del servicio
-        $sqlUbicacion = "DELETE FROM UbicacionServicio WHERE IdServicio = ?";
+        $sqlUbicacion = "DELETE FROM ServicioUbicacion WHERE IdServicio = ?";
         $stmtUbicacion = self::$conexion->prepare($sqlUbicacion);
         if ($stmtUbicacion) {
             $stmtUbicacion->bind_param("i", $idServicio);

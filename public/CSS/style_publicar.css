@@ -342,6 +342,131 @@
     margin-left: 0.5rem;
 }
 
+/* Estilos para las ubicaciones */
+.contenedor-ubicaciones {
+    margin-top: 0.5rem;
+}
+
+.formulario-ubicacion {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.campos-ubicacion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.campos-ubicacion .campo-ubicacion:first-child {
+    grid-column: 1 / -1; /* País ocupa toda la fila */
+}
+
+.campo-ubicacion input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+.campo-ubicacion input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.btn-agregar-ubicacion {
+    background: #4CAF50;
+    color: white;
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.btn-agregar-ubicacion:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.lista-ubicaciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+
+.ubicacion-item {
+    background: white;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.ubicacion-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #4CAF50;
+}
+
+.ubicacion-info {
+    flex: 1;
+}
+
+.ubicacion-principal {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ubicacion-principal::before {
+    content: '📍';
+    font-size: 1.2rem;
+}
+
+.ubicacion-detalles {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.btn-eliminar-ubicacion {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-eliminar-ubicacion:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.ayuda-texto {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
 .categoria {
     background: #e9ecef;
     padding: 0.5rem 1rem;

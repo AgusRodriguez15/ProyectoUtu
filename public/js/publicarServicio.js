@@ -3,6 +3,7 @@ const CONFIG = {
     MAX_CATEGORIAS: 3,
     MAX_PALABRAS_CLAVE: 5,
     MAX_FOTOS: 5,
+    MAX_UBICACIONES: 10,
     TIEMPO_MENSAJE: 3000,
     TIPOS_IMAGEN_PERMITIDOS: ['image/jpeg', 'image/png', 'image/gif'],
     MAX_TAMANO_FOTO: 5 * 1024 * 1024 // 5MB
@@ -17,10 +18,20 @@ const palabrasClaveInput = document.getElementById('palabrasClave');
 const listaPalabrasClave = document.getElementById('listaPalabrasClave');
 const inputFotos = document.getElementById('inputFotos');
 const previewContainer = document.getElementById('previewFotos');
+
+// Elementos de ubicación
+const paisUbicacion = document.getElementById('paisUbicacion');
+const ciudadUbicacion = document.getElementById('ciudadUbicacion');
+const calleUbicacion = document.getElementById('calleUbicacion');
+const numeroUbicacion = document.getElementById('numeroUbicacion');
+const btnAgregarUbicacion = document.getElementById('btnAgregarUbicacion');
+const listaUbicaciones = document.getElementById('listaUbicaciones');
+
 let palabrasClave = [];
 let categorias = [];
 let categoriasElegidas = [];
 let fotosSeleccionadas = [];
+let ubicacionesAgregadas = [];
 
 // ==================== MÉTODOS PARA MANEJAR CATEGORÍAS ====================
 const manejadorCategorias = {
@@ -115,6 +126,99 @@ const manejadorFotos = {
     },
     obtenerArchivos: function() {
         return fotosSeleccionadas.map(foto => foto.file);
+    }
+};
+
+// ==================== MÉTODOS PARA MANEJAR UBICACIONES ====================
+const manejadorUbicaciones = {
+    agregar: function(ubicacion) {
+        console.log('Agregando ubicación:', ubicacion);
+        if (!this.puedeAgregar()) {
+            alert(`Máximo ${CONFIG.MAX_UBICACIONES} ubicaciones`);
+            return false;
+        }
+        if (!this.validarUbicacion(ubicacion)) {
+            return false;
+        }
+        if (this.esRepetida(ubicacion)) {
+            alert('Esta ubicación ya está agregada');
+            return false;
+        }
+        ubicacionesAgregadas.push(ubicacion);
+        console.log('Ubicaciones:', ubicacionesAgregadas);
+        return true;
+    },
+    puedeAgregar: function() {
+        return ubicacionesAgregadas.length < CONFIG.MAX_UBICACIONES;
+    },
+    validarUbicacion: function(ubicacion) {
+        // País es obligatorio
+        if (!ubicacion.pais || ubicacion.pais.trim() === '') {
+            alert('El país es obligatorio');
+            return false;
+        }
+        
+        // Validar jerarquía: si un campo tiene valor, el anterior no puede estar vacío
+        // Jerarquía: País → Ciudad → Calle → Número
+        
+        if (ubicacion.calle && (!ubicacion.ciudad || ubicacion.ciudad.trim() === '')) {
+            alert('Si especificas una calle, debes especificar la ciudad');
+            return false;
+        }
+        
+        if (ubicacion.numero && (!ubicacion.calle || ubicacion.calle.trim() === '')) {
+            alert('Si especificas un número, debes especificar la calle');
+            return false;
+        }
+        
+        return true;
+    },
+    esRepetida: function(nuevaUbicacion) {
+        // Comparar con ubicaciones existentes
+        return ubicacionesAgregadas.some(ubicacion => {
+            return this.sonIguales(ubicacion, nuevaUbicacion);
+        });
+    },
+    sonIguales: function(ub1, ub2) {
+        // Normalizar valores (trim y lowercase para comparación)
+        const normalizar = (val) => (val || '').trim().toLowerCase();
+        
+        return normalizar(ub1.pais) === normalizar(ub2.pais) &&
+               normalizar(ub1.ciudad) === normalizar(ub2.ciudad) &&
+               normalizar(ub1.calle) === normalizar(ub2.calle) &&
+               normalizar(ub1.numero) === normalizar(ub2.numero);
+    },
+    eliminar: function(index) {
+        console.log('Eliminando ubicación:', index);
+        ubicacionesAgregadas.splice(index, 1);
+    },
+    obtenerTodas: function() {
+        return ubicacionesAgregadas;
+    },
+    formatearParaMostrar: function(ubicacion) {
+        // Crear texto descriptivo de la ubicación con jerarquía correcta
+        const partes = [];
+        
+        // Orden: País → Ciudad → Calle Número
+        if (ubicacion.pais) {
+            partes.push(ubicacion.pais);
+        }
+        
+        if (ubicacion.ciudad) {
+            partes.push(ubicacion.ciudad);
+        }
+        
+        if (ubicacion.calle) {
+            let direccion = ubicacion.calle;
+            if (ubicacion.numero) {
+                direccion += ' ' + ubicacion.numero;
+            }
+            partes.push(direccion);
+        } else if (ubicacion.numero) {
+            partes.push('N° ' + ubicacion.numero);
+        }
+        
+        return partes.length > 0 ? partes : ['Ubicación sin especificar'];
     }
 };
 
@@ -267,6 +371,57 @@ if (palabrasClaveInput) {
     });
 }
 
+// ==================== EVENTOS DE UBICACIONES ====================
+if (btnAgregarUbicacion) {
+    btnAgregarUbicacion.addEventListener('click', () => {
+        const ubicacion = {
+            pais: paisUbicacion.value.trim(),
+            ciudad: ciudadUbicacion.value.trim(),
+            calle: calleUbicacion.value.trim(),
+            numero: numeroUbicacion.value.trim()
+        };
+        
+        if (manejadorUbicaciones.agregar(ubicacion)) {
+            actualizarListaUbicaciones();
+            
+            // Limpiar campos
+            paisUbicacion.value = '';
+            ciudadUbicacion.value = '';
+            calleUbicacion.value = '';
+            numeroUbicacion.value = '';
+        }
+    });
+}
+
+// Función para actualizar la lista visual de ubicaciones
+function actualizarListaUbicaciones() {
+    listaUbicaciones.innerHTML = '';
+    
+    ubicacionesAgregadas.forEach((ubicacion, index) => {
+        const partes = manejadorUbicaciones.formatearParaMostrar(ubicacion);
+        
+        const div = document.createElement('div');
+        div.className = 'ubicacion-item';
+        div.innerHTML = `
+            <div class="ubicacion-info">
+                <div class="ubicacion-principal">${partes[0]}</div>
+                ${partes.length > 1 ? `<div class="ubicacion-detalles">${partes.slice(1).join(' • ')}</div>` : ''}
+            </div>
+            <button type="button" class="btn-eliminar-ubicacion" data-index="${index}">
+                🗑️ Eliminar
+            </button>
+        `;
+        
+        // Agregar evento para eliminar
+        div.querySelector('.btn-eliminar-ubicacion').onclick = function() {
+            manejadorUbicaciones.eliminar(index);
+            actualizarListaUbicaciones();
+        };
+        
+        listaUbicaciones.appendChild(div);
+    });
+}
+
 // ==================== EVENTOS DE FOTOS ====================
 if (inputFotos) {
     inputFotos.addEventListener('change', function(e) {
@@ -376,21 +531,44 @@ formulario.addEventListener("submit", async (e) => {
             console.log('Palabras clave agregadas:', palabras);
         }
 
+        // Agregar ubicaciones usando el manejador
+        const ubicaciones = manejadorUbicaciones.obtenerTodas();
+        if (ubicaciones.length > 0) {
+            const ubicacionesJSON = JSON.stringify(ubicaciones);
+            formData.append('ubicaciones', ubicacionesJSON);
+            console.log('Ubicaciones agregadas:', ubicaciones);
+            console.log('Ubicaciones JSON:', ubicacionesJSON);
+        } else {
+            console.log('No hay ubicaciones para agregar');
+        }
+
         // Agregar fotos usando el manejador
         fotos.forEach(file => {
             formData.append('fotos[]', file);
         });
         console.log('Fotos agregadas:', fotos.length);
 
-        // Mostrar todo el contenido del FormData para debugging
-        console.log('Contenido del FormData:');
+        // Verificar FormData - método simplificado
+        const camposFormData = [];
         for (let pair of formData.entries()) {
-            if (pair[1] instanceof File) {
-                console.log(pair[0], ':', pair[1].name);
-            } else {
-                console.log(pair[0], ':', pair[1]);
-            }
+            camposFormData.push(pair[0]); // Solo el nombre del campo
         }
+        
+        console.log('========== RESUMEN FORMDATA ==========');
+        console.log('Total de campos:', camposFormData.length);
+        console.log('Campos presentes:', camposFormData.join(', '));
+        console.log('¿Tiene ubicaciones?', camposFormData.includes('ubicaciones'));
+        
+        // Si tiene ubicaciones, mostrar su contenido
+        if (camposFormData.includes('ubicaciones')) {
+            // Obtener el valor de ubicaciones del FormData
+            const ubicacionesValue = formData.get('ubicaciones');
+            console.log('✅ Ubicaciones se están enviando:');
+            console.log(ubicacionesValue);
+        } else {
+            console.log('❌ ERROR: Ubicaciones NO está en FormData');
+        }
+        console.log('======================================');
 
         const response = await fetch("/proyecto/apps/Controllers/publicarServicioController.php", {
             method: "POST",
