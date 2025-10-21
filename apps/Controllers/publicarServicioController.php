@@ -105,7 +105,7 @@ try {
         
         // Guardar fotos
         $fotosGuardadas = 0;
-        if (isset($_FILES['fotos']) && isset($_FILES['fotos']['name'])) {
+        if (isset($_FILES['fotos'])) {
             $totalFotos = is_array($_FILES['fotos']['name']) ? count($_FILES['fotos']['name']) : 1;
             
             for ($i = 0; $i < $totalFotos && $fotosGuardadas < 5; $i++) {
@@ -124,6 +124,7 @@ try {
                         $rutaGuardada = Foto::guardarFoto($idServicio, $archivoFoto);
                         $fotosGuardadas++;
                     } catch (Exception $e) {
+                        error_log("Error al guardar foto {$i}: " . $e->getMessage());
                         // Continuamos con las demás fotos
                     }
                 }
@@ -140,29 +141,22 @@ try {
             'idServicio' => $idServicio,
             'fotosGuardadas' => $fotosGuardadas
         ]);
-        exit;
     }
     
 } catch (Exception $e) {
-    http_response_code(400); // Bad Request en lugar de 500
+    http_response_code(400);
     error_log("Error en publicarServicioController: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage(),
-        'error' => $e->getMessage()
+        'message' => $e->getMessage()
     ]);
-    exit;
 } catch (Error $e) {
     http_response_code(500);
     error_log("Error fatal en publicarServicioController: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => 'Error interno del servidor',
-        'error' => $e->getMessage()
+        'message' => 'Error interno del servidor'
     ]);
-    exit;
 }
-
-?>
