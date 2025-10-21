@@ -138,18 +138,26 @@ document.addEventListener("DOMContentLoaded", () => {
             // Mostrar foto actual
             if (data.usuario.rutaFoto) {
                 let rutaFoto = data.usuario.rutaFoto;
+                console.log('Ruta foto ORIGINAL recibida:', rutaFoto);
                 
-                // Si la ruta empieza con /proyecto, quitarlo para usar ruta relativa
-                if (rutaFoto.startsWith('/proyecto/')) {
-                    rutaFoto = rutaFoto.replace('/proyecto/', '../../');
+                // Si la ruta NO empieza con /, es solo el nombre del archivo
+                // Construir la ruta completa
+                if (!rutaFoto.startsWith('/')) {
+                    rutaFoto = '/proyecto/public/recursos/imagenes/perfil/' + rutaFoto;
+                    console.log('Ruta foto CONSTRUIDA (sin /):', rutaFoto);
+                }
+                // Si la ruta empieza con /proyecto, usarla tal cual
+                else if (rutaFoto.startsWith('/proyecto/')) {
+                    console.log('Ruta foto YA TIENE /proyecto:', rutaFoto);
                 } 
-                // Si la ruta no tiene el prefijo completo, construirla
+                // Si tiene otra ruta relativa, construirla
                 else if (!rutaFoto.startsWith('http')) {
-                    rutaFoto = '../../' + rutaFoto.replace(/^\//, '');
+                    rutaFoto = '/proyecto' + rutaFoto;
+                    console.log('Ruta foto CONSTRUIDA (otra /):', rutaFoto);
                 }
                 
+                console.log('Ruta foto FINAL que se usará:', rutaFoto);
                 fotoActualDiv.innerHTML = `<img src="${rutaFoto}" alt="Foto actual" style="max-width: 100px; border-radius: 50%;">`;
-                console.log('Foto establecida:', rutaFoto);
             } else {
                 console.log('No hay foto de perfil');
                 fotoActualDiv.innerHTML = '<p>Sin foto de perfil</p>';
