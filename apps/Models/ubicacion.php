@@ -130,10 +130,13 @@ class ubicacion
      */
     public static function crearYAsociarAServicio(int $idServicio, array $datosUbicacion)
     {
+        error_log("🚀 INICIO crearYAsociarAServicio - Servicio ID: {$idServicio}");
         $conexionDB = new ClaseConexion();
         $conn = $conexionDB->getConexion();
         
         try {
+            error_log("📦 crearYAsociarAServicio - Servicio: {$idServicio}, Datos: " . json_encode($datosUbicacion));
+            
             // Iniciar transacción
             $conn->begin_transaction();
             
@@ -143,48 +146,57 @@ class ubicacion
             $calle = isset($datosUbicacion['calle']) ? trim($datosUbicacion['calle']) : '';
             $numero = isset($datosUbicacion['numero']) ? trim($datosUbicacion['numero']) : '';
             
+            error_log("Valores normalizados - País: '{$pais}', Ciudad: '{$ciudad}', Calle: '{$calle}', Número: '{$numero}'");
+            
             // Validar que país no esté vacío
             if (empty($pais)) {
+                error_log("ERROR: El país es obligatorio pero está vacío");
                 throw new Exception("El país es obligatorio");
             }
             
             // Validar jerarquía: si un campo tiene valor, el anterior no puede estar vacío
             if (!empty($calle) && empty($ciudad)) {
+                error_log("ERROR: Se especificó calle sin ciudad");
                 throw new Exception("Si especificas una calle, debes especificar la ciudad");
             }
             
             if (!empty($numero) && empty($calle)) {
+                error_log("ERROR: Se especificó número sin calle");
                 throw new Exception("Si especificas un número, debes especificar la calle");
             }
             
-            // Construir la dirección completa
+            // Construir la dirección completa (se guarda en el campo Calle)
             $direccionCompleta = '';
             if (!empty($calle)) {
                 $direccionCompleta = $calle;
                 if (!empty($numero)) {
                     $direccionCompleta .= ' ' . $numero;
                 }
-            } else if (!empty($numero)) {
-                $direccionCompleta = 'N° ' . $numero;
             }
+            
+            error_log("Dirección completa construida: '{$direccionCompleta}'");
+            
+            // Convertir valores para comparación en BD (vacíos a NULL)
+            $calleComparar = !empty($direccionCompleta) ? $direccionCompleta : null;
+            $ciudadComparar = !empty($ciudad) ? $ciudad : null;
+            $numeroComparar = !empty($numero) ? intval($numero) : null;
             
             // Verificar si ya existe una ubicación idéntica para este servicio
             $sqlCheck = "SELECT us.IdUbicacion FROM ServicioUbicacion us 
                         INNER JOIN Ubicacion u ON us.IdUbicacion = u.IdUbicacion 
                         WHERE us.IdServicio = ? 
-                        AND COALESCE(u.Pais, '') = ?
-                        AND COALESCE(u.Calle, '') = ?
-                        AND COALESCE(u.Ciudad, '') = ?
-                        AND COALESCE(u.Numero, '') = ?";
+                        AND u.Pais = ?
+                        AND (u.Calle <=> ?)
+                        AND (u.Ciudad <=> ?)
+                        AND (u.Numero <=> ?)";
             
             $stmtCheck = $conn->prepare($sqlCheck);
-            $numeroInt = !empty($numero) ? intval($numero) : null;
             $stmtCheck->bind_param('isssi', 
                 $idServicio, 
                 $pais,
-                $direccionCompleta,
-                $ciudad,
-                $numeroInt
+                $calleComparar,
+                $ciudadComparar,
+                $numeroComparar
             );
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->get_result();
@@ -199,42 +211,43 @@ class ubicacion
             }
             $stmtCheck->close();
             
-            // Buscar si existe una ubicación idéntica en la tabla Ubicacion
+            // Buscar si existe una ubicación idéntica en la tabla Ubicacion (usando operador NULL-safe)
             $sqlFind = "SELECT IdUbicacion FROM Ubicacion 
-                       WHERE COALESCE(Pais, '') = ?
-                       AND COALESCE(Calle, '') = ?
-                       AND COALESCE(Ciudad, '') = ?
-                       AND COALESCE(Numero, '') = ?";
+                       WHERE Pais = ?
+                       AND (Calle <=> ?)
+                       AND (Ciudad <=> ?)
+                       AND (Numero <=> ?)";
             
             $stmtFind = $conn->prepare($sqlFind);
             $stmtFind->bind_param('sssi', 
                 $pais,
-                $direccionCompleta,
-                $ciudad,
-                $numeroInt
+                $calleComparar,
+                $ciudadComparar,
+                $numeroComparar
             );
             $stmtFind->execute();
             $resultFind = $stmtFind->get_result();
-            $stmtFind->close();
             
             if ($fila = $resultFind->fetch_assoc()) {
                 // Si existe, usar ese ID
                 $idUbicacion = $fila['IdUbicacion'];
+                error_log("Ubicación existente encontrada con ID: {$idUbicacion}");
+                $stmtFind->close();
             } else {
                 // Si no existe, crear nueva ubicación
-                // Convertir strings vacíos a NULL para la BD
-                $calleNull = !empty($direccionCompleta) ? $direccionCompleta : null;
-                $ciudadNull = !empty($ciudad) ? $ciudad : null;
-                $numeroInt = !empty($numero) ? intval($numero) : null;
+                $stmtFind->close();
+                
+                error_log("Creando nueva ubicación: País='{$pais}', Ciudad='" . ($ciudadComparar ?? 'NULL') . "', Calle='" . ($calleComparar ?? 'NULL') . "', Número=" . ($numeroComparar ?? 'NULL'));
                 
                 $stmt = $conn->prepare("INSERT INTO Ubicacion (Pais, Ciudad, Calle, Numero) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param('sssi', $pais, $ciudadNull, $calleNull, $numeroInt);
+                $stmt->bind_param('sssi', $pais, $ciudadComparar, $calleComparar, $numeroComparar);
                 
                 if (!$stmt->execute()) {
                     throw new Exception("Error al crear ubicación: " . $stmt->error);
                 }
                 
                 $idUbicacion = $conn->insert_id;
+                error_log("Nueva ubicación creada con ID: {$idUbicacion}");
                 $stmt->close();
             }
             
@@ -286,11 +299,10 @@ class ubicacion
         while ($fila = $resultado->fetch_assoc()) {
             $ubicaciones[] = [
                 'idUbicacion' => $fila['IdUbicacion'],
-                'direccion' => $fila['Direccion'],
+                'pais' => $fila['Pais'],
                 'ciudad' => $fila['Ciudad'],
-                'departamento' => $fila['Departamento'],
-                'latitud' => $fila['Latitud'],
-                'longitud' => $fila['Longitud']
+                'calle' => $fila['Calle'],
+                'numero' => $fila['Numero']
             ];
         }
         
@@ -298,5 +310,50 @@ class ubicacion
         $conn->close();
         
         return $ubicaciones;
+    }
+    
+    /**
+     * Elimina la asociación de una ubicación con un servicio
+     * @param int $idServicio ID del servicio
+     * @param int $idUbicacion ID de la ubicación
+     * @return bool True si se eliminó correctamente
+     */
+    public static function eliminarDeServicio(int $idServicio, int $idUbicacion): bool
+    {
+        $conexionDB = new ClaseConexion();
+        $conn = $conexionDB->getConexion();
+        
+        try {
+            // Eliminar la asociación en ServicioUbicacion
+            $stmt = $conn->prepare("DELETE FROM ServicioUbicacion WHERE IdServicio = ? AND IdUbicacion = ?");
+            $stmt->bind_param('ii', $idServicio, $idUbicacion);
+            $resultado = $stmt->execute();
+            $stmt->close();
+            
+            // Verificar si esta ubicación está asociada a otros servicios
+            $stmt = $conn->prepare("SELECT COUNT(*) as total FROM ServicioUbicacion WHERE IdUbicacion = ?");
+            $stmt->bind_param('i', $idUbicacion);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
+            
+            // Si no está asociada a ningún otro servicio, eliminar la ubicación
+            if ($row['total'] == 0) {
+                $stmt = $conn->prepare("DELETE FROM Ubicacion WHERE IdUbicacion = ?");
+                $stmt->bind_param('i', $idUbicacion);
+                $stmt->execute();
+                $stmt->close();
+                error_log("Ubicación {$idUbicacion} eliminada de la tabla Ubicacion (no tenía más servicios asociados)");
+            }
+            
+            $conn->close();
+            return $resultado;
+            
+        } catch (Exception $e) {
+            $conn->close();
+            error_log("Error en eliminarDeServicio: " . $e->getMessage());
+            return false;
+        }
     }
 }

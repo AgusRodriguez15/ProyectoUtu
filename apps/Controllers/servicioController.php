@@ -12,6 +12,7 @@ require_once __DIR__ . '/../Models/habilidad.php';
 require_once __DIR__ . '/../Models/proveedor.php';
 require_once __DIR__ . '/../Models/palabraClave.php';
 require_once __DIR__ . '/../Models/foto.php';
+require_once __DIR__ . '/../Models/ubicacion.php';
 
 session_start();
 
@@ -117,6 +118,46 @@ try {
                 PalabraClave::eliminarPorServicio($idServicio);
             } catch (Exception $e) {
                 error_log("Error al eliminar palabras clave: " . $e->getMessage());
+            }
+        }
+        
+        // Manejar ubicaciones a eliminar
+        if (isset($_POST['ubicacionesAEliminar'])) {
+            $ubicacionesAEliminar = json_decode($_POST['ubicacionesAEliminar'], true);
+            if (is_array($ubicacionesAEliminar) && !empty($ubicacionesAEliminar)) {
+                error_log("Ubicaciones a eliminar: " . implode(', ', $ubicacionesAEliminar));
+                foreach ($ubicacionesAEliminar as $idUbicacion) {
+                    try {
+                        ubicacion::eliminarDeServicio($idServicio, intval($idUbicacion));
+                        error_log("Ubicación {$idUbicacion} eliminada del servicio {$idServicio}");
+                    } catch (Exception $e) {
+                        error_log("Error al eliminar ubicación {$idUbicacion}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+        
+        // Manejar nuevas ubicaciones
+        error_log("🔍 POST nuevasUbicaciones isset: " . (isset($_POST['nuevasUbicaciones']) ? 'SI' : 'NO'));
+        if (isset($_POST['nuevasUbicaciones'])) {
+            error_log("📦 POST nuevasUbicaciones RAW: " . $_POST['nuevasUbicaciones']);
+            $nuevasUbicaciones = json_decode($_POST['nuevasUbicaciones'], true);
+            error_log("🔄 JSON decode result: " . (is_array($nuevasUbicaciones) ? 'ES ARRAY' : 'NO ES ARRAY'));
+            if (is_array($nuevasUbicaciones) && !empty($nuevasUbicaciones)) {
+                error_log("✅ Nuevas ubicaciones a agregar: " . count($nuevasUbicaciones));
+                error_log("📍 Datos ubicaciones: " . print_r($nuevasUbicaciones, true));
+                foreach ($nuevasUbicaciones as $index => $ubicacion) {
+                    try {
+                        $resultado = ubicacion::crearYAsociarAServicio($idServicio, $ubicacion);
+                        if ($resultado !== false) {
+                            error_log("Nueva ubicación #{$index} agregada con ID: {$resultado}");
+                        } else {
+                            error_log("No se pudo agregar la ubicación #{$index}");
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error al agregar ubicación #{$index}: " . $e->getMessage());
+                    }
+                }
             }
         }
 
@@ -291,6 +332,49 @@ try {
             error_log("Error al obtener palabras clave: " . $e->getMessage());
         }
 
+        // Obtener ubicaciones del servicio
+        $ubicaciones = [];
+        try {
+            $ubicacionesData = ubicacion::obtenerPorServicio($servicio->IdServicio);
+            error_log("Ubicaciones obtenidas: " . count($ubicacionesData));
+            foreach ($ubicacionesData as $ub) {
+                // Construir dirección completa
+                $direccion = '';
+                $ciudad = '';
+                
+                if (isset($ub['calle']) && !empty($ub['calle'])) {
+                    $direccion = $ub['calle'];
+                    if (isset($ub['numero']) && !empty($ub['numero'])) {
+                        $direccion .= ' ' . $ub['numero'];
+                    }
+                }
+                
+                if (isset($ub['ciudad']) && !empty($ub['ciudad'])) {
+                    $ciudad = $ub['ciudad'];
+                }
+                
+                if (isset($ub['pais']) && !empty($ub['pais'])) {
+                    if (!empty($ciudad)) {
+                        $ciudad .= ', ' . $ub['pais'];
+                    } else {
+                        $ciudad = $ub['pais'];
+                    }
+                }
+                
+                // Solo agregar si hay alguna información de ubicación
+                if (!empty($direccion) || !empty($ciudad)) {
+                    $ubicaciones[] = [
+                        'idUbicacion' => $ub['idUbicacion'],
+                        'direccion' => $direccion,
+                        'ciudad' => $ciudad
+                    ];
+                }
+            }
+            error_log("Total ubicaciones agregadas: " . count($ubicaciones));
+        } catch (Exception $e) {
+            error_log("Error al obtener ubicaciones: " . $e->getMessage());
+        }
+
         $respuesta = [
             'id' => $servicio->IdServicio,
             'nombre' => $servicio->Nombre,
@@ -302,6 +386,7 @@ try {
             'palabrasClave' => $palabrasClave,
             'fechaPublicacion' => $servicio->FechaPublicacion,
             'estado' => $servicio->Estado,
+            'ubicaciones' => $ubicaciones,
             'proveedor' => [
                 'nombre' => $nombreProveedor,
                 'descripcion' => $descripcionProveedor,

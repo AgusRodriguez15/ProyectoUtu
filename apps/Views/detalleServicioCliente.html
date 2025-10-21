@@ -85,6 +85,19 @@
           </div>
         </div>
         
+        <div class="servicio-ubicaciones">
+          <h3>📍 Ubicaciones del Servicio</h3>
+          <div class="ubicaciones-carrusel">
+            <div class="ubicaciones-lista"></div>
+          </div>
+          <div class="carrusel-controles">
+            <button class="carrusel-btn btn-anterior" aria-label="Ubicación anterior">◀</button>
+            <div class="carrusel-indicadores"></div>
+            <span class="carrusel-contador"></span>
+            <button class="carrusel-btn btn-siguiente" aria-label="Ubicación siguiente">▶</button>
+          </div>
+        </div>
+        
         <div class="servicio-proveedor">
           <h3>👤 Proveedor</h3>
           <div class="proveedor-card">
@@ -128,6 +141,16 @@
 
   <template id="template-habilidad-tag">
     <span class="habilidad-tag"></span>
+  </template>
+
+  <template id="template-ubicacion-item">
+    <div class="ubicacion-item">
+      <div class="ubicacion-icono">📍</div>
+      <div class="ubicacion-detalle">
+        <p class="ubicacion-direccion"></p>
+        <p class="ubicacion-ciudad"></p>
+      </div>
+    </div>
   </template>
 
   <template id="template-sin-comentarios">

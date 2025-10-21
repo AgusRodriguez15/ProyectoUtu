@@ -89,18 +89,48 @@ try {
         
         // Guardar ubicaciones
         if (isset($_POST['ubicaciones']) && !empty($_POST['ubicaciones'])) {
+            error_log("POST ubicaciones recibido: " . $_POST['ubicaciones']);
             $ubicaciones = json_decode($_POST['ubicaciones'], true);
             
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log("Error al decodificar JSON de ubicaciones: " . json_last_error_msg());
+            }
+            
             if (is_array($ubicaciones) && !empty($ubicaciones)) {
+                error_log("Total de ubicaciones a guardar: " . count($ubicaciones));
                 $ubicacionesGuardadas = 0;
-                foreach ($ubicaciones as $ubicacion) {
-                    $resultado = ubicacion::crearYAsociarAServicio($idServicio, $ubicacion);
-                    if ($resultado !== false) {
-                        $ubicacionesGuardadas++;
+                $ubicacionesError = 0;
+                
+                foreach ($ubicaciones as $index => $ubicacion) {
+                    error_log("Procesando ubicación #{$index}: " . json_encode($ubicacion));
+                    
+                    try {
+                        $resultado = ubicacion::crearYAsociarAServicio($idServicio, $ubicacion);
+                        
+                        if ($resultado !== false) {
+                            $ubicacionesGuardadas++;
+                            error_log("Ubicación #{$index} guardada exitosamente con ID: {$resultado}");
+                        } else {
+                            $ubicacionesError++;
+                            error_log("Ubicación #{$index} NO guardada (retornó false)");
+                        }
+                    } catch (Exception $e) {
+                        $ubicacionesError++;
+                        error_log("Error al guardar ubicación #{$index}: " . $e->getMessage());
                     }
                 }
-                error_log("Ubicaciones guardadas: {$ubicacionesGuardadas} de " . count($ubicaciones));
+                
+                error_log("RESUMEN Ubicaciones - Guardadas: {$ubicacionesGuardadas}, Errores: {$ubicacionesError}, Total: " . count($ubicaciones));
+                
+                // Si no se guardó ninguna ubicación pero se enviaron, es un error
+                if ($ubicacionesGuardadas === 0 && count($ubicaciones) > 0) {
+                    error_log("ADVERTENCIA: Se enviaron " . count($ubicaciones) . " ubicaciones pero ninguna se guardó");
+                }
+            } else {
+                error_log("Las ubicaciones no son un array válido o está vacío");
             }
+        } else {
+            error_log("No se recibieron ubicaciones en el POST");
         }
         
         // Guardar fotos

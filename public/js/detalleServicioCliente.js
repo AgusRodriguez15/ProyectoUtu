@@ -218,12 +218,53 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     
+    // Ubicaciones del servicio
+    if (servicio.ubicaciones && servicio.ubicaciones.length > 0) {
+      const ubicacionesContainer = servicioElement.querySelector('.servicio-ubicaciones');
+      const ubicacionesLista = servicioElement.querySelector('.ubicaciones-lista');
+      const templateUbicacion = document.getElementById('template-ubicacion-item');
+      
+      servicio.ubicaciones.forEach(ub => {
+        const ubicacionElement = templateUbicacion.content.cloneNode(true);
+        
+        // Si hay dirección, mostrarla
+        if (ub.direccion) {
+          ubicacionElement.querySelector('.ubicacion-direccion').textContent = ub.direccion;
+        } else {
+          // Si no hay dirección, ocultar ese elemento
+          const direccionElement = ubicacionElement.querySelector('.ubicacion-direccion');
+          if (direccionElement) {
+            direccionElement.style.display = 'none';
+          }
+        }
+        
+        // Mostrar ciudad/país
+        if (ub.ciudad) {
+          ubicacionElement.querySelector('.ubicacion-ciudad').textContent = ub.ciudad;
+        } else {
+          const ciudadElement = ubicacionElement.querySelector('.ubicacion-ciudad');
+          if (ciudadElement) {
+            ciudadElement.style.display = 'none';
+          }
+        }
+        
+        ubicacionesLista.appendChild(ubicacionElement);
+      });
+      
+      ubicacionesContainer.style.display = 'block';
+    }
+    
     // Limpiar y agregar al contenedor
     contenedor.innerHTML = '';
     contenedor.appendChild(servicioElement);
     
     // Configurar event listeners después de agregar al DOM
     configurarEventListeners(servicio);
+    
+    // Inicializar carrusel de ubicaciones si hay más de una
+    if (servicio.ubicaciones && servicio.ubicaciones.length > 0) {
+      inicializarCarruselUbicaciones(servicio.ubicaciones.length);
+    }
   }
   
   function configurarEventListeners(servicio) {
@@ -537,6 +578,132 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(error => {
       console.error('Error al verificar reseña:', error);
     });
+  }
+
+  // Función para inicializar el carrusel de ubicaciones
+  function inicializarCarruselUbicaciones(totalUbicaciones) {
+    if (totalUbicaciones <= 1) {
+      // Si solo hay una ubicación, ocultar los controles
+      const controles = document.querySelector('.carrusel-controles');
+      if (controles) {
+        controles.style.display = 'none';
+      }
+      return;
+    }
+
+    let indiceActual = 0;
+    const ubicacionesLista = document.querySelector('.ubicaciones-lista');
+    const btnAnterior = document.querySelector('.btn-anterior');
+    const btnSiguiente = document.querySelector('.btn-siguiente');
+    const indicadoresContainer = document.querySelector('.carrusel-indicadores');
+    const contador = document.querySelector('.carrusel-contador');
+
+    // Crear indicadores
+    for (let i = 0; i < totalUbicaciones; i++) {
+      const indicador = document.createElement('div');
+      indicador.classList.add('indicador');
+      if (i === 0) indicador.classList.add('activo');
+      indicador.addEventListener('click', () => irAUbicacion(i));
+      indicadoresContainer.appendChild(indicador);
+    }
+
+    // Actualizar contador
+    function actualizarContador() {
+      contador.textContent = `${indiceActual + 1} / ${totalUbicaciones}`;
+    }
+
+    // Actualizar indicadores
+    function actualizarIndicadores() {
+      const indicadores = document.querySelectorAll('.indicador');
+      indicadores.forEach((ind, idx) => {
+        if (idx === indiceActual) {
+          ind.classList.add('activo');
+        } else {
+          ind.classList.remove('activo');
+        }
+      });
+    }
+
+    // Actualizar botones
+    function actualizarBotones() {
+      btnAnterior.disabled = indiceActual === 0;
+      btnSiguiente.disabled = indiceActual === totalUbicaciones - 1;
+    }
+
+    // Mover el carrusel
+    function moverCarrusel() {
+      const desplazamiento = -indiceActual * 100;
+      ubicacionesLista.style.transform = `translateX(${desplazamiento}%)`;
+      actualizarIndicadores();
+      actualizarBotones();
+      actualizarContador();
+    }
+
+    // Ir a una ubicación específica
+    function irAUbicacion(indice) {
+      indiceActual = indice;
+      moverCarrusel();
+    }
+
+    // Event listeners para los botones
+    btnAnterior.addEventListener('click', () => {
+      if (indiceActual > 0) {
+        indiceActual--;
+        moverCarrusel();
+      }
+    });
+
+    btnSiguiente.addEventListener('click', () => {
+      if (indiceActual < totalUbicaciones - 1) {
+        indiceActual++;
+        moverCarrusel();
+      }
+    });
+
+    // Soporte para teclado
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && indiceActual > 0) {
+        indiceActual--;
+        moverCarrusel();
+      } else if (e.key === 'ArrowRight' && indiceActual < totalUbicaciones - 1) {
+        indiceActual++;
+        moverCarrusel();
+      }
+    });
+
+    // Soporte para gestos táctiles
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    ubicacionesLista.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    ubicacionesLista.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0 && indiceActual < totalUbicaciones - 1) {
+          // Swipe izquierda - siguiente
+          indiceActual++;
+          moverCarrusel();
+        } else if (diff < 0 && indiceActual > 0) {
+          // Swipe derecha - anterior
+          indiceActual--;
+          moverCarrusel();
+        }
+      }
+    }
+
+    // Inicializar
+    actualizarBotones();
+    actualizarContador();
   }
 });
 

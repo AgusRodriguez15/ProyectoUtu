@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 let fotosAEliminar = [];
 let fotosActuales = [];
 let palabrasClaveActuales = [];
+let ubicacionesActuales = [];
+let ubicacionesAEliminar = [];
+let nuevasUbicaciones = [];
 
 function cargarServicio(id) {
   fetch('../../apps/Controllers/servicioController.php', {
@@ -58,6 +61,10 @@ function cargarServicio(id) {
       // Cargar palabras clave actuales
       palabrasClaveActuales = data.palabrasClave || [];
       mostrarPalabrasClave();
+      
+      // Cargar ubicaciones actuales
+      ubicacionesActuales = data.ubicaciones || [];
+      mostrarUbicaciones();
     })
     .catch(err => {
       console.error('Error cargando servicio:', err);
@@ -108,6 +115,33 @@ function guardarCambios() {
   // Agregar palabras clave
   if (palabrasClaveActuales.length > 0) {
     formData.append('palabrasClave', JSON.stringify(palabrasClaveActuales));
+  }
+  
+  // Agregar ubicaciones a eliminar
+  console.log('📍 Ubicaciones a eliminar:', ubicacionesAEliminar);
+  if (ubicacionesAEliminar.length > 0) {
+    formData.append('ubicacionesAEliminar', JSON.stringify(ubicacionesAEliminar));
+  }
+  
+  // Agregar nuevas ubicaciones
+  console.log('📍 Nuevas ubicaciones a enviar:', nuevasUbicaciones);
+  if (nuevasUbicaciones.length > 0) {
+    const ubicacionesJSON = JSON.stringify(nuevasUbicaciones);
+    formData.append('nuevasUbicaciones', ubicacionesJSON);
+    console.log('✅ Agregadas', nuevasUbicaciones.length, 'ubicaciones al FormData');
+    console.log('📦 JSON enviado:', ubicacionesJSON);
+  } else {
+    console.warn('⚠️ No hay nuevas ubicaciones para enviar');
+  }
+
+  // Log de todo el FormData
+  console.log('📤 Contenido completo del FormData:');
+  for (let pair of formData.entries()) {
+    if (pair[0] === 'nuevasUbicaciones') {
+      console.log('  📍', pair[0] + ':', pair[1]);
+    } else {
+      console.log('  -', pair[0] + ':', typeof pair[1] === 'object' ? '[File]' : pair[1]);
+    }
   }
 
   fetch('../../apps/Controllers/servicioController.php', {
@@ -287,6 +321,143 @@ function actualizarEstadoVisual() {
     labelInactivo.style.opacity = '1';
     labelInactivo.style.transform = 'scale(1.1)';
   }
+}
+
+// ==================== FUNCIONES PARA UBICACIONES ====================
+
+function mostrarUbicaciones() {
+  const container = document.getElementById('ubicacionesActuales');
+  
+  // Combinar ubicaciones actuales (no eliminadas) y nuevas
+  const todasUbicaciones = [
+    ...ubicacionesActuales.filter(ub => !ubicacionesAEliminar.includes(ub.idUbicacion)),
+    ...nuevasUbicaciones
+  ];
+  
+  if (todasUbicaciones.length === 0) {
+    container.innerHTML = '<div class="sin-ubicaciones">📍 Este servicio no tiene ubicaciones</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  todasUbicaciones.forEach((ubicacion, index) => {
+    const esNueva = !ubicacion.idUbicacion;
+    const div = document.createElement('div');
+    div.className = 'ubicacion-actual-item';
+    
+    // Construir texto descriptivo
+    let textoPrincipal = ubicacion.direccion || ubicacion.pais;
+    let textoDetalles = [];
+    
+    if (ubicacion.direccion && ubicacion.ciudad) {
+      textoPrincipal = ubicacion.direccion;
+      textoDetalles.push(ubicacion.ciudad);
+    } else if (ubicacion.ciudad) {
+      if (ubicacion.direccion) {
+        textoDetalles.push(ubicacion.ciudad);
+      } else {
+        textoPrincipal = ubicacion.ciudad;
+      }
+    }
+    
+    div.innerHTML = `
+      <div class="ubicacion-actual-info">
+        <div class="ubicacion-actual-icono">📍</div>
+        <div class="ubicacion-actual-texto">
+          <div class="ubicacion-actual-principal">${textoPrincipal}</div>
+          ${textoDetalles.length > 0 ? `<div class="ubicacion-actual-detalles">${textoDetalles.join(' • ')}</div>` : ''}
+        </div>
+      </div>
+      <button type="button" class="btn-eliminar-ubicacion" onclick="eliminarUbicacion(${esNueva ? -1 : ubicacion.idUbicacion}, ${esNueva}, ${index})" title="Eliminar ubicación">
+        🗑️ Eliminar
+      </button>
+    `;
+    
+    container.appendChild(div);
+  });
+}
+
+function agregarUbicacion() {
+  const pais = document.getElementById('paisEdit').value.trim();
+  const ciudad = document.getElementById('ciudadEdit').value.trim();
+  const calle = document.getElementById('calleEdit').value.trim();
+  const numero = document.getElementById('numeroEdit').value.trim();
+  
+  // Validar país obligatorio
+  if (!pais) {
+    alert('❌ El país es obligatorio');
+    return;
+  }
+  
+  // Validar jerarquía
+  if (calle && !ciudad) {
+    alert('❌ Si especificas una calle, debes especificar la ciudad');
+    return;
+  }
+  
+  if (numero && !calle) {
+    alert('❌ Si especificas un número, debes especificar la calle');
+    return;
+  }
+  
+  // Construir objeto de ubicación
+  const nuevaUbicacion = {
+    pais: pais,
+    ciudad: ciudad || '',
+    calle: calle || '',
+    numero: numero || ''
+  };
+  
+  // Construir direccion para mostrar
+  if (calle) {
+    nuevaUbicacion.direccion = calle + (numero ? ' ' + numero : '');
+  }
+  
+  // Verificar duplicados
+  const esDuplicada = [...ubicacionesActuales, ...nuevasUbicaciones].some(ub => {
+    return ub.pais === pais && 
+           (ub.ciudad || '') === ciudad && 
+           (ub.calle || '') === calle && 
+           (ub.numero || '') === numero;
+  });
+  
+  if (esDuplicada) {
+    alert('⚠️ Esta ubicación ya existe');
+    return;
+  }
+  
+  // Agregar a la lista de nuevas ubicaciones
+  nuevasUbicaciones.push(nuevaUbicacion);
+  
+  // Limpiar campos
+  document.getElementById('paisEdit').value = '';
+  document.getElementById('ciudadEdit').value = '';
+  document.getElementById('calleEdit').value = '';
+  document.getElementById('numeroEdit').value = '';
+  
+  // Actualizar vista
+  mostrarUbicaciones();
+}
+
+function eliminarUbicacion(idUbicacion, esNueva, index) {
+  if (!confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) {
+    return;
+  }
+  
+  if (esNueva) {
+    // Es una ubicación nueva que aún no se ha guardado
+    // Calcular el índice real en el array de nuevas ubicaciones
+    const indiceReal = index - ubicacionesActuales.filter(ub => !ubicacionesAEliminar.includes(ub.idUbicacion)).length;
+    nuevasUbicaciones.splice(indiceReal, 1);
+  } else {
+    // Es una ubicación existente en la BD
+    if (!ubicacionesAEliminar.includes(idUbicacion)) {
+      ubicacionesAEliminar.push(idUbicacion);
+    }
+  }
+  
+  mostrarUbicaciones();
 }
 
 // Función para eliminar el servicio
