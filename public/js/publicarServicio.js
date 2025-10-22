@@ -27,11 +27,19 @@ const numeroUbicacion = document.getElementById('numeroUbicacion');
 const btnAgregarUbicacion = document.getElementById('btnAgregarUbicacion');
 const listaUbicaciones = document.getElementById('listaUbicaciones');
 
+// Elementos de disponibilidad
+const fechaInicio = document.getElementById('fechaInicio');
+const fechaFin = document.getElementById('fechaFin');
+const estadoDisponibilidad = document.getElementById('estadoDisponibilidad');
+const btnAgregarDisponibilidad = document.getElementById('btnAgregarDisponibilidad');
+const listaDisponibilidades = document.getElementById('listaDisponibilidades');
+
 let palabrasClave = [];
 let categorias = [];
 let categoriasElegidas = [];
 let fotosSeleccionadas = [];
 let ubicacionesAgregadas = [];
+let disponibilidadesAgregadas = [];
 
 // ==================== MÉTODOS PARA MANEJAR CATEGORÍAS ====================
 const manejadorCategorias = {
@@ -219,6 +227,86 @@ const manejadorUbicaciones = {
         }
         
         return partes.length > 0 ? partes : ['Ubicación sin especificar'];
+    }
+};
+
+// ==================== MÉTODOS PARA MANEJAR DISPONIBILIDADES ====================
+const manejadorDisponibilidades = {
+    agregar: function(disponibilidad) {
+        console.log('Agregando disponibilidad:', disponibilidad);
+        if (!this.validarDisponibilidad(disponibilidad)) {
+            return false;
+        }
+        if (this.hayConflicto(disponibilidad)) {
+            alert('Ya existe una disponibilidad que se superpone con este horario');
+            return false;
+        }
+        disponibilidadesAgregadas.push(disponibilidad);
+        console.log('Disponibilidades:', disponibilidadesAgregadas);
+        return true;
+    },
+    validarDisponibilidad: function(disponibilidad) {
+        // Validar que las fechas existan
+        if (!disponibilidad.fechaInicio || !disponibilidad.fechaFin) {
+            alert('Debes especificar fecha y hora de inicio y fin');
+            return false;
+        }
+        
+        const inicio = new Date(disponibilidad.fechaInicio);
+        const fin = new Date(disponibilidad.fechaFin);
+        
+        // Validar que la fecha de inicio sea antes que la de fin
+        if (inicio >= fin) {
+            alert('La fecha de inicio debe ser anterior a la fecha de fin');
+            return false;
+        }
+        
+        // Validar que no sea en el pasado
+        const ahora = new Date();
+        if (inicio < ahora) {
+            alert('No puedes agregar disponibilidades en el pasado');
+            return false;
+        }
+        
+        return true;
+    },
+    hayConflicto: function(nuevaDisp) {
+        const nuevoInicio = new Date(nuevaDisp.fechaInicio);
+        const nuevoFin = new Date(nuevaDisp.fechaFin);
+        
+        return disponibilidadesAgregadas.some(disp => {
+            const dispInicio = new Date(disp.fechaInicio);
+            const dispFin = new Date(disp.fechaFin);
+            
+            // Verificar si hay superposición
+            return (nuevoInicio < dispFin && nuevoFin > dispInicio);
+        });
+    },
+    eliminar: function(index) {
+        console.log('Eliminando disponibilidad:', index);
+        disponibilidadesAgregadas.splice(index, 1);
+    },
+    obtenerTodas: function() {
+        return disponibilidadesAgregadas;
+    },
+    formatearFecha: function(fechaStr) {
+        const fecha = new Date(fechaStr);
+        const opciones = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return fecha.toLocaleString('es-UY', opciones);
+    },
+    obtenerNombreEstado: function(estado) {
+        const nombres = {
+            'disponible': 'Disponible',
+            'ocupado': 'Ocupado',
+            'no_disponible': 'No Disponible'
+        };
+        return nombres[estado] || estado;
     }
 };
 
@@ -422,6 +510,59 @@ function actualizarListaUbicaciones() {
     });
 }
 
+// ==================== EVENTOS DE DISPONIBILIDADES ====================
+if (btnAgregarDisponibilidad) {
+    btnAgregarDisponibilidad.addEventListener('click', () => {
+        const disponibilidad = {
+            fechaInicio: fechaInicio.value,
+            fechaFin: fechaFin.value,
+            estado: estadoDisponibilidad.value
+        };
+        
+        if (manejadorDisponibilidades.agregar(disponibilidad)) {
+            actualizarListaDisponibilidades();
+            
+            // Limpiar campos
+            fechaInicio.value = '';
+            fechaFin.value = '';
+            estadoDisponibilidad.value = 'disponible';
+        }
+    });
+}
+
+// Función para actualizar la lista visual de disponibilidades
+function actualizarListaDisponibilidades() {
+    listaDisponibilidades.innerHTML = '';
+    
+    disponibilidadesAgregadas.forEach((disponibilidad, index) => {
+        const div = document.createElement('div');
+        div.className = 'disponibilidad-item';
+        div.innerHTML = `
+            <div class="disponibilidad-info">
+                <div class="disponibilidad-fechas">
+                    Horario ${index + 1}
+                </div>
+                <span class="disponibilidad-inicio">📍 Inicio: ${manejadorDisponibilidades.formatearFecha(disponibilidad.fechaInicio)}</span>
+                <span class="disponibilidad-fin">🏁 Fin: ${manejadorDisponibilidades.formatearFecha(disponibilidad.fechaFin)}</span>
+                <span class="disponibilidad-estado ${disponibilidad.estado}">
+                    ${manejadorDisponibilidades.obtenerNombreEstado(disponibilidad.estado)}
+                </span>
+            </div>
+            <button type="button" class="btn-eliminar-disponibilidad" data-index="${index}">
+                🗑️ Eliminar
+            </button>
+        `;
+        
+        // Agregar evento para eliminar
+        div.querySelector('.btn-eliminar-disponibilidad').onclick = function() {
+            manejadorDisponibilidades.eliminar(index);
+            actualizarListaDisponibilidades();
+        };
+        
+        listaDisponibilidades.appendChild(div);
+    });
+}
+
 // ==================== EVENTOS DE FOTOS ====================
 if (inputFotos) {
     inputFotos.addEventListener('change', function(e) {
@@ -540,6 +681,17 @@ formulario.addEventListener("submit", async (e) => {
             console.log('Ubicaciones JSON:', ubicacionesJSON);
         } else {
             console.log('No hay ubicaciones para agregar');
+        }
+
+        // Agregar disponibilidades usando el manejador
+        const disponibilidades = manejadorDisponibilidades.obtenerTodas();
+        if (disponibilidades.length > 0) {
+            const disponibilidadesJSON = JSON.stringify(disponibilidades);
+            formData.append('disponibilidades', disponibilidadesJSON);
+            console.log('Disponibilidades agregadas:', disponibilidades);
+            console.log('Disponibilidades JSON:', disponibilidadesJSON);
+        } else {
+            console.log('No hay disponibilidades para agregar');
         }
 
         // Agregar fotos usando el manejador

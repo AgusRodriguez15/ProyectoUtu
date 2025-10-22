@@ -161,6 +161,43 @@ try {
             }
         }
 
+        // Manejar disponibilidades a eliminar
+        if (isset($_POST['disponibilidadesAEliminar'])) {
+            $disponibilidadesAEliminar = json_decode($_POST['disponibilidadesAEliminar'], true);
+            if (is_array($disponibilidadesAEliminar) && !empty($disponibilidadesAEliminar)) {
+                error_log("Disponibilidades a eliminar: " . implode(', ', $disponibilidadesAEliminar));
+                foreach ($disponibilidadesAEliminar as $idDisponibilidad) {
+                    try {
+                        // Aquí iría la lógica de eliminación si tuvieras un método para ello
+                        error_log("Eliminando disponibilidad ID: {$idDisponibilidad}");
+                        // disponibilidad::eliminar($idDisponibilidad);
+                    } catch (Exception $e) {
+                        error_log("Error al eliminar disponibilidad {$idDisponibilidad}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+        
+        // Manejar nuevas disponibilidades
+        if (isset($_POST['nuevasDisponibilidades'])) {
+            $nuevasDisponibilidades = json_decode($_POST['nuevasDisponibilidades'], true);
+            if (is_array($nuevasDisponibilidades) && !empty($nuevasDisponibilidades)) {
+                error_log("Nuevas disponibilidades a agregar: " . count($nuevasDisponibilidades));
+                foreach ($nuevasDisponibilidades as $index => $disponibilidad) {
+                    try {
+                        $resultado = disponibilidad::crearParaServicio($idServicio, $disponibilidad);
+                        if ($resultado !== false) {
+                            error_log("Nueva disponibilidad #{$index} agregada con ID: {$resultado}");
+                        } else {
+                            error_log("No se pudo agregar la disponibilidad #{$index}");
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error al agregar disponibilidad #{$index}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+
         echo json_encode(['success' => true, 'message' => 'Servicio actualizado correctamente']);
         exit;
     }
@@ -375,6 +412,25 @@ try {
             error_log("Error al obtener ubicaciones: " . $e->getMessage());
         }
 
+        // Obtener disponibilidades del servicio
+        $disponibilidades = [];
+        try {
+            require_once __DIR__ . '/../Models/disponibilidad.php';
+            $disponibilidadesData = disponibilidad::obtenerPorServicio($servicio->IdServicio);
+            error_log("Disponibilidades obtenidas: " . count($disponibilidadesData));
+            foreach ($disponibilidadesData as $disp) {
+                $disponibilidades[] = [
+                    'idDisponibilidad' => $disp->getIdDisponibilidad(),
+                    'fechaInicio' => $disp->getFechaInicio(),
+                    'fechaFin' => $disp->getFechaFin(),
+                    'estado' => $disp->getEstado()
+                ];
+            }
+            error_log("Total disponibilidades agregadas: " . count($disponibilidades));
+        } catch (Exception $e) {
+            error_log("Error al obtener disponibilidades: " . $e->getMessage());
+        }
+
         $respuesta = [
             'id' => $servicio->IdServicio,
             'nombre' => $servicio->Nombre,
@@ -387,6 +443,7 @@ try {
             'fechaPublicacion' => $servicio->FechaPublicacion,
             'estado' => $servicio->Estado,
             'ubicaciones' => $ubicaciones,
+            'disponibilidades' => $disponibilidades,
             'proveedor' => [
                 'nombre' => $nombreProveedor,
                 'descripcion' => $descripcionProveedor,

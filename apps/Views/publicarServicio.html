@@ -117,6 +117,41 @@
                 </div>
             </div>
 
+            <div class="grupo-form">
+                <label>📅 Disponibilidad del Servicio (opcional)</label>
+                <div class="contenedor-disponibilidad">
+                    <div class="formulario-disponibilidad">
+                        <div class="campos-disponibilidad">
+                            <div class="campo-disponibilidad">
+                                <label for="fechaInicio">Fecha y Hora de Inicio</label>
+                                <input type="datetime-local" id="fechaInicio" 
+                                       placeholder="Fecha de inicio">
+                            </div>
+                            <div class="campo-disponibilidad">
+                                <label for="fechaFin">Fecha y Hora de Fin</label>
+                                <input type="datetime-local" id="fechaFin" 
+                                       placeholder="Fecha de fin">
+                            </div>
+                            <div class="campo-disponibilidad">
+                                <label for="estadoDisponibilidad">Estado</label>
+                                <select id="estadoDisponibilidad">
+                                    <option value="disponible">Disponible</option>
+                                    <option value="ocupado">Ocupado</option>
+                                    <option value="no_disponible">No Disponible</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAgregarDisponibilidad" class="btn-agregar-disponibilidad">
+                            + Agregar Disponibilidad
+                        </button>
+                    </div>
+                    <div id="listaDisponibilidades" class="lista-disponibilidades">
+                        <!-- Aquí se mostrarán las disponibilidades agregadas -->
+                    </div>
+                    <p class="ayuda-texto">💡 Agrega las franjas horarias en las que tu servicio estará disponible. Puedes agregar múltiples horarios.</p>
+                </div>
+            </div>
+
             <button type="submit" class="btn-publicar">Publicar Servicio</button>
         </form>
     </div>

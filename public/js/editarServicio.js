@@ -32,6 +32,9 @@ let palabrasClaveActuales = [];
 let ubicacionesActuales = [];
 let ubicacionesAEliminar = [];
 let nuevasUbicaciones = [];
+let disponibilidadesActuales = [];
+let disponibilidadesAEliminar = [];
+let nuevasDisponibilidades = [];
 
 function cargarServicio(id) {
   fetch('../../apps/Controllers/servicioController.php', {
@@ -65,6 +68,10 @@ function cargarServicio(id) {
       // Cargar ubicaciones actuales
       ubicacionesActuales = data.ubicaciones || [];
       mostrarUbicaciones();
+      
+      // Cargar disponibilidades actuales
+      disponibilidadesActuales = data.disponibilidades || [];
+      mostrarDisponibilidades();
     })
     .catch(err => {
       console.error('Error cargando servicio:', err);
@@ -132,6 +139,23 @@ function guardarCambios() {
     console.log('📦 JSON enviado:', ubicacionesJSON);
   } else {
     console.warn('⚠️ No hay nuevas ubicaciones para enviar');
+  }
+
+  // Agregar disponibilidades a eliminar
+  console.log('📅 Disponibilidades a eliminar:', disponibilidadesAEliminar);
+  if (disponibilidadesAEliminar.length > 0) {
+    formData.append('disponibilidadesAEliminar', JSON.stringify(disponibilidadesAEliminar));
+  }
+  
+  // Agregar nuevas disponibilidades
+  console.log('📅 Nuevas disponibilidades a enviar:', nuevasDisponibilidades);
+  if (nuevasDisponibilidades.length > 0) {
+    const disponibilidadesJSON = JSON.stringify(nuevasDisponibilidades);
+    formData.append('nuevasDisponibilidades', disponibilidadesJSON);
+    console.log('✅ Agregadas', nuevasDisponibilidades.length, 'disponibilidades al FormData');
+    console.log('📦 JSON enviado:', disponibilidadesJSON);
+  } else {
+    console.warn('⚠️ No hay nuevas disponibilidades para enviar');
   }
 
   // Log de todo el FormData
@@ -458,6 +482,152 @@ function eliminarUbicacion(idUbicacion, esNueva, index) {
   }
   
   mostrarUbicaciones();
+}
+
+// ==================== FUNCIONES DE DISPONIBILIDAD ====================
+
+function mostrarDisponibilidades() {
+  const container = document.getElementById('disponibilidadesActuales');
+  
+  // Combinar disponibilidades actuales (no eliminadas) y nuevas
+  const todasDisponibilidades = [
+    ...disponibilidadesActuales.filter(disp => !disponibilidadesAEliminar.includes(disp.idDisponibilidad)),
+    ...nuevasDisponibilidades
+  ];
+  
+  if (todasDisponibilidades.length === 0) {
+    container.innerHTML = '<div class="sin-disponibilidades">📅 Este servicio no tiene disponibilidades configuradas</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  todasDisponibilidades.forEach((disponibilidad, index) => {
+    const esNueva = !disponibilidad.idDisponibilidad;
+    const div = document.createElement('div');
+    div.className = 'disponibilidad-actual-item';
+    
+    // Formatear fechas
+    const fechaInicio = formatearFecha(disponibilidad.fechaInicio);
+    const fechaFin = formatearFecha(disponibilidad.fechaFin);
+    const estadoNombre = obtenerNombreEstado(disponibilidad.estado);
+    
+    div.innerHTML = `
+      <div class="disponibilidad-actual-info">
+        <div class="disponibilidad-actual-icono">📅</div>
+        <div class="disponibilidad-actual-texto">
+          <div class="disponibilidad-actual-principal">Horario ${index + 1}</div>
+          <div class="disponibilidad-actual-detalles">📍 Inicio: ${fechaInicio}</div>
+          <div class="disponibilidad-actual-detalles">🏁 Fin: ${fechaFin}</div>
+          <span class="disponibilidad-estado-badge ${disponibilidad.estado}">${estadoNombre}</span>
+        </div>
+      </div>
+      <button type="button" class="btn-eliminar-disponibilidad" onclick="eliminarDisponibilidad(${esNueva ? -1 : disponibilidad.idDisponibilidad}, ${esNueva}, ${index})" title="Eliminar disponibilidad">
+        🗑️ Eliminar
+      </button>
+    `;
+    
+    container.appendChild(div);
+  });
+}
+
+function agregarDisponibilidad() {
+  const fechaInicio = document.getElementById('fechaInicioEdit').value;
+  const fechaFin = document.getElementById('fechaFinEdit').value;
+  const estado = document.getElementById('estadoDispEdit').value;
+  
+  // Validar campos obligatorios
+  if (!fechaInicio || !fechaFin) {
+    alert('❌ Debes especificar fecha y hora de inicio y fin');
+    return;
+  }
+  
+  // Validar que la fecha de inicio sea antes que la de fin
+  const inicio = new Date(fechaInicio);
+  const fin = new Date(fechaFin);
+  
+  if (inicio >= fin) {
+    alert('❌ La fecha de inicio debe ser anterior a la fecha de fin');
+    return;
+  }
+  
+  // Validar que no sea en el pasado
+  const ahora = new Date();
+  if (inicio < ahora) {
+    alert('❌ No puedes agregar disponibilidades en el pasado');
+    return;
+  }
+  
+  // Verificar conflictos con disponibilidades existentes
+  const hayConflicto = [...disponibilidadesActuales, ...nuevasDisponibilidades].some(disp => {
+    if (disponibilidadesAEliminar.includes(disp.idDisponibilidad)) return false;
+    
+    const dispInicio = new Date(disp.fechaInicio);
+    const dispFin = new Date(disp.fechaFin);
+    
+    // Verificar si hay superposición
+    return (inicio < dispFin && fin > dispInicio);
+  });
+  
+  if (hayConflicto) {
+    alert('⚠️ Ya existe una disponibilidad que se superpone con este horario');
+    return;
+  }
+  
+  // Agregar a la lista de nuevas disponibilidades
+  nuevasDisponibilidades.push({
+    fechaInicio: fechaInicio,
+    fechaFin: fechaFin,
+    estado: estado
+  });
+  
+  // Limpiar campos
+  document.getElementById('fechaInicioEdit').value = '';
+  document.getElementById('fechaFinEdit').value = '';
+  document.getElementById('estadoDispEdit').value = 'disponible';
+  
+  // Actualizar vista
+  mostrarDisponibilidades();
+}
+
+function eliminarDisponibilidad(idDisponibilidad, esNueva, index) {
+  if (!confirm('¿Estás seguro de que quieres eliminar esta disponibilidad?')) {
+    return;
+  }
+  
+  if (esNueva) {
+    // Es una disponibilidad nueva que aún no se ha guardado
+    const indiceReal = index - disponibilidadesActuales.filter(disp => !disponibilidadesAEliminar.includes(disp.idDisponibilidad)).length;
+    nuevasDisponibilidades.splice(indiceReal, 1);
+  } else {
+    // Es una disponibilidad existente en la BD
+    if (!disponibilidadesAEliminar.includes(idDisponibilidad)) {
+      disponibilidadesAEliminar.push(idDisponibilidad);
+    }
+  }
+  
+  mostrarDisponibilidades();
+}
+
+function formatearFecha(fechaStr) {
+  const fecha = new Date(fechaStr);
+  const opciones = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  return fecha.toLocaleString('es-UY', opciones);
+}
+
+function obtenerNombreEstado(estado) {
+  const nombres = {
+    'disponible': 'Disponible',
+    'ocupado': 'Ocupado',
+    'no_disponible': 'No Disponible'
+  };
+  return nombres[estado] || estado;
 }
 
 // Función para eliminar el servicio

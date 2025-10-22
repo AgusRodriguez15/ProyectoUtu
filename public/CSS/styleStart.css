@@ -193,12 +193,28 @@ a {
 
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   margin-top: 30px;
-  max-width: 900px;
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Responsive: 4 columnas en pantallas grandes */
+@media (min-width: 1200px) {
+  .quick-actions {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+  }
+}
+
+/* Responsive: 1 columna en móviles */
+@media (max-width: 768px) {
+  .quick-actions {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
 }
 
 .action-card {

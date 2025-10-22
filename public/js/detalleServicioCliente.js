@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           
           mostrarDetalle(data);
+          
+          // Cargar disponibilidades y configurar modal DESPUÉS de renderizar
+          cargarDisponibilidades(servicioId);
+          configurarModalReserva(servicioId);
         } catch (e) {
           console.error('Error al parsear JSON:', e);
           console.error('Respuesta recibida:', text);
@@ -270,11 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function configurarEventListeners(servicio) {
     const servicioId = sessionStorage.getItem('servicioId');
     
-    // Event listeners para clientes
-    document.querySelector('.btn-contratar')?.addEventListener('click', () => {
-      alert('Función de contratación en desarrollo');
-    });
-    
+    // Event listeners para el botón de mensaje
     document.querySelector('.btn-mensaje')?.addEventListener('click', () => {
       alert('Función de mensajería en desarrollo');
     });
@@ -705,5 +705,284 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarBotones();
     actualizarContador();
   }
+  
+  // Función para cargar y mostrar disponibilidades
+  function cargarDisponibilidades(idServicio) {
+    const contenedorDisp = document.querySelector('.disponibilidades-lista');
+    
+    if (!contenedorDisp) {
+      console.error('No se encontró el contenedor de disponibilidades');
+      return;
+    }
+    
+    fetch(`../../apps/Controllers/disponibilidadController.php?idServicio=${idServicio}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.disponibilidades && data.disponibilidades.length > 0) {
+          mostrarDisponibilidades(data.disponibilidades);
+        } else {
+          contenedorDisp.innerHTML = '<p class="sin-disponibilidades">No hay disponibilidades registradas para este servicio.</p>';
+        }
+      })
+      .catch(err => {
+        console.error('Error al cargar disponibilidades:', err);
+        contenedorDisp.innerHTML = '<p class="sin-disponibilidades">Error al cargar disponibilidades.</p>';
+      });
+  }
+  
+  function mostrarDisponibilidades(disponibilidades) {
+    const contenedorDisp = document.querySelector('.disponibilidades-lista');
+    
+    if (!contenedorDisp) {
+      console.error('No se encontró el contenedor de disponibilidades');
+      return;
+    }
+    
+    contenedorDisp.innerHTML = '';
+    
+    const template = document.getElementById('template-disponibilidad-item');
+    
+    if (!template) {
+      console.error('No se encontró el template de disponibilidad');
+      return;
+    }
+    
+    // Filtrar solo disponibilidades con estado 'disponible' (case insensitive)
+    const dispDisponibles = disponibilidades.filter(d => {
+      const estado = (d.estado || '').toLowerCase();
+      return estado === 'disponible';
+    });
+    
+    console.log('Total disponibilidades recibidas:', disponibilidades.length);
+    console.log('Disponibilidades filtradas (disponible):', dispDisponibles.length);
+    
+    if (dispDisponibles.length === 0) {
+      contenedorDisp.innerHTML = '<p class="sin-disponibilidades">No hay horarios disponibles actualmente.</p>';
+      return;
+    }
+    
+    dispDisponibles.forEach(disp => {
+      const dispElement = template.content.cloneNode(true);
+      
+      const fechaInicio = new Date(disp.fechaInicio);
+      const fechaFin = new Date(disp.fechaFin);
+      
+      const fechasTexto = `${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`;
+      dispElement.querySelector('.disponibilidad-fechas').textContent = fechasTexto;
+      
+      const badge = dispElement.querySelector('.badge-estado');
+      badge.textContent = '✓ Disponible';
+      badge.classList.add('badge', 'disponible');
+      
+      contenedorDisp.appendChild(dispElement);
+    });
+  }
+  
+  function formatearFecha(fecha) {
+    const opciones = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return fecha.toLocaleDateString('es-ES', opciones);
+  }
+  
+  // Variables globales para el modal
+  let disponibilidadesServicio = [];
+  let servicioActualId = null;
+  let horarioSeleccionado = null;
+  
+  // Función para configurar el modal de reserva
+  function configurarModalReserva(idServicio) {
+    servicioActualId = idServicio;
+    const modal = document.getElementById('modalReserva');
+    const btnContratar = document.querySelector('.btn-contratar');
+    const btnCerrar = document.querySelector('.modal-cerrar');
+    const btnCancelar = document.querySelector('.btn-cancelar-reserva');
+    const formReserva = document.getElementById('formReserva');
+    
+    // Validar que todos los elementos existan
+    if (!modal || !btnContratar || !btnCerrar || !btnCancelar || !formReserva) {
+      console.error('No se encontraron todos los elementos necesarios para el modal');
+      return;
+    }
+    
+    // Cargar disponibilidades del servicio
+    fetch(`../../apps/Controllers/disponibilidadController.php?idServicio=${idServicio}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Filtrar solo disponibilidades con estado 'disponible' (case insensitive)
+          disponibilidadesServicio = data.disponibilidades.filter(d => {
+            const estado = (d.estado || '').toLowerCase();
+            return estado === 'disponible';
+          });
+          console.log('Disponibilidades para modal:', disponibilidadesServicio.length);
+          mostrarHorariosDisponibles();
+        }
+      })
+      .catch(err => console.error('Error al cargar disponibilidades:', err));
+    
+    // Abrir modal
+    btnContratar.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      modal.classList.add('mostrar');
+      horarioSeleccionado = null; // Resetear selección
+      limpiarFormularioReserva();
+    });
+    
+    // Cerrar modal
+    const cerrarModal = () => {
+      modal.style.display = 'none';
+      modal.classList.remove('mostrar');
+      formReserva.reset();
+      horarioSeleccionado = null;
+      limpiarFormularioReserva();
+    };
+    
+    btnCerrar.addEventListener('click', cerrarModal);
+    btnCancelar.addEventListener('click', cerrarModal);
+    
+    // Cerrar al hacer clic fuera del contenido
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        cerrarModal();
+      }
+    });
+    
+    // Manejar envío del formulario
+    formReserva.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await crearReserva();
+    });
+  }
+  
+  function mostrarHorariosDisponibles() {
+    const contenedor = document.querySelector('.lista-horarios-disponibles');
+    
+    if (!contenedor) {
+      console.error('No se encontró el contenedor de horarios disponibles');
+      return;
+    }
+    
+    contenedor.innerHTML = '';
+    
+    if (disponibilidadesServicio.length === 0) {
+      contenedor.innerHTML = '<p style="color: #666; text-align: center;">No hay horarios disponibles</p>';
+      return;
+    }
+    
+    disponibilidadesServicio.forEach((disp, index) => {
+      const div = document.createElement('div');
+      div.className = 'horario-disponible-item';
+      div.dataset.index = index;
+      
+      const fechaInicio = new Date(disp.fechaInicio);
+      const fechaFin = new Date(disp.fechaFin);
+      
+      div.textContent = `${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`;
+      
+      // Agregar evento de clic para seleccionar
+      div.addEventListener('click', () => seleccionarHorario(disp, div));
+      
+      contenedor.appendChild(div);
+    });
+  }
+  
+  function seleccionarHorario(disponibilidad, elemento) {
+    // Remover selección previa
+    document.querySelectorAll('.horario-disponible-item').forEach(item => {
+      item.classList.remove('seleccionado');
+    });
+    
+    // Marcar como seleccionado
+    elemento.classList.add('seleccionado');
+    horarioSeleccionado = disponibilidad;
+    
+    // Llenar los campos hidden
+    const fechaInicio = new Date(disponibilidad.fechaInicio);
+    const fechaFin = new Date(disponibilidad.fechaFin);
+    
+    document.getElementById('fechaInicioReserva').value = formatearParaInput(fechaInicio);
+    document.getElementById('fechaFinReserva').value = formatearParaInput(fechaFin);
+    
+    // Mostrar el cuadro de información
+    const infoBox = document.querySelector('.horario-seleccionado-info');
+    const textoHorario = document.getElementById('textoHorarioSeleccionado');
+    
+    if (infoBox && textoHorario) {
+      textoHorario.textContent = `${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`;
+      infoBox.style.display = 'block';
+    }
+  }
+  
+  function formatearParaInput(fecha) {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const hours = String(fecha.getHours()).padStart(2, '0');
+    const minutes = String(fecha.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+  
+  function limpiarFormularioReserva() {
+    document.getElementById('fechaInicioReserva').value = '';
+    document.getElementById('fechaFinReserva').value = '';
+    document.getElementById('observacionReserva').value = '';
+    
+    // Ocultar el cuadro de información
+    const infoBox = document.querySelector('.horario-seleccionado-info');
+    if (infoBox) {
+      infoBox.style.display = 'none';
+    }
+    
+    // Remover todas las selecciones
+    document.querySelectorAll('.horario-disponible-item').forEach(item => {
+      item.classList.remove('seleccionado');
+    });
+  }
+  
+  async function crearReserva() {
+    // Validar que se haya seleccionado un horario
+    if (!horarioSeleccionado) {
+      alert('Por favor, seleccione un horario disponible');
+      return;
+    }
+    
+    const observacion = document.getElementById('observacionReserva').value;
+    
+    // Crear la reserva con el ID de disponibilidad
+    try {
+      const response = await fetch('../../apps/Controllers/reservaController.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idServicio: servicioActualId,
+          idDisponibilidad: horarioSeleccionado.idDisponibilidad,
+          observacion: observacion
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✓ Reserva creada exitosamente\n\nSu reserva está pendiente de confirmación por el proveedor.');
+        document.getElementById('modalReserva').style.display = 'none';
+        document.getElementById('modalReserva').classList.remove('mostrar');
+        limpiarFormularioReserva();
+        horarioSeleccionado = null;
+        
+        // Recargar disponibilidades
+        cargarDisponibilidades(servicioActualId);
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (err) {
+      console.error('Error al crear reserva:', err);
+      alert('Error al procesar la reserva. Por favor, intente nuevamente.');
+    }
+  }
 });
-

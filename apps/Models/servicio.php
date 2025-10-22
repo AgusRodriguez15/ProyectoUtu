@@ -179,7 +179,16 @@ class Servicio
             $stmtPalabras->close();
         }
         
-        // 5. Eliminar relaciones de categoría (Pertenece)
+        // 5. Eliminar disponibilidades
+        $sqlDisponibilidades = "DELETE FROM Disponibilidad WHERE IdServicio = ?";
+        $stmtDisponibilidades = self::$conexion->prepare($sqlDisponibilidades);
+        if ($stmtDisponibilidades) {
+            $stmtDisponibilidades->bind_param("i", $idServicio);
+            $stmtDisponibilidades->execute();
+            $stmtDisponibilidades->close();
+        }
+        
+        // 6. Eliminar relaciones de categoría (Pertenece)
         $sqlPertenece = "DELETE FROM Pertenece WHERE IdServicio = ?";
         $stmtPertenece = self::$conexion->prepare($sqlPertenece);
         if ($stmtPertenece) {
@@ -188,7 +197,7 @@ class Servicio
             $stmtPertenece->close();
         }
         
-        // 6. Eliminar ubicaciones del servicio
+        // 7. Eliminar ubicaciones del servicio
         $sqlUbicacion = "DELETE FROM ServicioUbicacion WHERE IdServicio = ?";
         $stmtUbicacion = self::$conexion->prepare($sqlUbicacion);
         if ($stmtUbicacion) {

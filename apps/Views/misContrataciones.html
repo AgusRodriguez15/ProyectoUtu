@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Contrataciones</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <link rel="stylesheet" href="../../public/CSS/style_system.css">
+  <style>
+    .contrataciones-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+
+    .filtros-contrataciones {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filtro-btn {
+      padding: 0.8rem 1.5rem;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .filtro-btn:hover {
+      border-color: #3498db;
+      transform: translateY(-2px);
+    }
+
+    .filtro-btn.activo {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+
+    .contrataciones-lista {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .contratacion-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 5px solid #3498db;
+      transition: all 0.3s;
+    }
+
+    .contratacion-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+
+    .contratacion-card.pendiente {
+      border-left-color: #ff9800;
+    }
+
+    .contratacion-card.confirmada {
+      border-left-color: #4CAF50;
+    }
+
+    .contratacion-card.cancelada {
+      border-left-color: #f44336;
+    }
+
+    .contratacion-card.finalizada {
+      border-left-color: #9e9e9e;
+    }
+
+    .contratacion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .contratacion-servicio {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    .contratacion-estado {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    .estado-pendiente {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .estado-confirmada {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .estado-cancelada {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .estado-finalizada {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .contratacion-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .info-label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      font-size: 1rem;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .contratacion-proveedor {
+      background: #f0f8ff;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      border-left: 3px solid #3498db;
+    }
+
+    .proveedor-label {
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .proveedor-nombre {
+      color: #2c3e50;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .contratacion-observacion {
+      background: #fff9e6;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      border-left: 3px solid #ffc107;
+    }
+
+    .observacion-label {
+      font-weight: 600;
+      color: #856404;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .observacion-texto {
+      color: #2c3e50;
+      line-height: 1.6;
+    }
+
+    .contratacion-acciones {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-accion {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .btn-ver-servicio {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-ver-servicio:hover {
+      background: #2980b9;
+    }
+
+    .btn-finalizar {
+      background: #4caf50;
+      color: white;
+    }
+
+    .btn-finalizar:hover {
+      background: #45a049;
+    }
+
+    .btn-cancelar {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-cancelar:hover {
+      background: #da190b;
+    }
+
+    .btn-contactar {
+      background: #9c27b0;
+      color: white;
+    }
+
+    .btn-contactar:hover {
+      background: #7b1fa2;
+    }
+
+    .sin-contrataciones {
+      text-align: center;
+      padding: 3rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .sin-contrataciones-icono {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .sin-contrataciones h3 {
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .sin-contrataciones p {
+      color: #999;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-explorar {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      background: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-explorar:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .contrataciones-container {
+        padding: 1rem;
+      }
+
+      .contratacion-header {
+        flex-direction: column;
+      }
+
+      .contratacion-info {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <nav class="nav">
+      <a href="PANTALLA_CONTRATAR.html">Explorar Servicios</a>
+      <a href="misContrataciones.html" class="active">Mis Contrataciones</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+      <a href="../../public/php/logout.php">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <div class="contrataciones-container">
+    <h1>🛒 Mis Contrataciones</h1>
+    
+    <div class="filtros-contrataciones">
+      <button class="filtro-btn activo" data-filtro="todas">Todas</button>
+      <button class="filtro-btn" data-filtro="pendiente">Pendientes</button>
+      <button class="filtro-btn" data-filtro="confirmada">Confirmadas</button>
+      <button class="filtro-btn" data-filtro="cancelada">Canceladas</button>
+      <button class="filtro-btn" data-filtro="finalizada">Finalizadas</button>
+    </div>
+
+    <div class="contrataciones-lista" id="contratacionesLista">
+      <p style="text-align: center; padding: 2rem;">Cargando contrataciones...</p>
+    </div>
+  </div>
+
+  <script src="../../public/js/misContrataciones.js"></script>
+</body>
+</html>

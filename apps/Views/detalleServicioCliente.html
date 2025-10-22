@@ -12,6 +12,7 @@
     <div class="logo"><h1>Plataforma de Oficios</h1></div>
     <nav class="nav">
       <a href="PANTALLA_CONTRATAR.html">Servicios</a>
+      <a href="misContrataciones.html">Mis Contrataciones</a>
       <a href="perfilUsuario.html">Mi Perfil</a>
       <a href="#">Mensajes</a>
     </nav>
@@ -95,6 +96,13 @@
             <div class="carrusel-indicadores"></div>
             <span class="carrusel-contador"></span>
             <button class="carrusel-btn btn-siguiente" aria-label="Ubicación siguiente">▶</button>
+          </div>
+        </div>
+        
+        <div class="servicio-disponibilidades">
+          <h3>📅 Disponibilidad del Servicio</h3>
+          <div class="disponibilidades-lista">
+            <p class="cargando">Cargando disponibilidades...</p>
           </div>
         </div>
         
@@ -183,6 +191,50 @@
       <span class="comentario-fecha"></span>
     </div>
   </template>
+
+  <template id="template-disponibilidad-item">
+    <div class="disponibilidad-item">
+      <div class="disponibilidad-info">
+        <span class="disponibilidad-fechas"></span>
+        <span class="badge-estado"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Modal de Reserva -->
+  <div id="modalReserva" class="modal" style="display: none;">
+    <div class="modal-contenido">
+      <span class="modal-cerrar">&times;</span>
+      <h2>🛒 Contratar Servicio</h2>
+      
+      <form id="formReserva">
+        <div class="disponibilidades-disponibles">
+          <h4>Seleccione un horario disponible:</h4>
+          <div class="lista-horarios-disponibles"></div>
+        </div>
+        
+        <div class="horario-seleccionado-info" style="display: none;">
+          <div class="info-box">
+            <h4>📅 Horario seleccionado:</h4>
+            <p id="textoHorarioSeleccionado" class="horario-texto"></p>
+          </div>
+        </div>
+        
+        <input type="hidden" id="fechaInicioReserva" name="fechaInicio">
+        <input type="hidden" id="fechaFinReserva" name="fechaFin">
+        
+        <div class="form-group">
+          <label for="observacionReserva">📝 Observaciones (opcional):</label>
+          <textarea id="observacionReserva" name="observacion" rows="4" placeholder="Detalles adicionales sobre el servicio que necesitas..."></textarea>
+        </div>
+        
+        <div class="modal-acciones">
+          <button type="submit" class="btn-primary">Confirmar Reserva</button>
+          <button type="button" class="btn-secondary btn-cancelar-reserva">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="../../public/js/detalleServicioCliente.js"></script>
 </body>

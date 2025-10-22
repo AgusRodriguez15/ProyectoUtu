@@ -93,6 +93,43 @@
           </div>
         </div>
 
+        <label>📅 Disponibilidad del Servicio</label>
+        <div class="disponibilidades-container">
+          <div id="disponibilidadesActuales" class="disponibilidades-actuales">
+            <!-- Las disponibilidades se cargan aquí dinámicamente -->
+          </div>
+          
+          <div class="agregar-disponibilidad">
+            <h4>➕ Agregar Nueva Disponibilidad</h4>
+            <div class="disponibilidad-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fechaInicioEdit">Fecha y Hora de Inicio</label>
+                  <input type="datetime-local" id="fechaInicioEdit" />
+                </div>
+                <div class="form-group">
+                  <label for="fechaFinEdit">Fecha y Hora de Fin</label>
+                  <input type="datetime-local" id="fechaFinEdit" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="estadoDispEdit">Estado</label>
+                  <select id="estadoDispEdit">
+                    <option value="disponible">Disponible</option>
+                    <option value="ocupado">Ocupado</option>
+                    <option value="no_disponible">No Disponible</option>
+                  </select>
+                </div>
+              </div>
+              <button type="button" class="btn-agregar-disponibilidad" onclick="agregarDisponibilidad()">
+                📅 Agregar Disponibilidad
+              </button>
+            </div>
+            <small class="help-text">💡 Agrega las franjas horarias en las que tu servicio estará disponible.</small>
+          </div>
+        </div>
+
         <label>Fotos del Servicio</label>
         <div id="fotosActuales" class="fotos-actuales">
           <!-- Las fotos se cargan aquí dinámicamente -->

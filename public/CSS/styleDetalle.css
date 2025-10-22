@@ -1512,3 +1512,403 @@ input:checked + .slider:before {
     font-size: 0.85rem;
   }
 }
+
+/* ===== ESTILOS PARA DISPONIBILIDAD EN EDITAR SERVICIO ===== */
+
+.disponibilidades-container {
+  margin-bottom: 1.5rem;
+}
+
+.disponibilidades-actuales {
+  margin-bottom: 1rem;
+  min-height: 50px;
+}
+
+.disponibilidad-actual-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+  transition: all 0.3s;
+}
+
+.disponibilidad-actual-item:hover {
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  transform: translateX(3px);
+}
+
+.disponibilidad-actual-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.disponibilidad-actual-icono {
+  font-size: 1.5rem;
+  color: #4CAF50;
+}
+
+.disponibilidad-actual-texto {
+  flex: 1;
+}
+
+.disponibilidad-actual-principal {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.3rem;
+}
+
+.disponibilidad-actual-detalles {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.disponibilidad-estado-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.disponibilidad-estado-badge.disponible {
+  background: #d4edda;
+  color: #155724;
+}
+
+.disponibilidad-estado-badge.ocupado {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.disponibilidad-estado-badge.no_disponible {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.btn-eliminar-disponibilidad {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.btn-eliminar-disponibilidad:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+.sin-disponibilidades {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.agregar-disponibilidad {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px dashed #4CAF50;
+}
+
+.agregar-disponibilidad h4 {
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.disponibilidad-form {
+  margin-bottom: 0.5rem;
+}
+
+.btn-agregar-disponibilidad {
+  width: 100%;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+  margin-top: 0.5rem;
+}
+
+.btn-agregar-disponibilidad:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsive para disponibilidades en editar */
+@media (max-width: 768px) {
+  .disponibilidad-actual-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .btn-eliminar-disponibilidad {
+    width: 100%;
+  }
+}
+
+/* Estilos para disponibilidades en vista de cliente */
+.servicio-disponibilidades {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.servicio-disponibilidades h3 {
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+}
+
+.disponibilidades-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.disponibilidad-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.disponibilidad-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.disponibilidad-fechas {
+  font-size: 0.95rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Estilos para el modal de reserva */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+.modal.mostrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-contenido {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-cerrar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.modal-cerrar:hover {
+  color: #333;
+}
+
+.modal-contenido h2 {
+  color: #2c3e50;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8rem;
+}
+
+#formReserva .form-group {
+  margin-bottom: 1.5rem;
+}
+
+#formReserva label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+#formReserva input[type="datetime-local"],
+#formReserva textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+#formReserva input[type="datetime-local"]:focus,
+#formReserva textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.disponibilidades-disponibles {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.disponibilidades-disponibles h4 {
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.lista-horarios-disponibles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.horario-disponible-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 2px solid #ddd;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  font-weight: 500;
+}
+
+.horario-disponible-item:hover {
+  border-color: #4CAF50;
+  background: #f0f8f0;
+  transform: translateX(5px);
+}
+
+.horario-disponible-item.seleccionado {
+  background: #4CAF50;
+  color: white;
+  border-color: #45a049;
+  font-weight: 600;
+}
+
+.horario-disponible-item.seleccionado::before {
+  content: "✓ ";
+  font-weight: bold;
+}
+
+.horario-seleccionado-info {
+  margin: 1.5rem 0;
+}
+
+.info-box {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.2rem;
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-box h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.horario-texto {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.modal-acciones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modal-acciones button {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-cancelar-reserva {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-cancelar-reserva:hover {
+  background: #5a6268;
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+  .modal-contenido {
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .modal-acciones {
+    flex-direction: column;
+  }
+  
+  .modal-acciones button {
+    width: 100%;
+  }
+}

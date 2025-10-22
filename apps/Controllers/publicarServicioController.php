@@ -13,6 +13,7 @@ require_once __DIR__ . '/../Models/categoria.php';
 require_once __DIR__ . '/../Models/foto.php';
 require_once __DIR__ . '/../Models/palabraClave.php';
 require_once __DIR__ . '/../Models/ubicacion.php';
+require_once __DIR__ . '/../Models/disponibilidad.php';
 
 session_start();
 
@@ -131,6 +132,46 @@ try {
             }
         } else {
             error_log("No se recibieron ubicaciones en el POST");
+        }
+        
+        // Guardar disponibilidades
+        if (isset($_POST['disponibilidades']) && !empty($_POST['disponibilidades'])) {
+            error_log("POST disponibilidades recibido: " . $_POST['disponibilidades']);
+            $disponibilidades = json_decode($_POST['disponibilidades'], true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log("Error al decodificar JSON de disponibilidades: " . json_last_error_msg());
+            }
+            
+            if (is_array($disponibilidades) && !empty($disponibilidades)) {
+                error_log("Total de disponibilidades a guardar: " . count($disponibilidades));
+                $disponibilidadesGuardadas = 0;
+                $disponibilidadesError = 0;
+                
+                foreach ($disponibilidades as $index => $disponibilidad) {
+                    error_log("Procesando disponibilidad #{$index}: " . json_encode($disponibilidad));
+                    
+                    try {
+                        $resultado = disponibilidad::crearParaServicio($idServicio, $disponibilidad);
+                        if ($resultado !== false) {
+                            error_log("Disponibilidad #{$index} guardada con ID: {$resultado}");
+                            $disponibilidadesGuardadas++;
+                        } else {
+                            error_log("No se pudo guardar la disponibilidad #{$index}");
+                            $disponibilidadesError++;
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error al guardar disponibilidad #{$index}: " . $e->getMessage());
+                        $disponibilidadesError++;
+                    }
+                }
+                
+                error_log("RESUMEN Disponibilidades - Guardadas: {$disponibilidadesGuardadas}, Errores: {$disponibilidadesError}, Total: " . count($disponibilidades));
+            } else {
+                error_log("Las disponibilidades no son un array válido o está vacío");
+            }
+        } else {
+            error_log("No se recibieron disponibilidades en el POST");
         }
         
         // Guardar fotos

@@ -110,13 +110,14 @@ CREATE TABLE Disponibilidad (
 -- Tabla Reserva
 CREATE TABLE Reserva (
     IdReserva INT PRIMARY KEY AUTO_INCREMENT,
+    IdDisponibilidad INT,
+    Estado ENUM('pendiente', 'confirmada', 'cancelada', 'finalizada') DEFAULT 'pendiente',
+    Observacion TEXT,
+    IdUsuario INT,
     IdServicio INT,
-    IdCliente INT,
-    FechaHoraInicio DATETIME,
-    FechaHoraFin DATETIME,
-    Estado ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'COMPLETADA') DEFAULT 'PENDIENTE',
-    FOREIGN KEY (IdServicio) REFERENCES Servicio(IdServicio),
-    FOREIGN KEY (IdCliente) REFERENCES Cliente(IdUsuario)
+    FOREIGN KEY (IdDisponibilidad) REFERENCES Disponibilidad(IdDisponibilidad) ON DELETE CASCADE,
+    FOREIGN KEY (IdUsuario) REFERENCES Usuario(IdUsuario),
+    FOREIGN KEY (IdServicio) REFERENCES Servicio(IdServicio)
 );
 
 -- Tabla Reseña
