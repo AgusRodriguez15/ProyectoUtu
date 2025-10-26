@@ -13,6 +13,22 @@ require_once __DIR__ . '/../Models/servicio.php';
 session_start();
 
 try {
+    // ✅ NUEVO: Validación si se pide verificar un email existente
+    if (isset($_GET['action']) && $_GET['action'] === 'checkEmail') {
+        if (!isset($_GET['email']) || empty($_GET['email'])) {
+            throw new Exception("Email no proporcionado");
+        }
+
+        $email = trim($_GET['email']);
+
+        // Verificar si el email ya existe en la base de datos
+        $usuarioExistente = usuario::obtenerPor('Email', $email);
+        $exists = $usuarioExistente ? true : false;
+
+        echo json_encode(['exists' => $exists]);
+        exit;
+    }
+
     // Obtener el ID del usuario a ver desde GET
     if (!isset($_GET['id'])) {
         throw new Exception("ID de usuario no proporcionado");
@@ -68,7 +84,6 @@ try {
         // Obtener servicios del proveedor
         $proveedor = proveedor::obtenerPorIdUsuario($usuario->getIdUsuario());
         if ($proveedor) {
-            // IdProveedor en la tabla Servicio apunta a Proveedor.IdUsuario
             $servicios = Servicio::obtenerPorProveedor($proveedor->getIdUsuario());
             $response['servicios'] = $servicios;
             $response['aniosExperiencia'] = $proveedor->getAniosExperiencia();

@@ -42,12 +42,41 @@
         // Obtener el ID del usuario desde la URL
         const urlParams = new URLSearchParams(window.location.search);
         const idUsuario = urlParams.get('id');
+        const email = urlParams.get('email'); // <-- nuevo: leer email desde la URL
 
         if (!idUsuario) {
             alert('No se especificó un usuario para ver');
             window.location.href = '../../public/index.html';
         } else {
-            // Consultar el tipo de usuario y redirigir al perfil correcto
+            // ✅ Validar si el email ya existe antes de continuar
+            if (email) {
+                fetch(`../../apps/Controllers/verPerfilController.php?action=checkEmail&email=${encodeURIComponent(email)}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.exists) {
+                            alert('El email ya está registrado. Por favor, usa otro.');
+                            window.location.href = '../../public/index.html';
+                        } else {
+                            // Si el email no existe, continuar normalmente
+                            cargarPerfil(idUsuario);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al verificar el email:', error);
+                        alert('Error al verificar el email.');
+                        window.location.href = '../../public/index.html';
+                    });
+            } else {
+                // Si no se pasó email, seguir igual que antes
+                cargarPerfil(idUsuario);
+            }
+        }
+
+        // Función original para cargar el perfil y redirigir según el rol
+        function cargarPerfil(idUsuario) {
             fetch(`../../apps/Controllers/verPerfilController.php?id=${idUsuario}`)
                 .then(res => {
                     console.log('Status:', res.status);
