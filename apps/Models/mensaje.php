@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/ClaseConexion.php";
+require_once __DIR__ . "/ConexionDB.php"; // Tu archivo real
 
 class Mensaje
 {
@@ -24,19 +24,14 @@ class Mensaje
 
     /* ==== Getters & Setters ==== */
     public function getIdMensaje() { return $this->IdMensaje; }
-
     public function getContenido() { return $this->Contenido; }
     public function setContenido($Contenido) { $this->Contenido = $Contenido; }
-
     public function getFecha() { return $this->Fecha; }
     public function setFecha($Fecha) { $this->Fecha = $Fecha; }
-
     public function getEstado() { return $this->Estado; }
     public function setEstado($Estado) { $this->Estado = $Estado; }
-
     public function getIdUsuarioEmisor() { return $this->IdUsuarioEmisor; }
     public function setIdUsuarioEmisor($IdUsuarioEmisor) { $this->IdUsuarioEmisor = $IdUsuarioEmisor; }
-
     public function getIdUsuarioReceptor() { return $this->IdUsuarioReceptor; }
     public function setIdUsuarioReceptor($IdUsuarioReceptor) { $this->IdUsuarioReceptor = $IdUsuarioReceptor; }
 
@@ -44,7 +39,7 @@ class Mensaje
     private static function conectar()
     {
         if (!self::$conexion) {
-            $db = new ClaseConexion();
+            $db = new ConexionDB(); // ✅ Cambiado de ClaseConexion a ConexionDB
             self::$conexion = $db->getConexion();
         }
     }

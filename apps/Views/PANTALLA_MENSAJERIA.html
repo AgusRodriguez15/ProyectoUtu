@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mensajes</title>
+  <title>Mensajería</title>
   <link rel="stylesheet" href="../../public/CSS/style_message.css">
 </head>
 <body>
@@ -20,31 +20,39 @@
     const enviarBtn = document.getElementById("enviarBtn");
     const mensajeInput = document.getElementById("mensajeInput");
 
-    // Cargar mensajes como HTML desde PHP
+    
     async function cargarMensajes() {
-      const res = await fetch("../Controllers/mensajeController.php?action=listar&idUsuario=1");
-      const html = await res.text();
-      mensajesDiv.innerHTML = html;
+      try {
+        const res = await fetch("../Controllers/mensajeController.php?action=listar&idUsuario=1&idReceptor=2");
+        if (!res.ok) throw new Error("Error HTTP " + res.status);
+        const html = await res.text();
+        mensajesDiv.innerHTML = html;
+      } catch (err) {
+        console.error("Error al cargar mensajes:", err);
+      }
     }
 
-    // Enviar mensaje
+    
     enviarBtn.addEventListener("click", async () => {
       const contenido = mensajeInput.value.trim();
       if (!contenido) return;
 
-      await fetch("../Controllers/mensajeController.php?action=enviar", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "IdUsuarioEmisor=1&IdUsuarioReceptor=2&Contenido=" + encodeURIComponent(contenido)
-      });
+      try {
+        await fetch("../Controllers/mensajeController.php?action=enviar", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "IdUsuarioEmisor=1&IdUsuarioReceptor=2&Contenido=" + encodeURIComponent(contenido)
+        });
 
-      mensajeInput.value = "";
-      cargarMensajes();
+        mensajeInput.value = "";
+        cargarMensajes();
+      } catch (err) {
+        console.error("Error al enviar mensaje:", err);
+      }
     });
 
-    // Auto refresco cada 3 segundos
+    
     setInterval(cargarMensajes, 3000);
-
     cargarMensajes();
   </script>
 </body>
