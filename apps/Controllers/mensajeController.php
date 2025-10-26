@@ -1,51 +1,48 @@
 <?php
-require_once __DIR__ . '/../Models/ConexionDB.php';
-require_once __DIR__ . '/../Models/Mensaje.php';
-
-$conexion = (new ConexionDB())->getConexion(); // ✅ Corregido
-$action = $_GET['action'] ?? '';
-
-if ($action === 'listar') {
-    $idUsuario = intval($_GET['idUsuario'] ?? 0);
-    $idReceptor = intval($_GET['idReceptor'] ?? 0);
-
-    // Seguridad básica
-    if (!$idUsuario || !$idReceptor) {
-        exit('Faltan parámetros');
+<?php
+require_once __DIR__ . '/../Models/mensaje.php';
+$method = $_SERVER['REQUEST_METHOD'];
+if ($method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $contenido = $input['contenido'] ?? null;
+    $idEmisor = isset($input['idEmisor']) ? (int)$input['idEmisor'] : null;
+    $idReceptor = isset($input['idReceptor']) ? (int)$input['idReceptor'] : null;
+    header('Content-Type: application/json');
+    if (!$contenido || !$idEmisor || !$idReceptor) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'Datos incompletos']);
+        exit;
     }
-
-    $sql = "SELECT * FROM mensaje 
-            WHERE (IdUsuarioEmisor = $idUsuario AND IdUsuarioReceptor = $idReceptor)
-               OR (IdUsuarioEmisor = $idReceptor AND IdUsuarioReceptor = $idUsuario)
-            ORDER BY Fecha ASC";
-    $result = $conexion->query($sql);
-
-    while ($row = $result->fetch_assoc()) {
-        $clase = ($row['IdUsuarioEmisor'] == $idUsuario) ? "emisor" : "receptor";
-        echo "<div class='mensaje $clase'>";
-        echo htmlspecialchars($row['Contenido']);
-        echo "<br><small>" . htmlspecialchars($row['Fecha']) . "</small>";
-        echo "</div>";
+    $ok = Mensaje::enviar($contenido, $idEmisor, $idReceptor);
+    if ($ok) {
+        echo json_encode(['ok' => true]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'No se pudo enviar']);
     }
     exit;
 }
-
-if ($action === 'enviar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $contenido = trim($_POST['Contenido'] ?? '');
-    $emisor = intval($_POST['IdUsuarioEmisor'] ?? 0);
-    $receptor = intval($_POST['IdUsuarioReceptor'] ?? 0);
-
-    if (!$contenido || !$emisor || !$receptor) {
-        exit('Datos incompletos');
+if ($method === 'GET') {
+    $id1 = isset($_GET['id1']) ? (int)$_GET['id1'] : null;
+    $id2 = isset($_GET['id2']) ? (int)$_GET['id2'] : null;
+    header('Content-Type: application/json');
+    if (!$id1 || !$id2) {
+        http_response_code(400);
+        echo json_encode([]);
+        exit;
     }
-
-    $contenidoEscapado = $conexion->real_escape_string($contenido);
-    $sql = "INSERT INTO mensaje (Contenido, Fecha, Estado, IdUsuarioEmisor, IdUsuarioReceptor)
-            VALUES ('$contenidoEscapado', NOW(), 'ENVIADO', $emisor, $receptor)";
-    $conexion->query($sql);
-
-    exit("OK");
+    $mensajes = Mensaje::obtenerPorConversacion($id1, $id2);
+    $salida = array_map(function ($m) {
+        return [
+            'IdMensaje' => $m->IdMensaje,
+            'Contenido' => $m->Contenido,
+            'Fecha' => $m->Fecha,
+            'Estado' => $m->Estado,
+            'IdUsuarioEmisor' => $m->IdUsuarioEmisor,
+            'IdUsuarioReceptor' => $m->IdUsuarioReceptor,
+        ];
+    }, $mensajes);
+    echo json_encode($salida);
+    exit;
 }
-
-exit("Acción no válida");
 ?>

@@ -1,23 +1,27 @@
 <?php
-class ClaseConexion
+class ConexionDB
 {
-    private $servidor ="127.0.0.1";
-    private $usuario = "root";
-    private $contrasena = "";
-    private $baseDeDatos = "proyect";
-    private $conexion;
+    private $host = 'localhost';
+    private $usuario = 'root';
+    private $password = '';
+    private $db = 'proyecto_utu';
+    private static $conexion = null;
 
     public function __construct()
     {
-        $this->conexion = new mysqli($this->servidor, $this->usuario, $this->contrasena, $this->baseDeDatos);
-        if ($this->conexion->connect_error) 
-        {
-            throw new Exception("Error de conexión: " . $this->conexion->connect_error);
+        if (!self::$conexion) {
+            self::$conexion = new mysqli($this->host, $this->usuario, $this->password, $this->db);
+            if (self::$conexion->connect_errno) {
+                error_log('MySQL connect error: ' . self::$conexion->connect_error);
+                throw new Exception('Database connection error');
+            }
+            self::$conexion->set_charset('utf8mb4');
         }
     }
+
     public function getConexion()
     {
-        return $this->conexion;
+        return self::$conexion;
     }
 }
 ?>
