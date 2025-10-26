@@ -20,38 +20,54 @@
     const enviarBtn = document.getElementById("enviarBtn");
     const mensajeInput = document.getElementById("mensajeInput");
 
-    
+    // Cargar mensajes desde PHP
     async function cargarMensajes() {
       try {
         const res = await fetch("../Controllers/mensajeController.php?action=listar&idUsuario=1&idReceptor=2");
         if (!res.ok) throw new Error("Error HTTP " + res.status);
         const html = await res.text();
         mensajesDiv.innerHTML = html;
+        scrollToBottom();
       } catch (err) {
         console.error("Error al cargar mensajes:", err);
       }
     }
 
-    
-    enviarBtn.addEventListener("click", async () => {
+    // Desplazarse automáticamente al último mensaje
+    function scrollToBottom() {
+      mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+    }
+
+    // Enviar mensaje al servidor
+    async function enviarMensaje() {
       const contenido = mensajeInput.value.trim();
       if (!contenido) return;
 
       try {
-        await fetch("../Controllers/mensajeController.php?action=enviar", {
+        const res = await fetch("../Controllers/mensajeController.php?action=enviar", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: "IdUsuarioEmisor=1&IdUsuarioReceptor=2&Contenido=" + encodeURIComponent(contenido)
         });
+
+        if (!res.ok) throw new Error("Error HTTP " + res.status);
 
         mensajeInput.value = "";
         cargarMensajes();
       } catch (err) {
         console.error("Error al enviar mensaje:", err);
       }
+    }
+
+    // Enviar con el botón
+    enviarBtn.addEventListener("click", enviarMensaje);
+
+    // Enviar con la tecla Enter
+    mensajeInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") enviarMensaje();
     });
 
-    
+    // Recargar mensajes cada 3 segundos
     setInterval(cargarMensajes, 3000);
     cargarMensajes();
   </script>

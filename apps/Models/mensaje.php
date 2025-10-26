@@ -10,7 +10,6 @@ class Mensaje
     public $Estado;
     public $IdUsuarioEmisor;
     public $IdUsuarioReceptor;
-
     private static $conexion;
 
     public function __construct($IdMensaje, $Contenido, $Fecha, $Estado, $IdUsuarioEmisor, $IdUsuarioReceptor)
@@ -72,12 +71,14 @@ class Mensaje
                 VALUES (?, ?, 'ENVIADO', ?, ?)";
         $stmt = self::$conexion->prepare($sql);
         if (!$stmt) {
-            return false;
+            return ['ok' => false, 'error' => self::$conexion->error, 'insertId' => null];
         }
         $stmt->bind_param("ssii", $contenido, $fecha, $idEmisor, $idReceptor);
         $ok = $stmt->execute();
+        $error = $ok ? null : $stmt->error ?: self::$conexion->error;
+        $insertId = $ok ? self::$conexion->insert_id : null;
         $stmt->close();
-        return $ok;
+        return ['ok' => (bool)$ok, 'error' => $error, 'insertId' => $insertId];
     }
 }
 ?>

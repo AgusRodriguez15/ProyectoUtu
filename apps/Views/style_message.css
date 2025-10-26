@@ -22,6 +22,8 @@ body {
   flex: 1;
   padding: 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .mensaje {
@@ -46,11 +48,15 @@ body {
   display: flex;
   padding: 10px;
   border-top: 1px solid #ccc;
+  background: #fafafa;
 }
 
 .input-box input {
   flex: 1;
   padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
 }
 
 .input-box button {
@@ -61,4 +67,9 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.input-box button:hover {
+  background-color: #45a049;
 }
