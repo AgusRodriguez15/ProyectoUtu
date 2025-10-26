@@ -1,4 +1,5 @@
 <?php
+<?php
 require_once __DIR__ . "/ConexionDB.php";
 
 class Mensaje
@@ -33,7 +34,8 @@ class Mensaje
     public static function obtenerPorConversacion($idUsuario1, $idUsuario2)
     {
         self::conectar();
-        $sql = "SELECT * FROM mensaje 
+        $sql = "SELECT IdMensaje, Contenido, Fecha, Estado, IdUsuarioEmisor, IdUsuarioReceptor
+                FROM mensaje
                 WHERE (IdUsuarioEmisor = ? AND IdUsuarioReceptor = ?)
                    OR (IdUsuarioEmisor = ? AND IdUsuarioReceptor = ?)
                 ORDER BY Fecha ASC";
@@ -43,6 +45,7 @@ class Mensaje
         }
         $stmt->bind_param("iiii", $idUsuario1, $idUsuario2, $idUsuario2, $idUsuario1);
         if (!$stmt->execute()) {
+            $stmt->close();
             return [];
         }
         $resultado = $stmt->get_result();
