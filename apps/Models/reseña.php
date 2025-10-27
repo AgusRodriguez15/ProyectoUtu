@@ -70,7 +70,7 @@ class Resena {
      * @return bool true si se guardó correctamente, false en caso contrario
      */
     public function guardar(): bool {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Validaciones
@@ -108,7 +108,7 @@ class Resena {
         }
 
         $stmt->close();
-        $conn->close();
+
 
         return $resultado;
     }
@@ -120,7 +120,7 @@ class Resena {
      * @return array Array de reseñas con información del usuario
      */
     public static function obtenerPorServicio(int $idServicio): array {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $sql = "
@@ -184,7 +184,7 @@ class Resena {
      * @return Resena|null Objeto Resena o null si no existe
      */
     public static function obtenerPorId(int $idResena): ?Resena {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("SELECT * FROM Resenia WHERE IdResenia = ?");
@@ -220,7 +220,7 @@ class Resena {
             return false;
         }
 
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("DELETE FROM Resenia WHERE IdResenia = ?");
@@ -241,7 +241,7 @@ class Resena {
      * @return bool true si ya existe una reseña, false si no
      */
     public static function existeResena(int $idUsuario, int $idServicio): bool {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("SELECT COUNT(*) as total FROM Resenia WHERE IdUsuario = ? AND IdServicio = ?");
@@ -271,7 +271,7 @@ class Resena {
      * @return array|null Datos de la reseña o null si no existe
      */
     public static function obtenerResenaPorUsuarioYServicio(int $idUsuario, int $idServicio): ?array {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("
@@ -321,7 +321,7 @@ class Resena {
      * @return array Array con el promedio y total de reseñas
      */
     public static function calcularPromedioServicio(int $idServicio): array {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("

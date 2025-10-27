@@ -1,5 +1,6 @@
 <?php
 session_start();
+header('Content-Type: application/json');
 require_once __DIR__ . '/../Models/usuario.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,14 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usuario = Usuario::obtenerPor('Email', $email);
         
         if (!$usuario) {
-            $_SESSION['error'] = 'Credenciales inválidas';
-            header('Location: /proyecto/public/index.html');
+            echo json_encode(['success' => false, 'message' => 'Credenciales inválidas']);
             exit;
         }
 
         if (!password_verify($password, $usuario->getContrasenaHash())) {
-            $_SESSION['error'] = 'Credenciales inválidas';
-            header('Location: /proyecto/public/index.html');
+            echo json_encode(['success' => false, 'message' => 'Credenciales inválidas']);
             exit;
         }
 
@@ -58,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Enviar respuesta exitosa con la ruta de redirección
-        header('Content-Type: application/json');
         echo json_encode([
             'success' => true,
             'redirect' => $ruta,

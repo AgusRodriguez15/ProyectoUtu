@@ -131,15 +131,15 @@ try {
         }
         
         // Obtener información de la reserva antes de actualizar
-        $conexionDB = new ClaseConexion();
-        $conn = $conexionDB->getConexion();
+    $conexionDB = new ConexionDB();
+    $conn = $conexionDB->getConexion();
         $stmt = $conn->prepare("SELECT IdDisponibilidad, Estado FROM Reserva WHERE IdReserva = ?");
         $stmt->bind_param('i', $idReserva);
         $stmt->execute();
         $result = $stmt->get_result();
         $reservaActual = $result->fetch_assoc();
         $stmt->close();
-        $conn->close();
+
         
         if (!$reservaActual) {
             http_response_code(404);

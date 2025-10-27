@@ -1,5 +1,4 @@
 <?php
-<?php
 require_once __DIR__ . "/ConexionDB.php";
 
 class Mensaje
@@ -75,10 +74,35 @@ class Mensaje
         }
         $stmt->bind_param("ssii", $contenido, $fecha, $idEmisor, $idReceptor);
         $ok = $stmt->execute();
-        $error = $ok ? null : $stmt->error ?: self::$conexion->error;
+        $error = null;
+        if (!$ok) {
+            $error = $stmt->error ? $stmt->error : self::$conexion->error;
+        }
         $insertId = $ok ? self::$conexion->insert_id : null;
         $stmt->close();
         return ['ok' => (bool)$ok, 'error' => $error, 'insertId' => $insertId];
+    }
+
+    public static function obtenerChats($idUsuario) {
+        self::conectar();
+        $sql = "SELECT DISTINCT
+                    CASE WHEN IdUsuarioEmisor = ? THEN IdUsuarioReceptor ELSE IdUsuarioEmisor END AS OtroUsuario
+                FROM mensaje
+                WHERE IdUsuarioEmisor = ? OR IdUsuarioReceptor = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) return [];
+        $stmt->bind_param("iii", $idUsuario, $idUsuario, $idUsuario);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            return [];
+        }
+        $resultado = $stmt->get_result();
+        $chats = [];
+        while ($fila = $resultado->fetch_assoc()) {
+            $chats[] = $fila['OtroUsuario'];
+        }
+        $stmt->close();
+        return $chats;
     }
 }
 ?>

@@ -1,24 +1,100 @@
+/* Buscador de usuarios */
+.buscador-usuarios {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+.buscador-usuarios input {
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #b2dfdb;
+  outline: none;
+  font-size: 16px;
+  width: 220px;
+  transition: border 0.2s;
+}
+.buscador-usuarios input:focus {
+  border-color: #009688;
+}
+.buscador-usuarios button {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #009688;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.buscador-usuarios button:hover {
+  background: #00796b;
+}
+.resultados-usuarios {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+.usuario-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #e0f7fa;
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+}
+.usuario-foto {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #009688;
+}
+.usuario-info {
+  display: flex;
+  flex-direction: column;
+}
+.usuario-nombre {
+  font-weight: bold;
+  font-size: 16px;
+  color: #00796b;
+}
+.usuario-email {
+  font-size: 13px;
+  color: #555;
+}
+.usuario-rol {
+  font-size: 12px;
+  color: #009688;
+}
+.usuario-vacio {
+  text-align: center;
+  color: #888;
+  margin: 10px 0;
+}
 /* ----- Estilos generales ----- */
+
 body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%);
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
+
 .chat-container {
-  width: 400px;
-  height: 600px;
+  width: 420px;
+  height: 640px;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: box-shadow 0.3s;
 }
 
 /* ----- Área de mensajes ----- */
@@ -31,31 +107,79 @@ body {
   gap: 10px;
 }
 
-/* ----- Estilo general de cada mensaje ----- */
+/* Estilos para la mensajería tipo WhatsApp */
+#lista-chats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  margin: 2px 0;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.chat-btn:hover {
+  background: #b2dfdb;
+}
+.chat-btn img.chat-foto {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #b2dfdb;
+  margin-right: 6px;
+}
+.mensajes {
+  background: #f7f7f7;
+  border-radius: 14px;
+  padding: 16px;
+  min-height: 180px;
+  max-height: 340px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .mensaje {
-  max-width: 70%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  position: relative;
-  word-wrap: break-word;
+  margin-bottom: 10px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 15px;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 /* ----- Mensajes enviados (emisor) ----- */
 .mensaje.emisor {
-  background: #0084ff;
+  background: linear-gradient(90deg, #26a69a 60%, #009688 100%);
   color: #fff;
   align-self: flex-end;
   border-bottom-right-radius: 2px;
+  box-shadow: 0 2px 8px rgba(38,166,154,0.12);
 }
 
 /* ----- Mensajes recibidos (receptor) ----- */
 .mensaje.receptor {
-  background: #e5e5ea;
-  color: #000;
+  background: linear-gradient(90deg, #e0f7fa 60%, #b2dfdb 100%);
+  color: #222;
   align-self: flex-start;
   border-bottom-left-radius: 2px;
+  box-shadow: 0 2px 8px rgba(178,223,219,0.12);
 }
 
 /* ----- Fecha pequeña en el mensaje ----- */
@@ -71,33 +195,78 @@ body {
 }
 
 /* ----- Caja de entrada ----- */
+
 .input-box {
   display: flex;
-  border-top: 1px solid #ddd;
-  padding: 10px;
+  border-top: 1px solid #b2dfdb;
+  padding: 12px;
   background: #fafafa;
+  gap: 10px;
+  margin-top: 10px;
+  border-radius: 0 0 18px 18px;
 }
+
 
 .input-box input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #b2dfdb;
   border-radius: 20px;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
+  background: #e0f7fa;
+  transition: border 0.2s;
 }
+.input-box input:focus {
+  border-color: #009688;
+}
+
 
 .input-box button {
   margin-left: 8px;
-  padding: 10px 15px;
-  background: #0084ff;
+  padding: 10px 18px;
+  background: linear-gradient(90deg, #009688 60%, #26a69a 100%);
   border: none;
   border-radius: 20px;
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(38,166,154,0.10);
+  transition: background 0.2s;
+}
+.input-box button:hover {
+  background: linear-gradient(90deg, #26a69a 60%, #009688 100%);
 }
 
-.input-box button:hover {
-  background: #006fd6;
+.mensaje-vacio {
+  color: #888;
+  text-align: center;
+  font-style: italic;
+}
+.mensaje-error {
+  color: #c62828;
+  text-align: center;
+  font-weight: bold;
+}
+
+#mensajeInput {
+  flex: 1;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+#enviarBtn {
+  background: #26a69a;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#enviarBtn:hover {
+  background: #00897b;
 }

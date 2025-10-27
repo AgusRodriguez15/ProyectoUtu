@@ -16,7 +16,7 @@ class proveedor {
 
 	// Obtener proveedor por IdUsuario
 	public static function obtenerPorIdUsuario(int $idUsuario): ?proveedor {
-		$conexionDB = new ClaseConexion();
+		$conexionDB = new ConexionDB();
 		$conn = $conexionDB->getConexion();
 
 		$stmt = $conn->prepare("SELECT * FROM Proveedor WHERE IdUsuario = ?");
@@ -26,7 +26,7 @@ class proveedor {
 		$fila = $resultado->fetch_assoc();
 
 		$stmt->close();
-		$conn->close();
+
 
 		if ($fila) {
 			return new proveedor(

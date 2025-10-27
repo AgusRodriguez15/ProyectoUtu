@@ -5,23 +5,22 @@ class ConexionDB
     private $usuario = 'root';
     private $password = '';
     private $db = 'proyecto_utu';
-    private static $conexion = null;
+    // Eliminado el uso de conexión estática
 
     public function __construct()
     {
-        if (!self::$conexion) {
-            self::$conexion = new mysqli($this->host, $this->usuario, $this->password, $this->db);
-            if (self::$conexion->connect_errno) {
-                error_log('MySQL connect error: ' . self::$conexion->connect_error);
-                throw new Exception('Database connection error');
-            }
-            self::$conexion->set_charset('utf8mb4');
-        }
+        // El constructor ya no inicializa la conexión
     }
 
     public function getConexion()
     {
-        return self::$conexion;
+        $conexion = new mysqli($this->host, $this->usuario, $this->password, $this->db);
+        if ($conexion->connect_errno) {
+            error_log('MySQL connect error: ' . $conexion->connect_error);
+            throw new Exception('Database connection error');
+        }
+        $conexion->set_charset('utf8mb4');
+        return $conexion;
     }
 }
 ?>

@@ -9,7 +9,7 @@ class Foto
 
     public function __construct($IdServicio = null, $Foto = null)
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         self::$conexion = $db->getConexion();
         $this->IdServicio = $IdServicio;
         $this->Foto = $Foto;
@@ -24,7 +24,7 @@ class Foto
      */
     public static function guardarFoto(int $idServicio, array $foto): string
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         // Definir directorio absoluto desde el modelo
@@ -96,7 +96,7 @@ class Foto
      */
     public static function obtenerPorId(int $idFoto): ?Foto
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $sql = "SELECT * FROM Foto WHERE IdFoto = ?";
@@ -131,7 +131,7 @@ class Foto
             throw new Exception("Faltan datos obligatorios de la foto");
         }
 
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
 
         $sql = "UPDATE Foto SET Foto = ? WHERE IdServicio = ? AND Foto = ?";
@@ -153,7 +153,7 @@ class Foto
     public static function conectar()
     {
         if (!isset(self::$conexion)) {
-            $db = new ClaseConexion();
+            $db = new ConexionDB();
             self::$conexion = $db->getConexion();
         }
     }

@@ -1,5 +1,4 @@
 <?php
-<?php
 require_once __DIR__ . '/../Models/mensaje.php';
 $method = $_SERVER['REQUEST_METHOD'];
 header('Content-Type: application/json; charset=utf-8');
@@ -28,6 +27,21 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(['ok' => false, 'error' => $res['error'] ?? 'error desconocido']);
     }
+    exit;
+}
+
+if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'chats' && isset($_GET['idUsuario'])) {
+    require_once __DIR__ . '/../Models/usuario.php';
+    $idUsuario = (int)$_GET['idUsuario'];
+    $chats = Mensaje::obtenerChats($idUsuario);
+    $chatsConFoto = array_map(function($otroId) {
+        $foto = usuario::obtenerFotoPerfil($otroId);
+        return [
+            'id' => $otroId,
+            'foto' => $foto
+        ];
+    }, $chats);
+    echo json_encode($chatsConFoto);
     exit;
 }
 

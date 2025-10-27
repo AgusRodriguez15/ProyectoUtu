@@ -103,7 +103,7 @@ class usuario
 
     // ===== MÉTODOS ESTÁTICOS =====
     public static function obtenerRolPorEmail(string $email): ?string {
-        $conexionDB = new ClaseConexion();
+        $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Primero obtener el ID del usuario
@@ -111,7 +111,7 @@ class usuario
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $resultado = $stmt->get_result();
-        
+        $rol = null;
         if ($fila = $resultado->fetch_assoc()) {
             $idUsuario = $fila['IdUsuario'];
             $stmt->close();
@@ -121,37 +121,34 @@ class usuario
             $stmt->bind_param('i', $idUsuario);
             $stmt->execute();
             if ($stmt->get_result()->num_rows > 0) {
-                $stmt->close();
-                $conn->close();
-                return 'Proveedor';
+                $rol = 'Proveedor';
             }
             $stmt->close();
 
             // Verificar si es Cliente
-            $stmt = $conn->prepare("SELECT 1 FROM Cliente WHERE IdUsuario = ?");
-            $stmt->bind_param('i', $idUsuario);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) {
+            if (!$rol) {
+                $stmt = $conn->prepare("SELECT 1 FROM Cliente WHERE IdUsuario = ?");
+                $stmt->bind_param('i', $idUsuario);
+                $stmt->execute();
+                if ($stmt->get_result()->num_rows > 0) {
+                    $rol = 'Cliente';
+                }
                 $stmt->close();
-                $conn->close();
-                return 'Cliente';
             }
-            $stmt->close();
 
             // Verificar si es Administrador
-            $stmt = $conn->prepare("SELECT 1 FROM Administrador WHERE IdUsuario = ?");
-            $stmt->bind_param('i', $idUsuario);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) {
+            if (!$rol) {
+                $stmt = $conn->prepare("SELECT 1 FROM Administrador WHERE IdUsuario = ?");
+                $stmt->bind_param('i', $idUsuario);
+                $stmt->execute();
+                if ($stmt->get_result()->num_rows > 0) {
+                    $rol = 'Administrador';
+                }
                 $stmt->close();
-                $conn->close();
-                return 'Administrador';
             }
-            $stmt->close();
         }
 
-        $conn->close();
-        return null;
+        return $rol;
     }
 
     // ===== SETTERS =====
@@ -215,7 +212,7 @@ class usuario
     // ===== REGISTRAR USUARIO =====
     public function registrarUsuario(?int $AniosExperiencia = null): bool
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         if (empty($this->Nombre) || empty($this->Apellido) || empty($this->Email) || empty($this->ContrasenaHash) || empty($this->Rol)) {
@@ -283,7 +280,7 @@ class usuario
 
     // ===== OBTENER USUARIO POR CAMPO =====
 public static function obtenerPor(string $campo, $valor): ?usuario {
-    $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
     $conn = $conexionDB->getConexion();
 
     $stmt = $conn->prepare("SELECT * FROM Usuario WHERE $campo = ?");
@@ -325,7 +322,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
     // ===== ACTUALIZAR ÚLTIMO ACCESO =====
     public function actualizarUltimoAcceso(int $id): void
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $fecha = date('Y-m-d H:i:s');
@@ -349,7 +346,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
             return false; // No hay usuario cargado
         }
 
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Determinar el estado según el booleano
@@ -378,7 +375,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
      */
     public static function cambiarEstadoCuentaPorId(int $idUsuario, bool $activo): bool
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Determinar el estado según el booleano
@@ -400,7 +397,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
         return false; // No hay usuario cargado
     }
 
-    $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
     $conn = $conexionDB->getConexion();
 
     $stmt = $conn->prepare("
@@ -428,7 +425,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
 }
 
 public static function autenticar(string $email, string $password): ?usuario {
-    $conn = new ClaseConexion();
+    $conn = new ConexionDB();
     $db = $conn->getConexion();
 
     $stmt = $db->prepare("
@@ -483,7 +480,7 @@ public function guardarCompleto(array $contactos = [], array $habilidades = []):
         require_once __DIR__ . '/dato.php';
         require_once __DIR__ . '/habilidad.php';
 
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Borrar contactos previos
@@ -520,6 +517,19 @@ public function guardarCompleto(array $contactos = [], array $habilidades = []):
     return $resultado;
 }
 
-
+    public static function obtenerFotoPerfil($idUsuario) {
+        $db = new ConexionDB();
+        $conn = $db->getConexion();
+        $stmt = $conn->prepare("SELECT FotoPerfil FROM Usuario WHERE IdUsuario = ?");
+        $stmt->bind_param("i", $idUsuario);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $foto = null;
+        if ($fila = $resultado->fetch_assoc()) {
+            $foto = $fila['FotoPerfil'] ?? null;
+        }
+        $stmt->close();
+        return $foto;
+    }
 }
 ?>

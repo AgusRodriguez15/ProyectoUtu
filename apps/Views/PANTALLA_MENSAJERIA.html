@@ -6,70 +6,28 @@
   <link rel="stylesheet" href="../../public/CSS/style_message.css">
 </head>
 <body>
-  <section class="chat-container">
-    <div id="mensajes" class="mensajes"></div>
-
-    <div class="input-box">
-      <input type="text" id="mensajeInput" placeholder="Escribe un mensaje...">
-      <button id="enviarBtn">Enviar</button>
+  <aside class="chat-list">
+    <div class="chat-list-header">
+      <div class="chat-list-search">
+        <input type="text" id="buscadorUsuario" placeholder="Buscar usuario...">
+        <button id="buscarUsuarioBtn">Buscar</button>
+      </div>
     </div>
-  </section>
-
-  <script>
-    const mensajesDiv = document.getElementById("mensajes");
-    const enviarBtn = document.getElementById("enviarBtn");
-    const mensajeInput = document.getElementById("mensajeInput");
-
-    // Cargar mensajes desde PHP
-    async function cargarMensajes() {
-      try {
-        const res = await fetch("../Controllers/mensajeController.php?action=listar&idUsuario=1&idReceptor=2");
-        if (!res.ok) throw new Error("Error HTTP " + res.status);
-        const html = await res.text();
-        mensajesDiv.innerHTML = html;
-        scrollToBottom();
-      } catch (err) {
-        console.error("Error al cargar mensajes:", err);
-      }
-    }
-
-    // Desplazarse automáticamente al último mensaje
-    function scrollToBottom() {
-      mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-    }
-
-    // Enviar mensaje al servidor
-    async function enviarMensaje() {
-      const contenido = mensajeInput.value.trim();
-      if (!contenido) return;
-
-      try {
-        const res = await fetch("../Controllers/mensajeController.php?action=enviar", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "IdUsuarioEmisor=1&IdUsuarioReceptor=2&Contenido=" + encodeURIComponent(contenido)
-        });
-
-        if (!res.ok) throw new Error("Error HTTP " + res.status);
-
-        mensajeInput.value = "";
-        cargarMensajes();
-      } catch (err) {
-        console.error("Error al enviar mensaje:", err);
-      }
-    }
-
-    // Enviar con el botón
-    enviarBtn.addEventListener("click", enviarMensaje);
-
-    // Enviar con la tecla Enter
-    mensajeInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") enviarMensaje();
-    });
-
-    // Recargar mensajes cada 3 segundos
-    setInterval(cargarMensajes, 3000);
-    cargarMensajes();
-  </script>
+    <div id="chatListUsers" class="chat-list-users"></div>
+  </aside>
+  <main class="main-chat">
+    <div class="chat-header" id="chatHeader">
+      <img src="../../public/recursos/imagenes/perfil/default.png" id="chatUserFoto" alt="Foto" />
+      <span class="chat-title" id="chatUserNombre">Selecciona un chat</span>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-input" id="chatInputForm" enctype="multipart/form-data">
+      <input type="text" id="mensajeInput" placeholder="Escribe un mensaje...">
+      <input type="file" id="fotoInput" accept="image/*">
+      <label for="fotoInput">📷 Foto</label>
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+  <script src="../../public/js/mensajeria.js"></script>
 </body>
 </html>

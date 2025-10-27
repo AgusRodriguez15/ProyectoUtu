@@ -68,7 +68,7 @@ class ubicacion
     // Método para guardar una nueva ubicación en la base de datos
     public function guardar(): bool
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         $stmt = null;
         $resultado = false;
@@ -98,7 +98,7 @@ class ubicacion
     // Método estático para obtener una ubicación por su ID
     public static function obtenerPorId(int $IdUbicacion): ?ubicacion
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("SELECT * FROM Ubicacion WHERE IdUbicacion = ?");
@@ -131,7 +131,7 @@ class ubicacion
     public static function crearYAsociarAServicio(int $idServicio, array $datosUbicacion)
     {
         error_log("🚀 INICIO crearYAsociarAServicio - Servicio ID: {$idServicio}");
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         
         try {
@@ -283,7 +283,7 @@ class ubicacion
      */
     public static function obtenerPorServicio(int $idServicio): array
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         
         $sql = "SELECT u.* FROM Ubicacion u 
@@ -320,7 +320,7 @@ class ubicacion
      */
     public static function eliminarDeServicio(int $idServicio, int $idUbicacion): bool
     {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         
         try {

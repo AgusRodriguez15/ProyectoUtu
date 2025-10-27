@@ -10,7 +10,7 @@ class Categoria
 
     public function __construct()
     {
-        $db = new ClaseConexion(); // según tu código original
+    $db = new ConexionDB(); // según tu código original
         $this->conexion = $db->getConexion();
     }
 
@@ -20,7 +20,7 @@ class Categoria
      */
     public static function obtenerTodasCategorias(): array
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $sql = "SELECT IdCategoria, Nombre, Descripcion FROM Categoria";
@@ -46,7 +46,7 @@ class Categoria
      */
     public static function asociarCategoriasAServicio(int $idServicio, array $idsCategorias): void
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         // Comenzar transacción

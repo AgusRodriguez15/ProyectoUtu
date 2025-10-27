@@ -19,7 +19,7 @@ class Servicio
 
     public function __construct($idServicio = null, $nombre = null, $descripcion = null, $fechaPublicacion = null, $estado = null, $idProveedor = null, $precio = null, $divisa = 'UYU')
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         self::$conexion = $db->getConexion();
         
         // Asignar los parámetros a las propiedades si se proporcionan
@@ -227,7 +227,7 @@ class Servicio
     public static function conectar()
     {
         if (!isset(self::$conexion)) {
-            $db = new ClaseConexion();
+            $db = new ConexionDB();
             self::$conexion = $db->getConexion();
         }
     }

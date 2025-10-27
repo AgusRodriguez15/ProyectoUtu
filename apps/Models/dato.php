@@ -13,7 +13,7 @@ class dato {
     }
 
     public function guardar(): bool {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Usamos REPLACE INTO que funciona como un UPDATE si existe o INSERT si no existe
@@ -26,12 +26,12 @@ class dato {
 
         $resultado = $stmt->execute();
         $stmt->close();
-        $conn->close();
+
         return $resultado;
     }
 
     public static function eliminarPorUsuario(int $IdUsuario): bool {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("DELETE FROM Dato WHERE IdUsuario = ?");
@@ -48,7 +48,7 @@ class dato {
     }
 
     public static function obtenerPorUsuario(int $IdUsuario): array {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $stmt = $conn->prepare("SELECT Tipo, Contacto FROM Dato WHERE IdUsuario = ?");

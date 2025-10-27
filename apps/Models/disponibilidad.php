@@ -37,7 +37,7 @@
 		 * @return int|false ID de la disponibilidad creada o false en caso de error
 		 */
 		public static function crearParaServicio($idServicio, $datosDisponibilidad) {
-			$conexionDB = new ClaseConexion();
+			$conexionDB = new ConexionDB();
 			$conn = $conexionDB->getConexion();
 			
 			try {
@@ -65,7 +65,7 @@
 				error_log("Disponibilidad creada con ID: {$idDisponibilidad}");
 				
 				$stmt->close();
-				$conn->close();
+
 				
 				return $idDisponibilidad;
 				
@@ -82,7 +82,7 @@
 		 * @return array Array de disponibilidades
 		 */
 		public static function obtenerPorServicio($idServicio) {
-			$conexionDB = new ClaseConexion();
+			$conexionDB = new ConexionDB();
 			$conn = $conexionDB->getConexion();
 			$disponibilidades = [];
 			
@@ -120,7 +120,7 @@
 		 * @return bool true si se actualizó correctamente, false en caso contrario
 		 */
 		public static function actualizarEstado($idDisponibilidad, $nuevoEstado) {
-			$conexionDB = new ClaseConexion();
+			$conexionDB = new ConexionDB();
 			$conn = $conexionDB->getConexion();
 			
 			try {

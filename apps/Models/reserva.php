@@ -63,7 +63,7 @@ class Reserva {
      * @return int|false ID de la reserva creada o false en caso de error
      */
     public static function crear($datos) {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         
         try {
@@ -86,7 +86,7 @@ class Reserva {
             error_log("Reserva creada con ID: {$idReserva}");
             
             $stmt->close();
-            $conn->close();
+
             
             return $idReserva;
             
@@ -103,7 +103,7 @@ class Reserva {
      * @return array Array de reservas con fechas desde Disponibilidad
      */
     public static function obtenerPorUsuario($idUsuario) {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         $reservas = [];
         
@@ -151,7 +151,7 @@ class Reserva {
      * @return array Array de reservas con información del servicio, cliente y disponibilidad
      */
     public static function obtenerPorProveedor($idProveedor) {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         $reservas = [];
         
@@ -202,7 +202,7 @@ class Reserva {
      * @return bool true si se actualizó correctamente
      */
     public static function actualizarEstado($idReserva, $nuevoEstado) {
-        $conexionDB = new ClaseConexion();
+    $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
         
         try {

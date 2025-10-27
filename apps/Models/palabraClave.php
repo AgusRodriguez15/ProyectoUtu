@@ -7,7 +7,7 @@ class PalabraClave {
     public $IdServicio;
 
     public function __construct($Palabra = '', $IdServicio = null) {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         self::$conexion = $db->getConexion();
         $this->Palabra = $Palabra;
         $this->IdServicio = $IdServicio;
@@ -20,7 +20,7 @@ class PalabraClave {
      * @throws Exception si hay un error en la base de datos
      */
     public static function guardarPalabrasClaveServicio(int $idServicio, array $palabrasClave): void {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $conexion->begin_transaction();
@@ -68,7 +68,7 @@ class PalabraClave {
      */
     public static function obtenerPorId(int $idPalabra, int $idServicio): ?PalabraClave
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $sql = "SELECT * FROM PalabraClave WHERE IdPalabraClave = ? AND IdServicio = ?";
@@ -103,7 +103,7 @@ class PalabraClave {
             throw new Exception("Faltan datos obligatorios de la palabra clave");
         }
 
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
 
         $sql = "UPDATE PalabraClave SET Palabra = ? WHERE IdServicio = ? AND Palabra = ?";
@@ -129,7 +129,7 @@ class PalabraClave {
      */
     public static function obtenerPorServicio(int $idServicio): array
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $sql = "SELECT Palabra FROM PalabraClave WHERE IdServicio = ?";
@@ -162,7 +162,7 @@ class PalabraClave {
      */
     public static function eliminarPorServicio(int $idServicio): bool
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $sql = "DELETE FROM PalabraClave WHERE IdServicio = ?";
@@ -188,7 +188,7 @@ class PalabraClave {
      */
     public static function actualizarPorServicio(int $idServicio, array $palabrasClave): void
     {
-        $db = new ClaseConexion();
+    $db = new ConexionDB();
         $conexion = $db->getConexion();
         
         $conexion->begin_transaction();
