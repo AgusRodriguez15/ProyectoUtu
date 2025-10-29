@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plataforma de Oficios</title>
   <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <link rel="stylesheet" href="../../public/CSS/admin.css">
 </head>
 <body>
   <header class="header">
@@ -15,32 +16,102 @@
       <a href="#">Mensajes</a>
     </nav>
   </header>
+  <!-- Hero similar a páginas de inicio -->
+  <section class="hero hero-proveedor">
+    <div class="hero-inner">
+      <h2>Bienvenido al Panel de Administración</h2>
+      <p>Gestiona usuarios, servicios y archivos desde un solo lugar.</p>
+      <div class="quick-actions">
+        <a class="action-card" href="gestionarUsuarios.html">
+          <span class="icon">👥</span>
+          <h3>Usuarios</h3>
+          <p>Ver y gestionar todos los usuarios registrados.</p>
+        </a>
+        <a class="action-card" href="gestionarServicios.html">
+          <span class="icon">🛠️</span>
+          <h3>Servicios</h3>
+          <p>Revisar y moderar servicios publicados.</p>
+        </a>
+        <a class="action-card" href="crearAdmin.html">
+          <span class="icon">➕</span>
+          <h3>Crear Admin</h3>
+          <p>Agregar un nuevo administrador del sistema.</p>
+        </a>
+        <a class="action-card" href="gestionarArchivos.html">
+          <span class="icon">📁</span>
+          <h3>Archivos</h3>
+          <p>Gestiona subidas y elimina archivos obsoletos.</p>
+        </a>
+      </div>
+    </div>
+  </section>
 
-  <!-- Hero con buscador -->
-  <section class="hero">
-    <div class="hero-content">
-      <h2>Conecta Proveedores con Clientes</h2>
-      <p>Encuentra el servicio que necesitas o publica el tuyo</p>
+    <main class="main-content">
+      <header class="main-header">
+        <h2>Panel de Administración</h2>
+      </header>
 
-      <form id="buscadorForm">
-        <div class="search-container">
-          <div class="search-box">
-            <input type="text" id="search-input" placeholder="Buscar por título..." autocomplete="on">
-            <button type="submit">Buscar</button>
+      <section id="overview" class="panel-section active">
+        <div class="cards">
+          <div class="card">
+            <h4>Usuarios</h4>
+            <p id="countUsuarios">--</p>
+            <button class="btn small" data-action="verUsuarios">Ver usuarios</button>
+          </div>
+          <div class="card">
+            <h4>Servicios</h4>
+            <p id="countServicios">--</p>
+            <button class="btn small" data-action="verServicios">Ver servicios</button>
+          </div>
+          <div class="card">
+            <h4>Archivos</h4>
+            <p id="countArchivos">--</p>
+            <button class="btn small" onclick="window.location.href='gestionarArchivos.html'">Gestionar</button>
           </div>
         </div>
-      </form>
-    </div>
-  </section>
+      </section>
 
-  <!-- Grid de servicios -->
-  <section class="grid-section">
-    <h2>Servicios Populares</h2>
-    <div id="serviciosContainer" class="grid-container">
-      <!-- Se cargan dinámicamente -->
-    </div>
-  </section>
+      <section id="usuarios" class="panel-section">
+        <h3>Gestión de Usuarios</h3>
+        <div class="table-responsive">
+          <table id="tablaUsuarios" class="tabla-admin">
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="servicios" class="panel-section">
+        <h3>Gestión de Servicios</h3>
+        <div class="table-responsive">
+          <table id="tablaServicios" class="tabla-admin">
+            <thead><tr><th>ID</th><th>Nombre</th><th>Proveedor</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="archivos" class="panel-section">
+        <h3>Gestión de Archivos</h3>
+        <p>Accede a la página de archivos para gestionar subidas / eliminar archivos.</p>
+        <button class="btn" onclick="window.location.href='gestionarArchivos.html'">Ir a Archivos</button>
+      </section>
+
+      <section id="crear-admin" class="panel-section">
+        <h3>Crear Nuevo Administrador</h3>
+        <form id="crearAdminForm" class="form-admin">
+          <div class="form-row"><input type="text" name="nombre" placeholder="Nombre" required></div>
+          <div class="form-row"><input type="text" name="apellido" placeholder="Apellido" required></div>
+          <div class="form-row"><input type="email" name="email" placeholder="Email" required></div>
+          <div class="form-row"><input type="password" name="contrasena" placeholder="Contraseña" required></div>
+          <div class="form-row"><button type="submit" class="btn">Crear Administrador</button></div>
+        </form>
+        <div id="adminMsg" class="admin-msg" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
 
   <script src="../../public/js/inicio.js"></script>
+  <script src="../../public/js/admin.js"></script>
 </body>
 </html>

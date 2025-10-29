@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestionar Archivos - Plataforma de Oficios</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <style>
+    .center { max-width:800px; margin:40px auto; background:white; padding:24px; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,0.06);} 
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <nav class="nav">
+      <a href="PANTALLA_CONTRATAR.html">Servicios</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+    </nav>
+  </header>
+
+  <main class="grid-section">
+    <div class="center">
+      <h2>Gestión de Archivos</h2>
+      <p>Sube y gestiona archivos del sistema (nota: el backend permite esta acción sólo desde localhost).</p>
+
+      <form id="uploadForm">
+        <div class="form-row"><input type="file" name="archivo" id="archivoInput" required></div>
+        <div class="form-row"><button type="submit" class="btn">Subir archivo</button></div>
+      </form>
+
+      <h3 style="margin-top:18px">Archivos disponibles</h3>
+      <div id="filesList">Cargando...</div>
+
+      <p style="color:#666">Los archivos se guardan en <code>public/recursos/archivos/</code>. El backend acepta subida/listado/borrado (localhost).</p>
+    </div>
+  </main>
+
+  <script>
+    async function fetchFiles() {
+      const list = document.getElementById('filesList');
+      try {
+        const res = await fetch('/proyecto/apps/Controllers/archivosController.php?action=list');
+        const text = await res.text();
+        const data = JSON.parse(text);
+        if (!data.success) throw new Error(data.message || 'Error');
+        if (!data.files || data.files.length === 0) {
+          list.innerHTML = '<p>No hay archivos.</p>';
+          return;
+        }
+        list.innerHTML = '<ul>' + data.files.map(f => `<li>${f} <button data-file="${f}" class="btn small btn-delete">Eliminar</button> <a href="/proyecto/public/recursos/archivos/${f}" download class="btn small">Descargar</a></li>`).join('') + '</ul>';
+        document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', async (e) => {
+          const file = e.target.dataset.file;
+          if (!confirm('Eliminar ' + file + '?')) return;
+          const r = await fetch('/proyecto/apps/Controllers/archivosController.php?action=delete', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: 'file=' + encodeURIComponent(file) });
+          const t = await r.text(); const d = JSON.parse(t);
+          if (d.success) fetchFiles(); else alert('Error: ' + d.message);
+        }));
+
+      } catch (err) {
+        list.innerHTML = '<p>Error cargando archivos: ' + err.message + '</p>';
+      }
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = document.getElementById('archivoInput').files[0];
+      if (!f) return alert('Selecciona un archivo');
+      const fd = new FormData(); fd.append('archivo', f);
+      try {
+        const res = await fetch('/proyecto/apps/Controllers/archivosController.php?action=upload', { method: 'POST', body: fd });
+        const text = await res.text(); const data = JSON.parse(text);
+        if (data.success) { alert('Subido'); fetchFiles(); } else alert('Error: ' + data.message);
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    fetchFiles();
+  </script>
+</body>
+</html>

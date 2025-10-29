@@ -102,7 +102,8 @@ class usuario
     }
 
     // ===== MÉTODOS ESTÁTICOS =====
-    public static function obtenerRolPorEmail(string $email): ?string {
+    public static function obtenerRolPorEmail(string $email): ?string
+    {
         $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
@@ -212,7 +213,7 @@ class usuario
     // ===== REGISTRAR USUARIO =====
     public function registrarUsuario(?int $AniosExperiencia = null): bool
     {
-    $conexionDB = new ConexionDB();
+        $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         if (empty($this->Nombre) || empty($this->Apellido) || empty($this->Email) || empty($this->ContrasenaHash) || empty($this->Rol)) {
@@ -279,50 +280,51 @@ class usuario
     }
 
     // ===== OBTENER USUARIO POR CAMPO =====
-public static function obtenerPor(string $campo, $valor): ?usuario {
-    $conexionDB = new ConexionDB();
-    $conn = $conexionDB->getConexion();
+    public static function obtenerPor(string $campo, $valor): ?usuario
+    {
+        $conexionDB = new ConexionDB();
+        $conn = $conexionDB->getConexion();
 
-    $stmt = $conn->prepare("SELECT * FROM Usuario WHERE $campo = ?");
-    $stmt->bind_param('s', $valor);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    $fila = $resultado->fetch_assoc();
+        $stmt = $conn->prepare("SELECT * FROM Usuario WHERE $campo = ?");
+        $stmt->bind_param('s', $valor);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $fila = $resultado->fetch_assoc();
 
-    if (!$fila) {
-        return null;
+        if (!$fila) {
+            return null;
+        }
+
+        // Determinar rol dinámicamente
+        $IdUsuario = $fila['IdUsuario'];
+        $rol = 'Cliente'; // valor por defecto
+        if ($conn->query("SELECT 1 FROM Proveedor WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
+            $rol = 'Proveedor';
+        } elseif ($conn->query("SELECT 1 FROM Administrador WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
+            $rol = 'Administrador';
+        }
+
+        return new usuario(
+            $fila['IdUsuario'],
+            $fila['Nombre'],
+            $fila['Apellido'],
+            $fila['Email'],
+            $fila['ContrasenaHash'],
+            $fila['FotoPerfil'],
+            $fila['Descripcion'],
+            $fila['FechaRegistro'],
+            $fila['EstadoCuenta'],
+            $fila['UltimoAcceso'],
+            $rol,
+            $fila['IdUbicacion'] ?? null
+        );
     }
-
-    // Determinar rol dinámicamente
-    $IdUsuario = $fila['IdUsuario'];
-    $rol = 'Cliente'; // valor por defecto
-    if ($conn->query("SELECT 1 FROM Proveedor WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
-        $rol = 'Proveedor';
-    } elseif ($conn->query("SELECT 1 FROM Administrador WHERE IdUsuario = $IdUsuario")->num_rows > 0) {
-        $rol = 'Administrador';
-    }
-
-    return new usuario(
-        $fila['IdUsuario'],
-        $fila['Nombre'],
-        $fila['Apellido'],
-        $fila['Email'],
-        $fila['ContrasenaHash'],
-        $fila['FotoPerfil'],
-        $fila['Descripcion'],
-        $fila['FechaRegistro'],
-        $fila['EstadoCuenta'],
-        $fila['UltimoAcceso'],
-        $rol,
-        $fila['IdUbicacion'] ?? null
-    );
-}
 
 
     // ===== ACTUALIZAR ÚLTIMO ACCESO =====
     public function actualizarUltimoAcceso(int $id): void
     {
-    $conexionDB = new ConexionDB();
+        $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         $fecha = date('Y-m-d H:i:s');
@@ -346,7 +348,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
             return false; // No hay usuario cargado
         }
 
-    $conexionDB = new ConexionDB();
+        $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Determinar el estado según el booleano
@@ -375,7 +377,7 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
      */
     public static function cambiarEstadoCuentaPorId(int $idUsuario, bool $activo): bool
     {
-    $conexionDB = new ConexionDB();
+        $conexionDB = new ConexionDB();
         $conn = $conexionDB->getConexion();
 
         // Determinar el estado según el booleano
@@ -392,43 +394,44 @@ public static function obtenerPor(string $campo, $valor): ?usuario {
     }
 
     public function guardar(): bool
-{
-    if (!$this->IdUsuario) {
-        return false; // No hay usuario cargado
-    }
+    {
+        if (!$this->IdUsuario) {
+            return false; // No hay usuario cargado
+        }
 
-    $conexionDB = new ConexionDB();
-    $conn = $conexionDB->getConexion();
+        $conexionDB = new ConexionDB();
+        $conn = $conexionDB->getConexion();
 
-    $stmt = $conn->prepare("
+        $stmt = $conn->prepare("
         UPDATE Usuario
         SET Nombre = ?, Apellido = ?, Email = ?, Descripcion = ?, FotoPerfil = ?, IdUbicacion = ?
         WHERE IdUsuario = ?
     ");
 
-    $stmt->bind_param(
-        'sssssii',
-        $this->Nombre,
-        $this->Apellido,
-        $this->Email,
-        $this->Descripcion,
-        $this->FotoPerfil,
-        $this->IdUbicacion,
-        $this->IdUsuario
-    );
+        $stmt->bind_param(
+            'sssssii',
+            $this->Nombre,
+            $this->Apellido,
+            $this->Email,
+            $this->Descripcion,
+            $this->FotoPerfil,
+            $this->IdUbicacion,
+            $this->IdUsuario
+        );
 
-    $resultado = $stmt->execute();
-    $stmt->close();
-    $conn->close();
+        $resultado = $stmt->execute();
+        $stmt->close();
+        $conn->close();
 
-    return $resultado;
-}
+        return $resultado;
+    }
 
-public static function autenticar(string $email, string $password): ?usuario {
-    $conn = new ConexionDB();
-    $db = $conn->getConexion();
+    public static function autenticar(string $email, string $password): ?usuario
+    {
+        $conn = new ConexionDB();
+        $db = $conn->getConexion();
 
-    $stmt = $db->prepare("
+        $stmt = $db->prepare("
         SELECT u.IdUsuario, u.Nombre, u.Apellido, u.Email, u.ContrasenaHash, 
                u.FotoPerfil, u.Descripcion, u.FechaRegistro, 
                u.EstadoCuenta, u.UltimoAcceso, u.IdUbicacion,
@@ -441,83 +444,92 @@ public static function autenticar(string $email, string $password): ?usuario {
         FROM Usuario u
         WHERE Email = ?
     ");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) {
-        if (password_verify($password, $row['ContrasenaHash'])) {
-            return new usuario(
-                $row['IdUsuario'],
-                $row['Nombre'],
-                $row['Apellido'],
-                $row['Email'],
-                $row['ContrasenaHash'],
-                $row['FotoPerfil'],
-                $row['Descripcion'],
-                $row['FechaRegistro'],
-                $row['EstadoCuenta'],
-                $row['UltimoAcceso'],
-                $row['Rol'],
-                $row['IdUbicacion'] ?? null
-            );
-        }
-    }
-
-    return null;
-}
-
-public function guardarCompleto(array $contactos = [], array $habilidades = []): bool
-{
-    if (!$this->IdUsuario) {
-        return false; // No hay usuario cargado
-    }
-
-    // Guardar datos básicos
-    $resultado = $this->guardar();
-
-    if ($resultado) {
-        require_once __DIR__ . '/dato.php';
-        require_once __DIR__ . '/habilidad.php';
-
-    $conexionDB = new ConexionDB();
-        $conn = $conexionDB->getConexion();
-
-        // Borrar contactos previos
-        $stmt = $conn->prepare("DELETE FROM DatosContacto WHERE IdUsuario = ?");
-        $stmt->bind_param('i', $this->IdUsuario);
+        $stmt->bind_param("s", $email);
         $stmt->execute();
-        $stmt->close();
+        $result = $stmt->get_result();
 
-        // Guardar nuevos contactos
-        foreach ($contactos as $contacto) {
-            if (!empty($contacto['tipo']) && !empty($contacto['valor'])) {
-                $dato = new dato($this->IdUsuario, $contacto['tipo'], $contacto['valor']);
-                $dato->guardar();
+        if ($row = $result->fetch_assoc()) {
+            error_log("DEBUG: Usuario con email $email ENCONTRADO. Intentando verificar...");
+            // Debug: mostrar el hash recuperado y el resultado de password_verify
+            $hashRecuperado = $row['ContrasenaHash'] ?? '';
+            error_log("DEBUG: Hash recuperado para $email => " . substr($hashRecuperado, 0, 60) . "...");
+            $pwVerify = password_verify($password, $hashRecuperado);
+            error_log("DEBUG: Resultado password_verify para $email => " . ($pwVerify ? 'TRUE' : 'FALSE'));
+            if ($pwVerify) {
+                return new usuario(
+                    $row['IdUsuario'],
+                    $row['Nombre'],
+                    $row['Apellido'],
+                    $row['Email'],
+                    $row['ContrasenaHash'],
+                    $row['FotoPerfil'],
+                    $row['Descripcion'],
+                    $row['FechaRegistro'],
+                    $row['EstadoCuenta'],
+                    $row['UltimoAcceso'],
+                    $row['Rol'],
+                    $row['IdUbicacion'] ?? null
+                );
             }
+        } else {
+            error_log("DEBUG: Usuario con email $email NO ENCONTRADO en DB.");
         }
 
-        // Borrar habilidades previas
-        $stmt = $conn->prepare("DELETE FROM Habilidades WHERE IdUsuario = ?");
-        $stmt->bind_param('i', $this->IdUsuario);
-        $stmt->execute();
-        $stmt->close();
-
-        // Guardar nuevas habilidades
-        foreach ($habilidades as $habilidadData) {
-            if (!empty($habilidadData['nombre']) && isset($habilidadData['anios'])) {
-                $hab = new habilidad($this->IdUsuario, $habilidadData['nombre'], intval($habilidadData['anios']));
-                $hab->guardar();
-            }
-        }
-
-        $conn->close();
+        return null;
     }
 
-    return $resultado;
-}
+    public function guardarCompleto(array $contactos = [], array $habilidades = []): bool
+    {
+        if (!$this->IdUsuario) {
+            return false; // No hay usuario cargado
+        }
 
-    public static function obtenerFotoPerfil($idUsuario) {
+        // Guardar datos básicos
+        $resultado = $this->guardar();
+
+        if ($resultado) {
+            require_once __DIR__ . '/dato.php';
+            require_once __DIR__ . '/habilidad.php';
+
+            $conexionDB = new ConexionDB();
+            $conn = $conexionDB->getConexion();
+
+            // Borrar contactos previos
+            $stmt = $conn->prepare("DELETE FROM DatosContacto WHERE IdUsuario = ?");
+            $stmt->bind_param('i', $this->IdUsuario);
+            $stmt->execute();
+            $stmt->close();
+
+            // Guardar nuevos contactos
+            foreach ($contactos as $contacto) {
+                if (!empty($contacto['tipo']) && !empty($contacto['valor'])) {
+                    $dato = new dato($this->IdUsuario, $contacto['tipo'], $contacto['valor']);
+                    $dato->guardar();
+                }
+            }
+
+            // Borrar habilidades previas
+            $stmt = $conn->prepare("DELETE FROM Habilidades WHERE IdUsuario = ?");
+            $stmt->bind_param('i', $this->IdUsuario);
+            $stmt->execute();
+            $stmt->close();
+
+            // Guardar nuevas habilidades
+            foreach ($habilidades as $habilidadData) {
+                if (!empty($habilidadData['nombre']) && isset($habilidadData['anios'])) {
+                    $hab = new habilidad($this->IdUsuario, $habilidadData['nombre'], intval($habilidadData['anios']));
+                    $hab->guardar();
+                }
+            }
+
+            $conn->close();
+        }
+
+        return $resultado;
+    }
+
+    public static function obtenerFotoPerfil($idUsuario)
+    {
         $db = new ConexionDB();
         $conn = $db->getConexion();
         $stmt = $conn->prepare("SELECT FotoPerfil FROM Usuario WHERE IdUsuario = ?");
@@ -532,4 +544,3 @@ public function guardarCompleto(array $contactos = [], array $habilidades = []):
         return $foto;
     }
 }
-?>

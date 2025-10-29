@@ -6,18 +6,21 @@ require_once __DIR__ . '/../Models/usuario.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+
+        // Debug: loguear los valores recibidos
+        error_log('Login recibido - Email: ' . $email . ' | Password: ' . $password);
     
     try {
-        // Obtener usuario y verificar credenciales
-        $usuario = Usuario::obtenerPor('Email', $email);
-        
-        if (!$usuario) {
-            echo json_encode(['success' => false, 'message' => 'Credenciales inválidas']);
-            exit;
-        }
 
-        if (!password_verify($password, $usuario->getContrasenaHash())) {
-            echo json_encode(['success' => false, 'message' => 'Credenciales inválidas']);
+        // Autenticar usuario (verifica email y contraseña)
+        $usuario = Usuario::autenticar($email, $password);
+        if (!$usuario) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Credenciales inválidas',
+                'debug_email' => $email,
+                'debug_password' => $password
+            ]);
             exit;
         }
 

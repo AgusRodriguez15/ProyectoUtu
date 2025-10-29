@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Administrador - Plataforma de Oficios</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <style>
+    .container { max-width: 700px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,0.06);} 
+    .form-row { margin-bottom: 12px; }
+    input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+    .btn { display: inline-block; background: #27ae60; color: white; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; }
+    .msg { margin-top: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <nav class="nav">
+      <a href="#">Servicios</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+      <a href="#">Mensajes</a>
+    </nav>
+  </header>
+
+  <main class="grid-section">
+    <div class="container">
+      <h2>Crear Administrador (temporal)</h2>
+      <p>Este formulario llama a un endpoint temporal que sólo acepta conexiones desde localhost.</p>
+
+      <!-- Envío directo al controlador de usuarios para crear administrador -->
+      <form id="crearAdminForm" action="/proyecto/apps/Controllers/usuarioController.php" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="Rol" value="Administrador">
+        <div class="form-row"><input type="text" name="Nombre" placeholder="Nombre" required value="Administrador"></div>
+        <div class="form-row"><input type="text" name="Apellido" placeholder="Apellido" required value="Sistema"></div>
+        <div class="form-row"><input type="email" name="Email" placeholder="Email" required value="admin@ejemplo.com"></div>
+        <div class="form-row"><input type="password" name="ContrasenaHash" placeholder="Contraseña" required value="admin"></div>
+        <div class="form-row"><input type="password" name="ConfirmarContrasena" placeholder="Confirmar contraseña" required value="admin"></div>
+        <div class="form-row"><button type="submit" class="btn">Crear Administrador</button></div>
+      </form>
+
+      <div id="msg" class="msg" aria-live="polite"></div>
+      <p style="margin-top:12px; font-size:0.9rem; color:#666">Nota: Después de crear el administrador elimina o mueve `crearAdminTemporal.php` por seguridad.</p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('crearAdminForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+      const form = new FormData(e.target);
+
+      try {
+        const res = await fetch('/proyecto/apps/Controllers/crearAdminTemporal.php', {
+          method: 'POST',
+          body: new URLSearchParams([...form])
+        });
+
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (err) { throw new Error('Respuesta inválida del servidor: ' + text); }
+
+        if (data.success) {
+          msg.style.color = 'green';
+          msg.textContent = data.message + (data.IdUsuario ? (' (IdUsuario: ' + data.IdUsuario + ')') : '');
+        } else {
+          msg.style.color = 'red';
+          msg.textContent = data.message || 'Error al crear administrador';
+        }
+      } catch (err) {
+        msg.style.color = 'red';
+        msg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Servicios - Admin</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <style>
+    .container { max-width:1100px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06);} 
+    table.tabla-admin { width:100%; border-collapse: collapse; }
+    table.tabla-admin th, table.tabla-admin td { padding:10px; border-bottom:1px solid #eee; text-align:left; }
+    .actions { display:flex; gap:8px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios - Admin</h1></div>
+    <nav class="nav">
+      <a href="PANTALLA_ADMIN.html">Volver al panel</a>
+    </nav>
+  </header>
+
+  <main class="grid-section">
+    <div class="container">
+      <h2>Gestión de Servicios</h2>
+      <p>Lista de servicios publicados. Puedes revisar detalles y moderar.</p>
+
+      <div id="status">Cargando servicios...</div>
+      <div class="table-responsive">
+        <table id="tablaServicios" class="tabla-admin">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Proveedor</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function cargarServicios() {
+      const status = document.getElementById('status');
+      const tabla = document.querySelector('#tablaServicios tbody');
+      status.textContent = 'Cargando servicios...';
+      tabla.innerHTML = '';
+      try {
+        const res = await fetch('/proyecto/apps/Controllers/servicioController.php?action=listarTodos');
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { throw new Error('Respuesta inválida: ' + text); }
+        if (!Array.isArray(data) || data.length === 0) {
+          status.textContent = 'No hay servicios disponibles.';
+          return;
+        }
+        status.textContent = '';
+        tabla.innerHTML = data.map(s => `
+          <tr>
+            <td>${s.IdServicio}</td>
+            <td>${s.Nombre}</td>
+            <td>${s.ProveedorNombre || '—'}</td>
+            <td>${s.Estado || '—'}</td>
+            <td class="actions">
+              <a class="btn small" href="detalleServicioProveedor.html?id=${s.IdServicio}">Ver</a>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        status.textContent = 'Error cargando servicios: ' + err.message;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarServicios);
+  </script>
+</body>
+</html>

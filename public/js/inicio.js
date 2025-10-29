@@ -3,6 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("search-input");
   const contenedor = document.getElementById("serviciosContainer");
 
+  // Si alguno de los elementos clave no existe, hacer que el script sea no-op.
+  // Esto evita errores en páginas que no tienen buscador/servicios (por ejemplo: PANTALLA_ADMIN.html).
+  if (!form || !input || !contenedor) {
+    // No hay buscador en esta página; salimos silenciosamente.
+    return;
+  }
+
   // Cargar todos los servicios al inicio
   cargarServicios("");
 
