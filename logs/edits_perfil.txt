@@ -1,0 +1,2 @@
+2025-10-30T21:18:46+01:00 | IdUsuario:28 | By:41 | Nombre=Benjam??n; Apellido=; Email=22@gmail.com; IdUbicacion=NULL
+2025-10-30T21:58:07+01:00 | IdUsuario:24 | By:41 | Nombre=; Apellido=; Email=benjaminmartello@gmail.com; IdUbicacion=NULL

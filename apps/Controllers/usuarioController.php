@@ -251,7 +251,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $fecha = date('Y-m-d H:i:s');
                     // Registrar en Accion (migrado desde Gestion) vía modelo
                     try {
-                        accion::crear('desabilitar', $motivo, $id, $_SESSION['IdUsuario']);
+                        // Registrar baneo explícito
+                        accion::crear('banear', $motivo, $id, $_SESSION['IdUsuario']);
                     } catch (Exception $e) {
                         error_log('Error registrando Accion (banear -> accion): ' . $e->getMessage());
                     }
@@ -273,7 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $fecha = date('Y-m-d H:i:s');
                     // Registrar en Accion (migrado desde Gestion) vía modelo
                     try {
-                        accion::crear('desabilitar', $motivo, $id, $_SESSION['IdUsuario']);
+                        // Registrar desbaneo explícito
+                        accion::crear('desbanear', $motivo, $id, $_SESSION['IdUsuario']);
                     } catch (Exception $e) {
                         error_log('Error registrando Accion (desbanear -> accion): ' . $e->getMessage());
                     }
@@ -328,7 +330,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $descripcion = !empty($motivo) ? $motivo : 'Cambio de contraseña por administrador';
                     // Registrar en Accion (migrado desde Gestion) vía modelo
                     try {
-                        accion::crear('editar_datos_servicio', $descripcion, $id, $_SESSION['IdUsuario']);
+                        // Registrar cambio de contraseña en formato canónico
+                        accion::crear('cambiar_contrasena', $descripcion, $id, $_SESSION['IdUsuario']);
                     } catch (Exception $e) {
                         error_log('Error registrando Accion (cambiarContrasena -> accion): ' . $e->getMessage());
                     }
@@ -366,6 +369,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ok = $stmt->execute();
                 $stmt->close();
                 if ($ok) {
+                    // Registrar cambio de email en auditoría
+                    try {
+                        $descripcionEmail = 'Cambio de email por administrador: ' . $email;
+                        accion::crear('cambiar_email', $descripcionEmail, $id, $_SESSION['IdUsuario']);
+                    } catch (Exception $e) {
+                        error_log('Error registrando Accion (cambiarEmail -> accion): ' . $e->getMessage());
+                    }
+
                     echo json_encode(['success' => true, 'message' => 'Email actualizado']);
                 } else {
                     http_response_code(500);
@@ -467,8 +478,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($dbOk) {
+                    // Registrar entrada en archivo de logs local para auditoría simple
+                    $logDir = __DIR__ . '/../../logs';
+                    if (!file_exists($logDir)) { @mkdir($logDir, 0755, true); }
+                    $logFile = $logDir . '/edits_perfil.txt';
+                    $actor = isset($_SESSION['IdUsuario']) ? intval($_SESSION['IdUsuario']) : 'unknown';
+                    $campos = 'Nombre=' . addslashes($usuarioObj->getNombre()) . '; Apellido=' . addslashes($usuarioObj->getApellido()) . '; Email=' . addslashes($usuarioObj->getEmail()) . '; IdUbicacion=' . var_export($usuarioObj->getIdUbicacion(), true);
+                    $entry = date('c') . " | IdUsuario:$id | By:$actor | $campos" . PHP_EOL;
+                    // Si el archivo no existe, crear con BOM UTF-8 para que Notepad lo muestre correctamente en Windows
+                    if (!file_exists($logFile)) {
+                        @file_put_contents($logFile, "\xEF\xBB\xBF", LOCK_EX);
+                    }
+                    @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
+
+                    // Registrar acción en la tabla Accion
+                    require_once __DIR__ . '/../Models/accion.php';
+                    $descripcionAccion = 'Edición de perfil: ' . $campos;
+                    $idAdmin = is_numeric($actor) ? intval($actor) : null;
+                    accion::crear('editar_perfil', $descripcionAccion, $id, $idAdmin);
+
                     echo json_encode(['success'=>true,'message'=>'Perfil actualizado']);
                 } else {
+                    // Log de diagnóstico para investigar por qué no se guarda
+                    error_log('usuarioController::editarCompleto - guardar() devolvió false para IdUsuario=' . $id);
+                    error_log('POST data: ' . json_encode($_POST, JSON_UNESCAPED_UNICODE));
+                    // Log algunos campos clave del objeto usuario
+                    error_log('Usuario objeto: IdUsuario=' . $usuarioObj->getIdUsuario() . ' Nombre=' . $usuarioObj->getNombre() . ' Apellido=' . $usuarioObj->getApellido() . ' Email=' . $usuarioObj->getEmail() . ' IdUbicacion=' . var_export($usuarioObj->getIdUbicacion(), true));
+
                     http_response_code(500);
                     echo json_encode(['success'=>false,'message'=>'Error al guardar perfil']);
                 }

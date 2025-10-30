@@ -167,26 +167,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = await resp.text();
       let json; try { json = JSON.parse(text); } catch (e) { throw new Error('Respuesta inválida: ' + text); }
       if (json && json.success) {
-        alert(json.message || 'Guardado');
-        // Redirección inteligente: si vinimos del panel de gestión, volver allí;
-        // si vinimos desde una vista de perfil, volver al referrer; si no, abrir verPerfil del usuario.
-        try {
-          const ref = document.referrer || '';
-          if (ref.includes('gestionarUsuarios')) {
-            window.location.href = '/proyecto/apps/Views/gestionarUsuarios.html';
-          } else if (ref) {
-            window.location.href = ref;
-          } else {
+        // Mostrar mensaje inline en el div#status y retrasar la redirección para que el usuario lo lea
+        const mensajeExito = json.message || 'Guardado';
+        if (status) {
+          status.textContent = mensajeExito;
+        } else {
+          // fallback a alert si no existe el status
+          alert(mensajeExito);
+        }
+
+        // Redirección en 3 segundos (3000 ms)
+        setTimeout(() => {
+          try {
+            const ref = document.referrer || '';
+            if (ref.includes('gestionarUsuarios')) {
+              window.location.href = '/proyecto/apps/Views/gestionarUsuarios.html';
+            } else if (ref) {
+              window.location.href = ref;
+            } else {
+              const editedId = encodeURIComponent(document.getElementById('IdUsuario').value);
+              window.location.href = '/proyecto/apps/Views/verPerfil.html?id=' + editedId;
+            }
+          } catch (e) {
             const editedId = encodeURIComponent(document.getElementById('IdUsuario').value);
             window.location.href = '/proyecto/apps/Views/verPerfil.html?id=' + editedId;
           }
-        } catch (e) {
-          const editedId = encodeURIComponent(document.getElementById('IdUsuario').value);
-          window.location.href = '/proyecto/apps/Views/verPerfil.html?id=' + editedId;
-        }
+        }, 3000);
       } else {
-        alert(json.message || 'Error guardando');
-        if (status) status.textContent = '';
+        // Mostrar error al usuario y mantener el status para inspección
+        const mensajeError = json.message || 'Error guardando';
+        if (status) {
+          status.textContent = mensajeError;
+        }
+        alert(mensajeError);
       }
     } catch (e) {
       if (status) status.textContent = 'Error: ' + e.message;

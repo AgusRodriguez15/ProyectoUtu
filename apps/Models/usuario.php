@@ -420,6 +420,9 @@ class usuario
         );
 
         $resultado = $stmt->execute();
+        if (!$resultado) {
+            error_log('usuario::guardar execute failed: ' . $stmt->error . ' - SQL: UPDATE Usuario SET Nombre=?, Apellido=?, Email=?, Descripcion=?, FotoPerfil=?, IdUbicacion=? WHERE IdUsuario=' . intval($this->IdUsuario));
+        }
         $stmt->close();
         $conn->close();
 
