@@ -12,7 +12,7 @@ CREATE TABLE Usuario (
     FotoPerfil VARCHAR(255),
     Descripcion TEXT,
     FechaRegistro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    EstadoCuenta ENUM('ACTIVO', 'INACTIVO', 'SUSPENDIDO') DEFAULT 'ACTIVO',
+    EstadoCuenta ENUM('ACTIVO', 'INACTIVO', 'SUSPENDIDO', 'BANEADO') DEFAULT 'ACTIVO',
     UltimoAcceso DATETIME
 );
 
@@ -170,3 +170,34 @@ CREATE INDEX idx_email ON Usuario(Email);
 CREATE INDEX idx_servicio_estado ON Servicio(Estado);
 CREATE INDEX idx_reserva_estado ON Reserva(Estado);
 CREATE INDEX idx_mensaje_fecha ON Mensaje(FechaHora);
+
+-- Tabla Gestion (auditoría de acciones administrativas)
+CREATE TABLE IF NOT EXISTS Gestion (
+    IdGestion INT PRIMARY KEY AUTO_INCREMENT,
+    tipo ENUM('baneo','desbaneo','eliminar_usuario','editar_perfil','cambiar_gmail','cambiar_contraseña') NOT NULL,
+    descripcion TEXT,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    IdAdministrador INT NULL,
+    IdServicio INT NULL,
+    FOREIGN KEY (IdAdministrador) REFERENCES Administrador(IdUsuario) ON DELETE SET NULL,
+    FOREIGN KEY (IdServicio) REFERENCES Servicio(IdServicio) ON DELETE SET NULL
+);
+
+-- Tabla Accion (registro de acciones administrativas/operativas)
+-- Se crea si no existe y se asegura que la columna 'tipo' tenga los valores esperados
+-- Definición de la tabla `accion` exactamente con las columnas solicitadas
+CREATE TABLE IF NOT EXISTS `accion` (
+    `IdAccion` int(11) NOT NULL AUTO_INCREMENT,
+    `tipo` enum('borrar_comentario','editar_datos_servicio','desabilitar','cancelar_reseñas','borrar_servicio') NOT NULL,
+    `descripcion` text DEFAULT NULL,
+    `fecha` datetime DEFAULT NULL,
+    `IdUsuario` int(11) DEFAULT NULL,
+    `IdUsuarioAdministrador` int(11) DEFAULT NULL,
+    PRIMARY KEY (`IdAccion`),
+    KEY `idx_IdUsuario` (`IdUsuario`),
+    KEY `idx_IdUsuarioAdministrador` (`IdUsuarioAdministrador`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Por compatibilidad: si la tabla ya existiera con otra definición, ejecutar ALTER para ajustar la columna 'tipo'
+ALTER TABLE `accion`
+MODIFY COLUMN `tipo` ENUM('borrar_comentario','editar_datos_servicio','desabilitar','cancelar_reseñas','borrar_servicio') NOT NULL;

@@ -52,22 +52,87 @@
         }
         status.textContent = '';
         tabla.innerHTML = data.map(s => `
-          <tr>
+          <tr data-id="${s.IdServicio}">
             <td>${s.IdServicio}</td>
             <td>${s.Nombre}</td>
             <td>${s.ProveedorNombre || '—'}</td>
-            <td>${s.Estado || '—'}</td>
+            <td class="estado">${s.Estado || '—'}</td>
             <td class="actions">
-              <a class="btn small" href="detalleServicioProveedor.html?id=${s.IdServicio}">Ver</a>
+              <select class="service-actions" data-id="${s.IdServicio}">
+                <option value="">Acciones...</option>
+                <option value="ver">Ver</option>
+                <option value="editar">Editar</option>
+                <option value="cambiarEstado">${s.Estado === 'DISPONIBLE' ? 'Deshabilitar' : 'Habilitar'}</option>
+                <option value="cancelarResenas">Cancelar reseñas</option>
+                <option value="borrar">Borrar</option>
+              </select>
             </td>
           </tr>
         `).join('');
+
+        // Attach change listeners to selects (desplegable similar a gestionarUsuarios)
+        document.querySelectorAll('.service-actions').forEach(sel => {
+          sel.addEventListener('change', function () {
+            const action = this.value;
+            const id = this.getAttribute('data-id');
+            if (!action) return;
+            performServiceAction(id, action);
+            this.value = '';
+          });
+        });
       } catch (err) {
         status.textContent = 'Error cargando servicios: ' + err.message;
       }
     }
 
     document.addEventListener('DOMContentLoaded', cargarServicios);
+
+    async function performServiceAction(id, action) {
+      try {
+        switch (action) {
+          case 'ver':
+            window.location.href = 'detalleServicioProveedor.html?id=' + encodeURIComponent(id);
+            return;
+          case 'editar':
+            window.location.href = 'editarServicio.html?id=' + encodeURIComponent(id);
+            return;
+          case 'cambiarEstado': {
+            const estadoEl = document.querySelector('tr[data-id="' + id + '"] .estado');
+            const actual = estadoEl ? estadoEl.textContent.trim() : '';
+            const nuevo = (actual === 'DISPONIBLE') ? 'SUSPENDIDO' : 'DISPONIBLE';
+            if (!confirm('Cambiar estado del servicio a ' + nuevo + ' ?')) return;
+            const fd = new FormData(); fd.append('cambiarEstado','1'); fd.append('idServicio', id); fd.append('Estado', nuevo);
+            const res = await fetch('/proyecto/apps/Controllers/servicioController.php', { method: 'POST', body: fd });
+            const json = await res.json();
+            alert(json.message || (json.success ? 'OK' : 'Error'));
+            await cargarServicios();
+            return;
+          }
+          case 'cancelarResenas': {
+            if (!confirm('Eliminar todas las reseñas de este servicio?')) return;
+            const fd = new FormData(); fd.append('idServicio', id);
+            const res = await fetch('/proyecto/apps/Controllers/reseñaController.php?accion=cancelarPorServicio', { method: 'POST', body: fd });
+            const json = await res.json();
+            alert(json.mensaje || (json.success ? 'OK' : 'Error'));
+            await cargarServicios();
+            return;
+          }
+          case 'borrar': {
+            if (!confirm('¿Borrar este servicio permanentemente?')) return;
+            const fd = new FormData(); fd.append('eliminarAdmin','1'); fd.append('idServicio', id);
+            const res = await fetch('/proyecto/apps/Controllers/servicioController.php', { method: 'POST', body: fd });
+            const json = await res.json();
+            alert(json.message || (json.success ? 'OK' : 'Error'));
+            await cargarServicios();
+            return;
+          }
+          default:
+            console.warn('Acción desconocida:', action);
+        }
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
   </script>
 </body>
 </html>

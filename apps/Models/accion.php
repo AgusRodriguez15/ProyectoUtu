@@ -33,5 +33,35 @@ class accion
 
 	public function getIdUsuarioAdministrador() { return $this->IdUsuarioAdministrador; }
 	public function setIdUsuarioAdministrador($IdUsuarioAdministrador) { $this->IdUsuarioAdministrador = $IdUsuarioAdministrador; }
+
+	/**
+	 * Crear una nueva fila en la tabla Accion.
+	 * @param string $tipo
+	 * @param string|null $descripcion
+	 * @param int|null $idUsuario
+	 * @param int|null $idUsuarioAdministrador
+	 * @return int|false Devuelve el IdAccion insertado o false en error
+	 */
+	public static function crear($tipo, $descripcion = null, $idUsuario = null, $idUsuarioAdministrador = null) {
+		require_once __DIR__ . '/ConexionDB.php';
+		try {
+			$db = new ConexionDB();
+			$conn = $db->getConexion();
+			$fecha = date('Y-m-d H:i:s');
+			$idUsuarioInt = $idUsuario ? intval($idUsuario) : 0;
+			$idAdminInt = $idUsuarioAdministrador ? intval($idUsuarioAdministrador) : 0;
+			$stmt = $conn->prepare("INSERT INTO Accion (tipo, descripcion, fecha, IdUsuario, IdUsuarioAdministrador) VALUES (?, ?, ?, ?, ?)");
+			if (!$stmt) return false;
+			$stmt->bind_param('sssii', $tipo, $descripcion, $fecha, $idUsuarioInt, $idAdminInt);
+			$ok = $stmt->execute();
+			if (!$ok) { $stmt->close(); return false; }
+			$insertId = $conn->insert_id;
+			$stmt->close();
+			return $insertId;
+		} catch (Exception $e) {
+			error_log('accion::crear error: ' . $e->getMessage());
+			return false;
+		}
+	}
 }
 ?>

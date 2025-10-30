@@ -36,7 +36,10 @@
         <div class="form-row"><input type="email" name="Email" placeholder="Email" required value="admin@ejemplo.com"></div>
         <div class="form-row"><input type="password" name="ContrasenaHash" placeholder="Contraseña" required value="admin"></div>
         <div class="form-row"><input type="password" name="ConfirmarContrasena" placeholder="Confirmar contraseña" required value="admin"></div>
-        <div class="form-row"><button type="submit" class="btn">Crear Administrador</button></div>
+        <div class="form-row" style="display:flex;gap:8px;">
+          <button type="button" id="btnCrear" class="btn">Crear Administrador</button>
+          <button type="button" id="btnCrearVerGestiones" class="btn">Crear y ver gestiones</button>
+        </div>
       </form>
 
       <div id="msg" class="msg" aria-live="polite"></div>
@@ -44,35 +47,6 @@
     </div>
   </main>
 
-  <script>
-    document.getElementById('crearAdminForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const msg = document.getElementById('msg');
-      msg.textContent = '';
-      const form = new FormData(e.target);
-
-      try {
-        const res = await fetch('/proyecto/apps/Controllers/crearAdminTemporal.php', {
-          method: 'POST',
-          body: new URLSearchParams([...form])
-        });
-
-        const text = await res.text();
-        let data;
-        try { data = JSON.parse(text); } catch (err) { throw new Error('Respuesta inválida del servidor: ' + text); }
-
-        if (data.success) {
-          msg.style.color = 'green';
-          msg.textContent = data.message + (data.IdUsuario ? (' (IdUsuario: ' + data.IdUsuario + ')') : '');
-        } else {
-          msg.style.color = 'red';
-          msg.textContent = data.message || 'Error al crear administrador';
-        }
-      } catch (err) {
-        msg.style.color = 'red';
-        msg.textContent = 'Error: ' + err.message;
-      }
-    });
-  </script>
+  <script src="/proyecto/public/js/crearAdmin.js"></script>
 </body>
 </html>

@@ -170,4 +170,15 @@ function mostrarPerfil(data) {
     if (!hasInfo) {
         document.getElementById('sinInfo').style.display = 'block';
     }
+
+    // Mostrar botón editar si es editable
+    const btnEditar = document.getElementById('btnEditarPerfil');
+    if (btnEditar) {
+        if (data.editable) {
+            btnEditar.style.display = 'inline-block';
+            btnEditar.href = `/proyecto/apps/Views/editarPerfil.html?id=${usuario.id}`;
+        } else {
+            btnEditar.style.display = 'none';
+        }
+    }
 }

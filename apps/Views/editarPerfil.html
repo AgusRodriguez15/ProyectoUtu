@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Editar Perfil</title>
+  <link rel="stylesheet" href="/proyecto/public/CSS/style_system.css">
+  <link rel="stylesheet" href="/proyecto/public/CSS/style_editar_usuario.css">
+    <style>
+      .container { max-width:900px; margin:20px auto; padding:12px; }
+      label { display:block; margin-top:8px; }
+      input[type=text], input[type=email], textarea { width:100%; padding:8px; box-sizing:border-box; }
+      .lista { margin-top:8px; }
+      .lista .item { display:flex; gap:8px; margin-bottom:6px; }
+      .lista .item input { flex:1; }
+      .btn { padding:8px 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Editar Perfil</h1>
+      <div id="status">Cargando...</div>
+      <form id="perfilForm">
+        <input type="hidden" id="IdUsuario" name="IdUsuario">
+        <label>Nombre
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="Nombre" name="Nombre" readonly>
+            <button id="resetNombre" type="button" class="btn" style="background:#ef4444;">Reiniciar</button>
+          </div>
+        </label>
+        <label>Apellido
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="Apellido" name="Apellido" readonly>
+            <button id="resetApellido" type="button" class="btn" style="background:#ef4444;">Reiniciar</button>
+          </div>
+        </label>
+        <label>Descripción
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <textarea id="Descripcion" name="Descripcion" rows="4" readonly></textarea>
+            <button id="resetDescripcion" type="button" class="btn" style="background:#ef4444;height:40px;">Reiniciar</button>
+          </div>
+        </label>
+
+        <label>Foto de perfil
+          <div style="display:flex;gap:8px;align-items:center">
+            <!-- selector de archivo eliminado; la vista solo muestra y permite eliminar la foto -->
+            <button id="resetFoto" type="button" class="btn" style="background:#ef4444;">Eliminar foto</button>
+          </div>
+        </label>
+        <div id="fotoContainer" style="margin-top:8px;">
+          <img id="fotoPerfilImg" src="/proyecto/public/recursos/imagenes/perfil/default.png" alt="Foto de perfil" style="width:96px;height:96px;border-radius:8px;object-fit:cover;border:1px solid #e5e7eb" />
+        </div>
+  <!-- Checkbox para eliminar al guardar removido: ahora se usa el botón 'Eliminar foto' -->
+
+        <h3>Ubicación principal</h3>
+        <label>País <input type="text" id="pais" name="pais" readonly></label>
+        <label>Ciudad <input type="text" id="ciudad" name="ciudad" readonly></label>
+        <label>Calle / Dirección <input type="text" id="calle" name="calle" readonly></label>
+        <label>Número <input type="text" id="numero" name="numero" readonly></label>
+        <div style="margin-top:8px;margin-bottom:8px">
+          <!-- Solo botón para eliminar la única ubicación principal -->
+          <button id="eliminarUbicacionBtn" type="button" class="btn" style="background:#ef4444;">Eliminar ubicación</button>
+        </div>
+
+        <h3>Datos de contacto</h3>
+        <div id="listaContactos" class="lista"></div>
+        <div style="margin-top:6px">
+          <button id="resetContactos" type="button" class="btn" style="background:#ef4444;margin-left:8px;">Reiniciar contactos</button>
+        </div>
+
+        <h3>Habilidades</h3>
+        <div id="listaHabilidades" class="lista"></div>
+        <div style="margin-top:6px">
+          <button id="resetHabilidades" type="button" class="btn" style="background:#ef4444;margin-left:8px;">Reiniciar habilidades</button>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button type="submit" class="btn">Guardar</button>
+          <button id="btnVolver" type="button" class="btn" style="margin-left:12px;">Volver</button>
+        </div>
+      </form>
+    </div>
+    <script src="/proyecto/public/js/editarPerfil.js"></script>
+  </body>
+</html>

@@ -76,6 +76,19 @@ try {
     $contactos = dato::obtenerPorUsuario($usuario->getIdUsuario());
     $response['contactos'] = $contactos;
 
+    // Determinar si el perfil es editable por el usuario en sesión (dueño) o por un administrador
+    $response['editable'] = false;
+    if (isset($_SESSION['IdUsuario'])) {
+        $sesId = $_SESSION['IdUsuario'];
+        require_once __DIR__ . '/../Models/usuario.php';
+        $usuarioSesion = usuario::obtenerPor('IdUsuario', $sesId);
+        if ($usuarioSesion) {
+            if ($usuarioSesion->getRol() === 'Administrador' || $sesId == $usuario->getIdUsuario()) {
+                $response['editable'] = true;
+            }
+        }
+    }
+
     // Si es proveedor, obtener habilidades y servicios
     if ($usuario->getRol() === 'Proveedor') {
         $habilidades = habilidad::obtenerPorUsuario($usuario->getIdUsuario());

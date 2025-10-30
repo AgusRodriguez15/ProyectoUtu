@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Editar usuario</title>
+    <link rel="stylesheet" href="/proyecto/public/CSS/style_system.css">
+    <link rel="stylesheet" href="/proyecto/public/CSS/style_editar_usuario.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Editar usuario</h1>
+      <div id="status">Cargando...</div>
+      <form id="editarForm">
+        <input type="hidden" id="IdUsuario" name="IdUsuario">
+        <label>Nombre
+          <input type="text" id="Nombre" name="Nombre" required>
+        </label>
+        <label>Apellido
+          <input type="text" id="Apellido" name="Apellido" required>
+        </label>
+        <label>Email
+          <input type="email" id="Email" name="Email" required>
+        </label>
+        <div class="actions">
+          <button type="submit">Guardar</button>
+          <a href="/proyecto/apps/Views/gestionarUsuarios.html" style="margin-left:12px;">Volver</a>
+        </div>
+      </form>
+    </div>
+    <script src="/proyecto/public/js/editarUsuario.js"></script>
+  </body>
+</html>

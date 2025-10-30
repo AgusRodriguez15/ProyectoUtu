@@ -13,8 +13,44 @@ require_once __DIR__ . '/../Models/proveedor.php';
 require_once __DIR__ . '/../Models/palabraClave.php';
 require_once __DIR__ . '/../Models/foto.php';
 require_once __DIR__ . '/../Models/ubicacion.php';
+require_once __DIR__ . '/../Models/accion.php';
 
 session_start();
+
+// Si se solicita una acción vía GET (por ejemplo desde el panel admin)
+if (isset($_GET['action']) && $_GET['action'] === 'listarTodos') {
+    try {
+        // Devolver todos los servicios (incluye proveedor y estado)
+        require_once __DIR__ . '/../Models/usuario.php';
+        $db = new ConexionDB();
+        $conn = $db->getConexion();
+        $sql = "SELECT s.IdServicio, s.Nombre, s.Descripcion, s.Estado, s.IdProveedor, u.Nombre as ProveedorNombre, u.Apellido as ProveedorApellido, s.Precio, s.Divisa
+                FROM Servicio s LEFT JOIN Usuario u ON s.IdProveedor = u.IdUsuario
+                ORDER BY s.FechaPublicacion DESC";
+        $res = $conn->query($sql);
+        $out = [];
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $out[] = [
+                    'IdServicio' => $row['IdServicio'],
+                    'Nombre' => $row['Nombre'],
+                    'Descripcion' => $row['Descripcion'],
+                    'Estado' => $row['Estado'],
+                    'IdProveedor' => $row['IdProveedor'],
+                    'ProveedorNombre' => trim(($row['ProveedorNombre'] ?? '') . ' ' . ($row['ProveedorApellido'] ?? '')),
+                    'Precio' => $row['Precio'],
+                    'Divisa' => $row['Divisa']
+                ];
+            }
+        }
+        echo json_encode($out);
+        exit;
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
+}
 
 try {
     // Actualizar un servicio existente
@@ -233,6 +269,132 @@ try {
         }
         
         echo json_encode(['success' => true, 'message' => 'Servicio eliminado correctamente']);
+        exit;
+    }
+    // Eliminación por administrador (permitir borrar servicio aun si no es propietario)
+    if (isset($_POST['eliminarAdmin']) && isset($_POST['idServicio'])) {
+        // Verificar rol admin
+        require_once __DIR__ . '/../Models/usuario.php';
+        $usuarioSesion = null;
+        if (isset($_SESSION['IdUsuario'])) {
+            $usuarioSesion = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
+        }
+        if (!$usuarioSesion || $usuarioSesion->getRol() !== usuario::ROL_ADMIN) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            exit;
+        }
+
+        $idServicio = intval($_POST['idServicio']);
+        $servicio = Servicio::obtenerPorId($idServicio);
+        if (!$servicio) {
+            echo json_encode(['success' => false, 'message' => 'Servicio no encontrado']);
+            exit;
+        }
+
+        $idProveedor = $servicio->IdProveedor;
+        $eliminado = Servicio::eliminar($idServicio, $idProveedor);
+        if (!$eliminado) {
+            echo json_encode(['success' => false, 'message' => 'No se pudo eliminar el servicio']);
+            exit;
+        }
+
+        // Registrar acción en la tabla Accion mediante el modelo
+        try {
+            $motivo = $_POST['motivo'] ?? '';
+            // usar el modelo accion para insertar
+            accion::crear('borrar_servicio', $motivo, $idProveedor, $_SESSION['IdUsuario']);
+        } catch (Exception $e) {
+            error_log('Error registrando Accion (borrar_servicio): ' . $e->getMessage());
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Servicio eliminado correctamente (admin)']);
+        exit;
+    }
+
+    // Cambiar estado (admin)
+    if (isset($_POST['cambiarEstado']) && isset($_POST['idServicio']) && isset($_POST['Estado'])) {
+        require_once __DIR__ . '/../Models/usuario.php';
+        $usuarioSesion = null;
+        if (isset($_SESSION['IdUsuario'])) {
+            $usuarioSesion = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
+        }
+        if (!$usuarioSesion || $usuarioSesion->getRol() !== usuario::ROL_ADMIN) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            exit;
+        }
+        $idServicio = intval($_POST['idServicio']);
+        $nuevoEstado = trim($_POST['Estado']);
+        $db = new ConexionDB(); $conn = $db->getConexion();
+        $stmt = $conn->prepare("UPDATE Servicio SET Estado = ? WHERE IdServicio = ?");
+        if (!$stmt) {
+            echo json_encode(['success' => false, 'message' => 'Error preparando consulta']); exit;
+        }
+        $stmt->bind_param('si', $nuevoEstado, $idServicio);
+        $ok = $stmt->execute();
+        $stmt->close();
+        // Registrar en Accion si el cambio fue exitoso
+        if ($ok) {
+            try {
+                $motivo = $_POST['motivo'] ?? '';
+                // si el nuevo estado no es DISPONIBLE lo consideramos una deshabilitación
+                $tipoAcc = (strtoupper($nuevoEstado) !== 'DISPONIBLE') ? 'desabilitar' : 'editar_datos_servicio';
+                // obtener el proveedor para registrar como IdUsuario
+                $serv = Servicio::obtenerPorId($idServicio);
+                $idProv = $serv ? $serv->IdProveedor : null;
+                accion::crear($tipoAcc, $motivo, $idProv ? intval($idProv) : 0, $_SESSION['IdUsuario']);
+            } catch (Exception $e) {
+                error_log('Error registrando Accion (cambiarEstado): ' . $e->getMessage());
+            }
+        }
+
+        echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Estado actualizado' : 'No se pudo actualizar estado']);
+        exit;
+    }
+
+    // Editar datos del servicio por administrador (no borrar)
+    if (isset($_POST['editarAdmin']) && isset($_POST['idServicio'])) {
+        require_once __DIR__ . '/../Models/usuario.php';
+        $usuarioSesion = null;
+        if (isset($_SESSION['IdUsuario'])) {
+            $usuarioSesion = usuario::obtenerPor('IdUsuario', $_SESSION['IdUsuario']);
+        }
+        if (!$usuarioSesion || $usuarioSesion->getRol() !== usuario::ROL_ADMIN) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            exit;
+        }
+
+        $idServicio = intval($_POST['idServicio']);
+        $nombre = trim($_POST['Nombre'] ?? '');
+        $descripcion = trim($_POST['Descripcion'] ?? '');
+        $precio = isset($_POST['Precio']) ? floatval($_POST['Precio']) : null;
+        $divisa = $_POST['Divisa'] ?? null;
+        $estado = $_POST['Estado'] ?? null;
+
+        if ($nombre === '') {
+            echo json_encode(['success' => false, 'message' => 'El nombre es obligatorio']); exit;
+        }
+
+        $db = new ConexionDB(); $conn = $db->getConexion();
+        $sql = "UPDATE Servicio SET Nombre = ?, Descripcion = ?, Precio = ?, Divisa = ?, Estado = ? WHERE IdServicio = ?";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) { echo json_encode(['success'=>false,'message'=>'Error preparar consulta']); exit; }
+        $stmt->bind_param('ssdsis', $nombre, $descripcion, $precio, $divisa, $estado, $idServicio);
+        $ok = $stmt->execute();
+        $stmt->close();
+        // Registrar en Accion la edición de datos por admin
+        if ($ok) {
+            try {
+                $motivo = $_POST['motivo'] ?? '';
+                $tipoAcc = 'editar_datos_servicio';
+                $serv = Servicio::obtenerPorId($idServicio);
+                $idProv = $serv ? $serv->IdProveedor : null;
+                accion::crear($tipoAcc, $motivo, $idProv ? intval($idProv) : 0, $_SESSION['IdUsuario']);
+            } catch (Exception $e) {
+                error_log('Error registrando Accion (editarAdmin): ' . $e->getMessage());
+            }
+        }
+
+        echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Servicio actualizado (admin)' : 'No se pudo actualizar']);
         exit;
     }
     

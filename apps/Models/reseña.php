@@ -345,5 +345,23 @@ class Resena {
             'total' => $fila['total']
         ];
     }
+
+    // ===== ELIMINAR TODAS LAS RESEÑAS DE UN SERVICIO =====
+    public static function eliminarPorServicio(int $idServicio): bool {
+        $conexionDB = new ConexionDB();
+        $conn = $conexionDB->getConexion();
+
+        $stmt = $conn->prepare("DELETE FROM Resenia WHERE IdServicio = ?");
+        if (!$stmt) {
+            error_log('Error en prepare eliminarPorServicio: ' . $conn->error);
+            return false;
+        }
+        $stmt->bind_param('i', $idServicio);
+        $res = $stmt->execute();
+        if (!$res) error_log('Error al eliminar reseñas por servicio: ' . $stmt->error);
+        $stmt->close();
+        $conn->close();
+        return (bool) $res;
+    }
 }
 ?>

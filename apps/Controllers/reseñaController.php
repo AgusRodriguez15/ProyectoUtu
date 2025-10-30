@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 
 session_start();
 require_once __DIR__ . '/../Models/reseña.php';
+require_once __DIR__ . '/../Models/accion.php';
 
 // Limpiar cualquier salida previa
 ob_clean();
@@ -58,6 +59,9 @@ switch ($accion) {
     case 'eliminar':
         eliminarResena();
         break;
+    case 'cancelarPorServicio':
+        cancelarResenasPorServicio();
+        break;
     
     case 'obtenerPromedio':
         obtenerPromedioServicio();
@@ -69,6 +73,43 @@ switch ($accion) {
     
     default:
         enviarRespuesta(false, 'Acción no válida');
+}
+
+// ===== ELIMINAR TODAS LAS RESEÑAS DE UN SERVICIO (ADMIN) =====
+function cancelarResenasPorServicio() {
+    // Verificar que el usuario esté logueado y sea administrador
+    if (!isset($_SESSION['IdUsuario']) || !isset($_SESSION['TipoUsuario']) || $_SESSION['TipoUsuario'] !== 'Administrador') {
+        enviarRespuesta(false, 'No tienes permiso para realizar esta acción');
+    }
+
+    $idServicio = intval($_POST['idServicio'] ?? $_GET['idServicio'] ?? 0);
+    if ($idServicio <= 0) {
+        enviarRespuesta(false, 'ID de servicio inválido');
+    }
+
+    try {
+        require_once __DIR__ . '/../Models/reseña.php';
+        $ok = Resena::eliminarPorServicio($idServicio);
+        if ($ok) {
+            // Registrar la acción en Accion (cancelar_reseñas)
+            try {
+                require_once __DIR__ . '/../Models/servicio.php';
+                $serv = Servicio::obtenerPorId($idServicio);
+                $idProv = $serv ? $serv->IdProveedor : 0;
+                $motivo = $_POST['motivo'] ?? '';
+                accion::crear('cancelar_reseñas', $motivo, $idProv ? intval($idProv) : 0, $_SESSION['IdUsuario']);
+            } catch (Exception $e) {
+                error_log('Error registrando Accion (cancelar_reseñas): ' . $e->getMessage());
+            }
+
+            enviarRespuesta(true, 'Reseñas canceladas/eliminadas para el servicio');
+        } else {
+            enviarRespuesta(false, 'No se pudieron eliminar las reseñas o no había reseñas');
+        }
+    } catch (Exception $e) {
+        error_log('Error en cancelarResenasPorServicio: ' . $e->getMessage());
+        enviarRespuesta(false, 'Error al procesar la solicitud');
+    }
 }
 
 // ===== OBTENER RESEÑAS DE UN SERVICIO =====

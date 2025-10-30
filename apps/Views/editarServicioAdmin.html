@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Servicio (Admin)</title>
+  <link rel="stylesheet" href="/proyecto/public/CSS/styleDetalle.css" />
+  <style>
+    .container { max-width:900px; margin:24px auto; padding:16px; background:#fff; border-radius:6px; }
+    label { display:block; margin-top:10px; }
+    input[type=text], textarea, input[type=number], select { width:100%; padding:8px; box-sizing:border-box; }
+    .actions { margin-top:14px; display:flex; gap:10px; align-items:center }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="btn-volver" id="btnVolver">← Volver</button>
+    <h1>Editar Servicio (Admin)</h1>
+
+    <form id="formEditarAdmin">
+      <input type="hidden" id="idServicio" name="idServicio">
+
+      <label for="Nombre">Título</label>
+      <input type="text" id="Nombre" name="Nombre" required>
+
+      <label for="Descripcion">Descripción</label>
+      <textarea id="Descripcion" name="Descripcion" rows="5" required></textarea>
+
+      <label for="Precio">Precio</label>
+      <input type="number" id="Precio" name="Precio" step="0.01" min="0">
+
+      <label for="Divisa">Divisa</label>
+      <select id="Divisa" name="Divisa">
+        <option value="UYU">UYU</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="ARS">ARS</option>
+        <option value="BRL">BRL</option>
+      </select>
+
+      <label for="Estado">Estado</label>
+      <select id="Estado" name="Estado">
+        <option value="DISPONIBLE">DISPONIBLE</option>
+        <option value="SUSPENDIDO">SUSPENDIDO</option>
+        <option value="INACTIVO">INACTIVO</option>
+      </select>
+
+      <div class="actions">
+        <button type="submit" class="btn-primario">Guardar cambios</button>
+        <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/proyecto/public/js/editarServicioAdmin.js"></script>
+  <!-- Modal de confirmación reutilizable (necesario para pedir motivo al guardar) -->
+  <div id="confirmModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:#fff; border-radius:8px; width:90%; max-width:520px; padding:18px; box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+      <h3 id="confirmTitle" style="margin:0 0 8px 0;">Confirmar acción</h3>
+      <p id="confirmMessage" style="margin:0 0 12px 0; color:#333;">¿Estás seguro?</p>
+      <div id="confirmPrimaryContainer" style="margin-bottom:12px; display:none;">
+        <label for="confirmInput" id="confirmPrimaryLabel" style="display:block; font-size:0.9rem; margin-bottom:6px; color:#444;">Valor</label>
+        <input id="confirmInput" type="text" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;" />
+      </div>
+      <div id="confirmMotivoContainer" style="margin-bottom:12px; display:block;">
+        <label for="confirmMotivo" style="display:block; font-size:0.9rem; margin-bottom:6px; color:#444;">Motivo (opcional)</label>
+        <input id="confirmMotivo" type="text" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;" />
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="confirmCancel" class="btn" style="background:#ccc; color:#111;">Cancelar</button>
+        <button id="confirmOk" class="btn" style="background:#27ae60; color:white;">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
