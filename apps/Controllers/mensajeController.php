@@ -95,10 +95,21 @@ switch ($accion) {
             if (!is_array($res)) {
                 echo json_encode(['ok' => false, 'error' => 'Respuesta inesperada del modelo']);
             } else {
+                // Si subimos un archivo y existe en disco, añadir la URL directa para que el cliente la use
+                if (!empty($imagenNombre)) {
+                    $possiblePath = __DIR__ . '/../../public/recursos/mensajes/' . $imagenNombre;
+                    if (file_exists($possiblePath)) {
+                        $res['imagenUrl'] = '/proyecto/public/recursos/mensajes/' . $imagenNombre;
+                    } else {
+                        // Registrar en log local si el archivo no está donde esperamos
+                        _mc_log_local('[mensajeController] Imagen esperada no encontrada en disco: ' . $possiblePath);
+                    }
+                }
                 echo json_encode($res);
             }
         } catch (Throwable $t) {
             http_response_code(500);
+            _mc_log_local('[mensajeController] Excepción: ' . $t->getMessage());
             echo json_encode(['ok' => false, 'error' => 'Excepción en servidor: ' . $t->getMessage()]);
         }
         break;

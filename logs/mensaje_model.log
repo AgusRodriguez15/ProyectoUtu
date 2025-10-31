@@ -1,0 +1,5 @@
+[2025-10-31 16:34:25] [enviar] Error preparando consulta principal: Unknown column 'Imagen' in 'field list'
+[2025-10-31 16:34:26] [enviar] Fallback INSERT ejecutado. insertId=15
+[2025-10-31 16:44:48] [enviar] INSERT ejecutado. insertId=16, contenido=asda, imagenNombre=msg_1761925488_1850.jpg
+[2025-10-31 16:44:48] [guardarImagen] UPDATE exitoso para IdMensaje=16, Imagen=msg_1761925488_1850.jpg
+[2025-10-31 16:44:48] [enviar] guardarImagen ejecutado para insertId=16, resultado=true

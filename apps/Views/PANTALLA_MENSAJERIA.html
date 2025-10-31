@@ -41,11 +41,25 @@
 
       <div id="chatMessages" class="chat-messages"></div>
 
+      <!-- Preview desplegable para imagen seleccionada -->
+      <div id="mensajePreview" style="display:none;padding:8px;border-top:1px solid #eee;background:#fff">
+        <div style="display:flex;align-items:center;gap:12px">
+          <img id="mensajePreviewImg" src="" alt="Preview" style="max-width:120px;max-height:120px;border-radius:8px;object-fit:cover;border:1px solid #ddd">
+          <div style="flex:1">
+            <div id="mensajePreviewName" style="font-weight:600;margin-bottom:6px">Nombre archivo.jpg</div>
+            <div style="font-size:13px;color:#666">Previsualización de la imagen adjunta. Puedes quitarla si quieres.</div>
+          </div>
+          <div>
+            <button id="mensajePreviewRemove" type="button" style="background:#dc3545;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer">Quitar</button>
+          </div>
+        </div>
+      </div>
+
       <form id="chatInputForm" class="chat-input" enctype="multipart/form-data">
         <input type="text" id="mensajeInput" name="contenido" placeholder="Escribe un mensaje..." style="flex:1;padding:8px">
         <label class="foto-label" for="mensajeFile" title="Adjuntar foto" style="cursor:pointer;padding:6px 10px;background:#28a745;color:#fff;border-radius:6px">📷</label>
         <input type="file" id="mensajeFile" name="imagen" accept="image/*" style="display:none">
-        <button type="submit">Enviar</button>
+        <button type="submit" id="mensajeEnviarBtn" disabled>Enviar</button>
       </form>
     </main>
   </div>

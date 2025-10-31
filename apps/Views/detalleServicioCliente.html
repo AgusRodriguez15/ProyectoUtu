@@ -243,6 +243,20 @@
       <h2>💬 Enviar mensaje</h2>
       <p id="modalMensajeProveedorNombre" style="font-weight:600;margin-bottom:8px"></p>
       <textarea id="mensajeModalTexto" rows="4" placeholder="Escribe tu mensaje..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px"></textarea>
+
+      <!-- Soporte para adjuntar imagen desde el modal -->
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+        <label for="modalMensajeFile" title="Adjuntar foto" style="cursor:pointer;padding:6px 10px;background:#28a745;color:#fff;border-radius:6px">📷 Adjuntar</label>
+        <input type="file" id="modalMensajeFile" name="imagen" accept="image/*" style="display:none">
+        <div id="modalMensajePreview" style="display:none;align-items:center;gap:8px;margin-left:auto">
+          <img id="modalMensajePreviewImg" src="" alt="Preview" style="max-width:90px;max-height:90px;border-radius:6px;border:1px solid #ddd;object-fit:cover">
+          <div style="display:flex;flex-direction:column;align-items:flex-start">
+            <div id="modalMensajePreviewName" style="font-size:13px;font-weight:600">archivo.jpg</div>
+            <button id="modalMensajePreviewRemove" type="button" style="background:#dc3545;color:#fff;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;margin-top:6px">Quitar</button>
+          </div>
+        </div>
+      </div>
+
       <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
         <button id="btnCancelarMensajeModal" class="btn-secondary">Cancelar</button>
         <button id="btnEnviarMensajeModal" class="btn-primary">Enviar</button>

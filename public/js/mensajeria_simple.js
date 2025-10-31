@@ -46,6 +46,56 @@ async function inicializar(){
   setInterval(()=>{ if(chatActivoId) cargarMensajes(); }, 3000);
   const form = document.getElementById('chatInputForm');
   if(form) form.addEventListener('submit', enviarMensaje);
+  // Preparar preview y handlers para archivo
+  const fileInput = document.getElementById('mensajeFile');
+  const preview = document.getElementById('mensajePreview');
+  const previewImg = document.getElementById('mensajePreviewImg');
+  const previewName = document.getElementById('mensajePreviewName');
+  const previewRemove = document.getElementById('mensajePreviewRemove');
+  const enviarBtn = document.getElementById('mensajeEnviarBtn');
+  const textoInput = document.getElementById('mensajeInput');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const f = fileInput.files && fileInput.files[0];
+      if (f) {
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          previewImg.src = ev.target.result;
+        };
+        reader.readAsDataURL(f);
+        previewName.textContent = f.name;
+        preview.style.display = 'block';
+        // Habilitar enviar
+        if (enviarBtn) enviarBtn.disabled = false;
+      } else {
+        // No hay archivo
+        preview.style.display = 'none';
+        previewImg.src = '';
+        if (enviarBtn) enviarBtn.disabled = !(textoInput && textoInput.value.trim().length>0);
+      }
+    });
+  }
+
+  if (previewRemove) {
+    previewRemove.addEventListener('click', () => {
+      if (fileInput) fileInput.value = '';
+      preview.style.display = 'none';
+      previewImg.src = '';
+      // Deshabilitar enviar si no hay texto
+      if (enviarBtn) enviarBtn.disabled = !(textoInput && textoInput.value.trim().length>0);
+    });
+  }
+
+  // Controlar habilitado del botón enviar según texto
+  if (textoInput) {
+    textoInput.addEventListener('input', () => {
+      const hasText = textoInput.value.trim().length > 0;
+      const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+      if (enviarBtn) enviarBtn.disabled = !(hasText || hasFile);
+    });
+  }
 }
 
 function disableForm(){
@@ -136,7 +186,7 @@ async function enviarMensaje(e){
     const fileInput = document.getElementById('mensajeFile');
     let fetchOpts;
     if (fileInput && fileInput.files && fileInput.files.length > 0) {
-      // Usar FormData para enviar imagen
+      console.log('[enviarMensaje] Enviando imagen:', fileInput.files[0]);
       const fd = new FormData();
       fd.append('accion', 'enviarMensaje');
       fd.append('contenido', text);
@@ -145,6 +195,7 @@ async function enviarMensaje(e){
       fd.append('imagen', fileInput.files[0]);
       fetchOpts = { method: 'POST', body: fd };
     } else {
+      console.log('[enviarMensaje] Enviando solo texto:', text);
       const form = new URLSearchParams();
       form.append('accion', 'enviarMensaje');
       form.append('contenido', text);
@@ -155,13 +206,66 @@ async function enviarMensaje(e){
 
     const res = await fetch('/proyecto/apps/Controllers/mensajeController.php', fetchOpts);
     const j = await res.json();
+    console.log('[enviarMensaje] Respuesta del servidor:', j);
     if(j.ok){
+      // Limpiar campos
       inp.value='';
-      if (document.getElementById('mensajeFile')) document.getElementById('mensajeFile').value = '';
-      // Recargar mensajes desde servidor para garantizar orden y ver imagen
-      await cargarMensajes();
-    } else alert(j.error||'Error al enviar');
-  }catch(e){ console.error('enviarMensaje', e); }
+      const fileInputEl = document.getElementById('mensajeFile');
+      const previewImgEl = document.getElementById('mensajePreviewImg');
+      const previewEl = document.getElementById('mensajePreview');
+
+      // Si se envió una imagen pero el servidor/BD no la devuelve inmediatamente,
+      // mostramos una previsualización temporal en el chat usando la imagen que ya teníamos en cliente.
+      const hasFile = fileInputEl && fileInputEl.files && fileInputEl.files.length > 0;
+      let appendedTemp = false;
+      if (hasFile) {
+        let src = j.imagenUrl || '';
+        console.log('[enviarMensaje] imagenUrl devuelta:', src);
+        if (!src) {
+          if (previewImgEl && previewImgEl.src) src = previewImgEl.src;
+          else {
+            try { src = URL.createObjectURL(fileInputEl.files[0]); } catch(e){ src = ''; }
+          }
+        }
+        if (src) {
+          try {
+            const box = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message sent';
+            const texto = document.createElement('div');
+            texto.className = 'message-text';
+            texto.textContent = text || '';
+            div.appendChild(texto);
+            const img = document.createElement('img');
+            img.className = 'message-image';
+            img.src = src;
+            img.alt = 'Adjunto';
+            div.appendChild(img);
+            const meta = document.createElement('div'); meta.style.fontSize='10px'; meta.style.color='#666'; meta.textContent = new Date().toLocaleString();
+            div.appendChild(meta);
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            appendedTemp = true;
+            console.log('[enviarMensaje] Mensaje temporal con imagen añadido al DOM');
+          } catch(e) { console.warn('No se pudo añadir previsualización temporal en el chat', e); }
+        }
+      }
+
+      // Limpiar input y preview
+      if (fileInputEl) fileInputEl.value = '';
+      if (previewImgEl) previewImgEl.src = '';
+      if (previewEl) previewEl.style.display = 'none';
+
+      try { await cargarMensajes(); } catch(e){ console.warn('[enviarMensaje] Error al recargar mensajes', e); }
+
+      if (!appendedTemp && !hasFile) {
+        // nothing special
+      }
+    } else {
+      console.error('[enviarMensaje] Error al enviar:', j.error||'Error desconocido');
+      alert(j.error||'Error al enviar');
+    }
+  }catch(e){ console.error('[enviarMensaje] Excepción:', e); }
 }
 
 function agregarMensaje(contenido, tipo, fecha){

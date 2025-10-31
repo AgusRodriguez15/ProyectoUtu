@@ -483,13 +483,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (btnEnviarMsg) {
+      // Manejo del archivo del modal y preview
+      const modalFile = document.getElementById('modalMensajeFile');
+      const modalPreview = document.getElementById('modalMensajePreview');
+      const modalPreviewImg = document.getElementById('modalMensajePreviewImg');
+      const modalPreviewName = document.getElementById('modalMensajePreviewName');
+      const modalPreviewRemove = document.getElementById('modalMensajePreviewRemove');
+
+      if (modalFile) {
+        modalFile.addEventListener('change', (ev) => {
+          const f = modalFile.files && modalFile.files[0];
+          if (f) {
+            modalPreviewName.textContent = f.name;
+            try {
+              const reader = new FileReader();
+              reader.onload = function(e) { modalPreviewImg.src = e.target.result; };
+              reader.readAsDataURL(f);
+            } catch (e) {
+              try { modalPreviewImg.src = URL.createObjectURL(f); } catch (err) { modalPreviewImg.src = ''; }
+            }
+            modalPreview.style.display = 'flex';
+          } else {
+            modalPreview.style.display = 'none';
+            modalPreviewImg.src = '';
+          }
+        });
+      }
+
+      if (modalPreviewRemove) {
+        modalPreviewRemove.addEventListener('click', () => {
+          if (modalFile) modalFile.value = '';
+          modalPreview.style.display = 'none';
+          modalPreviewImg.src = '';
+        });
+      }
+
       btnEnviarMsg.addEventListener('click', async () => {
         const modal = document.getElementById('modalMensaje');
         const txt = document.getElementById('mensajeModalTexto');
         const feedback = document.getElementById('modalMensajeFeedback');
         if (!modal || !txt) return;
         const contenido = txt.value.trim();
-        if (!contenido) { alert('Escribe un mensaje antes de enviar.'); return; }
+        // permitir enviar solo imagen sin texto también
+        const hasFile = modalFile && modalFile.files && modalFile.files.length > 0;
+        if (!contenido && !hasFile) { alert('Escribe un mensaje o adjunta una imagen antes de enviar.'); return; }
 
         // Obtener id del emisor (intentos: sessionStorage IdUsuario, usuarioActualId, cookie, servidor)
         let emisor = null;
@@ -509,31 +546,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const receptor = modal.dataset.receptorId;
         if (!receptor) { alert('No se pudo determinar el receptor del mensaje.'); return; }
 
-        // Enviar al backend vía POST form-urlencoded (coincide con mensajeController.php)
         try {
-          const form = new URLSearchParams();
-          form.append('accion', 'enviarMensaje');
-          form.append('contenido', contenido);
-          form.append('emisor', emisor);
-          form.append('receptor', receptor);
-
           btnEnviarMsg.disabled = true;
           btnEnviarMsg.textContent = 'Enviando...';
 
-          const resp = await fetch('/proyecto/apps/Controllers/mensajeController.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: form.toString()
-          });
+          let resp, respText, json;
 
-          // Leer como texto para poder manejar respuestas vacías o HTML inesperado
-          const respText = await resp.text();
-          let json = null;
-          try {
-            if (respText && respText.trim() !== '') {
-              json = JSON.parse(respText);
-            }
-          } catch (parseErr) {
+          if (hasFile) {
+            const fd = new FormData();
+            fd.append('accion', 'enviarMensaje');
+            fd.append('contenido', contenido);
+            fd.append('emisor', emisor);
+            fd.append('receptor', receptor);
+            fd.append('imagen', modalFile.files[0]);
+
+            resp = await fetch('/proyecto/apps/Controllers/mensajeController.php', { method: 'POST', body: fd });
+            respText = await resp.text();
+          } else {
+            const form = new URLSearchParams();
+            form.append('accion', 'enviarMensaje');
+            form.append('contenido', contenido);
+            form.append('emisor', emisor);
+            form.append('receptor', receptor);
+            resp = await fetch('/proyecto/apps/Controllers/mensajeController.php', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form.toString() });
+            respText = await resp.text();
+          }
+
+          try { json = respText && respText.trim() !== '' ? JSON.parse(respText) : null; } catch (parseErr) {
             console.error('Respuesta inválida al enviar mensaje. Status:', resp.status, 'Body:', respText);
             feedback.style.display = 'block';
             feedback.style.color = 'red';
@@ -554,6 +593,10 @@ document.addEventListener("DOMContentLoaded", () => {
             feedback.style.color = 'green';
             feedback.textContent = 'Mensaje enviado correctamente.';
             txt.value = '';
+            // limpiar preview y file
+            if (modalFile) modalFile.value = '';
+            if (modalPreview) { modalPreview.style.display = 'none'; modalPreviewImg.src = ''; }
+
             setTimeout(() => { cerrarModalMensaje(); }, 900);
           } else {
             feedback.style.display = 'block';
