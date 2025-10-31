@@ -51,9 +51,21 @@ function crearTarjetaServicio(servicio) {
     const estadoTexto = servicio.Estado === 'DISPONIBLE' ? '✅ Disponible' : '🔒 No disponible';
     
     // Primera foto o imagen por defecto
-    const fotoUrl = (servicio.Fotos && servicio.Fotos.length > 0) 
-        ? servicio.Fotos[0].Url 
-        : "../../public/recursos/imagenes/default/servicio-default.jpg";
+    let fotoUrl = "../../public/recursos/imagenes/default/servicio-default.jpg";
+    if (servicio.Fotos && Array.isArray(servicio.Fotos) && servicio.Fotos.length > 0) {
+        console.log('[crearTarjetaServicio] Fotos disponibles:', servicio.Fotos);
+        // Elegir foto aleatoria
+        const idx = Math.floor(Math.random() * servicio.Fotos.length);
+        const primera = servicio.Fotos[idx];
+        if (primera && (primera.Url || primera.URL)) {
+            fotoUrl = primera.Url || primera.URL;
+            console.log(`[crearTarjetaServicio] Usando foto aleatoria index=${idx}:`, fotoUrl);
+        } else {
+            console.warn('[crearTarjetaServicio] Elemento de foto sin Url/URL en index', idx, primera);
+        }
+    } else {
+        console.warn('[crearTarjetaServicio] No hay fotos para el servicio (usar default):', servicio.IdServicio);
+    }
 
     card.innerHTML = `
         <div class="service-image">
@@ -62,7 +74,20 @@ function crearTarjetaServicio(servicio) {
         </div>
         <div class="service-info">
             <h3>${servicio.Nombre}</h3>
-            <p class="service-description">${servicio.Descripcion || 'Sin descripción'}</p>
+            <div class="service-meta">
+                <p class="service-description">${servicio.Descripcion || 'Sin descripción'}</p>
+                <div class="service-rating">
+                    ${(() => {
+                        // Mostrar estrellas y cantidad de reseñas si existen
+                        const r = (servicio.rating !== undefined) ? servicio.rating : (servicio.Rating !== undefined ? servicio.Rating : 0);
+                        const rc = (servicio.ratingCount !== undefined) ? servicio.ratingCount : (servicio.RatingCount !== undefined ? servicio.RatingCount : 0);
+                        if (!r || rc === 0) return '<span class="no-reseñas">Sin reseñas</span>';
+                        const rounded = Math.round(r);
+                        const stars = '★'.repeat(Math.min(5, Math.max(0, rounded))) + '☆'.repeat(5 - Math.min(5, Math.max(0, rounded)));
+                        return `<span class="estrellas">${stars}</span> <span class="rating-count">(${rc})</span>`;
+                    })()}
+                </div>
+            </div>
             <div class="service-actions">
                 <button class="btn-ver" onclick="verServicio(${servicio.IdServicio})">👁️ Ver</button>
                 <button class="btn-editar" onclick="editarServicio(${servicio.IdServicio})">✏️ Editar</button>

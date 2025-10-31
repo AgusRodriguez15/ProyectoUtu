@@ -124,5 +124,68 @@ class Categoria
 
         return $categorias;
     }
+
+    /**
+     * Crea una nueva categoría y devuelve el Id insertado
+     * @param string $nombre
+     * @param string $descripcion
+     * @return int Id insertado
+     * @throws Exception
+     */
+    public function crear(string $nombre, string $descripcion = ''): int
+    {
+        $sql = "INSERT INTO Categoria (Nombre, Descripcion) VALUES (?, ?)";
+        $stmt = $this->conexion->prepare($sql);
+        if (!$stmt) {
+            throw new Exception('Error en prepare(): ' . $this->conexion->error);
+        }
+        $stmt->bind_param('ss', $nombre, $descripcion);
+        if (!$stmt->execute()) {
+            throw new Exception('Error al insertar categoría: ' . $stmt->error);
+        }
+        $insertId = (int)$this->conexion->insert_id;
+        $stmt->close();
+        return $insertId;
+    }
+
+    /**
+     * Elimina una categoría por Id (no elimina servicios)
+     * @param int $idCategoria
+     * @return bool
+     * @throws Exception
+     */
+    public function eliminar(int $idCategoria): bool
+    {
+        // Usamos transacción por seguridad
+        $this->conexion->begin_transaction();
+        try {
+            // Eliminar relaciones en pertenece (por compatibilidad si no hay cascade)
+            $sqlPert = "DELETE FROM pertenece WHERE IdCategoria = ?";
+            $stmt = $this->conexion->prepare($sqlPert);
+            if ($stmt) {
+                $stmt->bind_param('i', $idCategoria);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // Eliminar la categoría
+            $sql = "DELETE FROM Categoria WHERE IdCategoria = ?";
+            $stmt2 = $this->conexion->prepare($sql);
+            if (!$stmt2) {
+                throw new Exception('Error en prepare(): ' . $this->conexion->error);
+            }
+            $stmt2->bind_param('i', $idCategoria);
+            if (!$stmt2->execute()) {
+                throw new Exception('Error al eliminar categoría: ' . $stmt2->error);
+            }
+            $stmt2->close();
+
+            $this->conexion->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conexion->rollback();
+            throw $e;
+        }
+    }
 }
 ?>

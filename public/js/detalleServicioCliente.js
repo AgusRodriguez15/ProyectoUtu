@@ -19,6 +19,69 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Cargar los detalles del servicio
   cargarDetalleServicio(servicioId);
+
+  // Helper: obtener id válido del proveedor (entero > 0) a partir de posibles nombres de campo
+  // Esta función intenta múltiples claves, soporta valores directos (number/string) y objetos anidados.
+  function obtenerIdProveedor(prov) {
+    if (prov === null || prov === undefined) return null;
+
+    // Si prov es un número o string numérico
+    if (typeof prov === 'number' && isFinite(prov) && prov > 0) return prov;
+    if (typeof prov === 'string' && prov.trim() !== '') {
+      const n = Number(prov);
+      if (!Number.isNaN(n) && isFinite(n) && n > 0) return n;
+    }
+
+    // Lista amplia de claves comunes donde podría guardarse el id
+    const commonKeys = [
+      'idUsuario','IdUsuario','id','Id','IdProveedor','idProveedor','IdProv','Id_user','usuarioId','UsuarioId','IdUsuarioProveedor','IdUser'
+    ];
+
+    for (let k of commonKeys) {
+      if (Object.prototype.hasOwnProperty.call(prov, k)) {
+        const v = prov[k];
+        if (v === null || v === undefined) continue;
+        const n = Number(v);
+        if (!Number.isNaN(n) && Number.isFinite(n) && n > 0) return n;
+      }
+    }
+
+    // Si prov tiene una propiedad 'usuario' o 'user', intentar recursivamente
+    if (prov.usuario) {
+      const r = obtenerIdProveedor(prov.usuario);
+      if (r) return r;
+    }
+    if (prov.user) {
+      const r = obtenerIdProveedor(prov.user);
+      if (r) return r;
+    }
+
+    // Último recurso: iterar todas las propiedades y devolver el primer número válido
+    try {
+      for (const k in prov) {
+        if (!Object.prototype.hasOwnProperty.call(prov, k)) continue;
+        const v = prov[k];
+        if (v === null || v === undefined) continue;
+        const n = Number(v);
+        if (!Number.isNaN(n) && isFinite(n) && n > 0) return n;
+      }
+    } catch (e) {
+      // no crítico
+    }
+
+    return null;
+  }
+
+  // Helper: construir ruta correcta para foto de perfil
+  function buildPerfilFoto(foto) {
+    if (!foto) return '/proyecto/public/recursos/imagenes/perfil/default.png';
+    try {
+      if (foto.startsWith('http://') || foto.startsWith('https://') || foto.startsWith('/')) return foto;
+    } catch (e) {
+      return '/proyecto/public/recursos/imagenes/perfil/default.png';
+    }
+    return '/proyecto/public/recursos/imagenes/perfil/' + foto;
+  }
   
   function cargarDetalleServicio(id) {
     fetch("../../apps/Controllers/servicioController.php", {
@@ -37,7 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const data = JSON.parse(text);
           
-          console.log('Datos parseados:', data);
+    console.log('Datos parseados:', data);
+    // Exponer temporalmente el proveedor en window para depuración desde la consola
+    try { window._ultimoProveedor = data.proveedor; } catch (e) { /* no crítico */ }
           console.log('Proveedor:', data.proveedor);
           console.log('Contactos:', data.proveedor?.contactos);
           console.log('Habilidades:', data.proveedor?.habilidades);
@@ -159,20 +224,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // Proveedor
     if (servicio.proveedor) {
       const prov = servicio.proveedor;
+      // Guardar el id del proveedor en el DOM para que otros scripts lo puedan leer
+      try {
+        const provCardEl = servicioElement.querySelector('.proveedor-card');
+        const provId = obtenerIdProveedor(prov);
+        if (provCardEl && provId) {
+          provCardEl.setAttribute('data-id', provId);
+        }
+      } catch (e) {
+        console.warn('No se pudo establecer data-id en proveedor-card', e);
+      }
       
       // Foto del proveedor
-      if (prov.foto) {
+        if (prov.foto) {
         const fotoContainer = servicioElement.querySelector('.proveedor-foto');
         const fotoImg = servicioElement.querySelector('.proveedor-imagen');
         fotoContainer.style.display = 'block';
         
-        // Si la foto NO empieza con /, es solo el nombre del archivo
-        if (!prov.foto.startsWith('/')) {
-          fotoImg.src = `/proyecto/public/recursos/imagenes/perfil/${prov.foto}`;
-        } else {
-          // Si empieza con /, usar tal cual (para compatibilidad con datos antiguos)
-          fotoImg.src = prov.foto;
-        }
+        // Usar helper para normalizar la ruta de la foto (evita duplicados)
+        fotoImg.src = buildPerfilFoto(prov.foto);
         
         fotoImg.onerror = function() {
           this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23ddd'/%3E%3Ctext x='50' y='50' text-anchor='middle' fill='%23666' font-size='40'%3E👤%3C/text%3E%3C/svg%3E";
@@ -190,35 +260,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       
       // Contactos
+      console.log('[mostrarDetalle] Contactos recibidos:', prov.contactos);
       if (prov.contactos && prov.contactos.length > 0) {
         const contactosContainer = servicioElement.querySelector('.proveedor-contactos');
         const contactosLista = servicioElement.querySelector('.contactos-lista');
         const templateContacto = document.getElementById('template-contacto-item');
-        
         prov.contactos.forEach(c => {
           const contactoElement = templateContacto.content.cloneNode(true);
           contactoElement.querySelector('.contacto-tipo').textContent = c.tipo + ':';
-          contactoElement.querySelector('.contacto-valor').textContent = c.contacto;
+          contactoElement.querySelector('.contacto-valor').textContent = c.valor;
           contactosLista.appendChild(contactoElement);
         });
-        
         contactosContainer.style.display = 'block';
+      } else {
+        console.warn('[mostrarDetalle] No hay contactos para mostrar');
       }
       
       // Habilidades
+      console.log('[mostrarDetalle] Habilidades recibidas:', prov.habilidades);
       if (prov.habilidades && prov.habilidades.length > 0) {
         const habilidadesContainer = servicioElement.querySelector('.proveedor-habilidades');
         const habilidadesTags = servicioElement.querySelector('.habilidades-tags');
         const templateHabilidad = document.getElementById('template-habilidad-tag');
-        
         prov.habilidades.forEach(h => {
           const habilidadElement = templateHabilidad.content.cloneNode(true);
           const tag = habilidadElement.querySelector('.habilidad-tag');
-          tag.textContent = `${h.habilidad}${h.experiencia > 0 ? ` (${h.experiencia} ${h.experiencia === 1 ? 'año' : 'años'})` : ''}`;
+          // Si es string, mostrar directamente
+          if (typeof h === 'string') {
+            tag.textContent = h;
+          } else {
+            tag.textContent = `${h.habilidad}${h.experiencia > 0 ? ` (${h.experiencia} ${h.experiencia === 1 ? 'año' : 'años'})` : ''}`;
+          }
           habilidadesTags.appendChild(habilidadElement);
         });
-        
         habilidadesContainer.style.display = 'block';
+      } else {
+        console.warn('[mostrarDetalle] No hay habilidades para mostrar');
       }
     }
     
@@ -261,7 +338,50 @@ document.addEventListener("DOMContentLoaded", () => {
     // Limpiar y agregar al contenedor
     contenedor.innerHTML = '';
     contenedor.appendChild(servicioElement);
-    
+
+    // Si no hay proveedor válido, ocultar/desactivar el botón de mensaje y mostrar nota sutil
+    try {
+      const provId = obtenerIdProveedor(servicio.proveedor);
+      const btnMensaje = document.querySelector('.btn-mensaje');
+      if (!provId) {
+        if (btnMensaje) {
+          btnMensaje.style.display = 'none';
+        }
+        // añadir nota sutil en la sección del proveedor
+        const provCard = document.querySelector('.proveedor-card');
+        if (provCard && !document.getElementById('notaProveedorNoDisponible')) {
+          const nota = document.createElement('div');
+          nota.id = 'notaProveedorNoDisponible';
+          nota.style.color = '#666';
+          nota.style.fontSize = '0.95rem';
+          nota.style.marginTop = '6px';
+          nota.textContent = 'Proveedor no disponible para este servicio.';
+          provCard.appendChild(nota);
+        }
+      } else {
+        // Si hay proveedor, asegurar que el botón esté visible
+        if (btnMensaje) btnMensaje.style.display = '';
+        const existing = document.getElementById('notaProveedorNoDisponible');
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      }
+    } catch (e) {
+      console.warn('Error al procesar visibilidad del botón de mensaje', e);
+    }
+
+    // Ocultar el formulario de reseñas si el usuario actual es el dueño del servicio
+    try {
+      const usuarioActualId = sessionStorage.getItem('IdUsuario');
+      const esDueno = usuarioActualId && servicio.proveedor?.idUsuario && parseInt(usuarioActualId) === parseInt(servicio.proveedor.idUsuario);
+      if (esDueno) {
+        const formularioComentario = document.querySelector('.formulario-comentario');
+        if (formularioComentario) {
+          formularioComentario.innerHTML = '<div class="info-resena-dueno"><p>No puedes dejar reseñas en tus propios servicios. Aquí puedes ver las reseñas.</p></div>';
+        }
+      }
+    } catch (e) {
+      console.warn('No se pudo verificar si el usuario es dueño para ocultar formulario de reseñas', e);
+    }
+
     // Configurar event listeners después de agregar al DOM
     configurarEventListeners(servicio);
     
@@ -274,15 +394,187 @@ document.addEventListener("DOMContentLoaded", () => {
   function configurarEventListeners(servicio) {
     const servicioId = sessionStorage.getItem('servicioId');
     
-    // Event listeners para el botón de mensaje
+    // Event listeners para el botón de mensaje: abrir modal local para enviar mensaje
     document.querySelector('.btn-mensaje')?.addEventListener('click', () => {
-      alert('Función de mensajería en desarrollo');
+      const idProveedor = obtenerIdProveedor(servicio.proveedor);
+      const nombreProv = servicio.proveedor && (servicio.proveedor.nombre || servicio.proveedor.Nombre || 'Proveedor');
+      if (idProveedor) {
+        abrirModalMensaje(idProveedor, nombreProv);
+      } else {
+        mostrarAvisoProveedorNoDisponible();
+      }
     });
+
+    function mostrarAvisoProveedorNoDisponible() {
+      // Mostrar un aviso inline cerca de la sección proveedor en vez de alert
+      const provSection = document.querySelector('.servicio-proveedor');
+      const acciones = document.querySelector('.servicio-acciones');
+      // Evitar duplicados
+      if (document.getElementById('avisoProveedorNoDisponible')) return;
+      const aviso = document.createElement('div');
+      aviso.id = 'avisoProveedorNoDisponible';
+      aviso.style.background = '#fff3cd';
+      aviso.style.border = '1px solid #ffeeba';
+      aviso.style.color = '#856404';
+      aviso.style.padding = '8px 12px';
+      aviso.style.borderRadius = '6px';
+      aviso.style.margin = '8px 0';
+      aviso.textContent = 'Proveedor no disponible en este servicio.';
+
+      if (acciones && acciones.parentNode) {
+        acciones.parentNode.insertBefore(aviso, acciones);
+      } else if (provSection && provSection.parentNode) {
+        provSection.parentNode.insertBefore(aviso, provSection.nextSibling);
+      } else {
+        // fallback: append to body
+        document.body.appendChild(aviso);
+      }
+
+      // Desactivar temporalmente el botón de mensaje
+      const btn = document.querySelector('.btn-mensaje');
+      if (btn) {
+        btn.disabled = true;
+        setTimeout(() => { btn.disabled = false; }, 4000);
+      }
+
+      // El aviso desaparece solo después de unos segundos
+      setTimeout(() => {
+        const elem = document.getElementById('avisoProveedorNoDisponible');
+        if (elem && elem.parentNode) elem.parentNode.removeChild(elem);
+      }, 4500);
+    }
+
+    // ----- Modal de mensajería local -----
+    function abrirModalMensaje(idProveedor, nombreProveedor) {
+      const modal = document.getElementById('modalMensaje');
+      const txt = document.getElementById('mensajeModalTexto');
+      const nombreEl = document.getElementById('modalMensajeProveedorNombre');
+      const feedback = document.getElementById('modalMensajeFeedback');
+      if (!modal || !txt || !nombreEl) return;
+      nombreEl.textContent = `Para: ${nombreProveedor}`;
+      txt.value = '';
+      feedback.style.display = 'none';
+      modal.style.display = 'flex';
+      modal.classList.add('mostrar');
+
+      // Guardar id en dataset para referencia al enviar
+      modal.dataset.receptorId = idProveedor;
+    }
+
+    function cerrarModalMensaje() {
+      const modal = document.getElementById('modalMensaje');
+      if (!modal) return;
+      modal.style.display = 'none';
+      modal.classList.remove('mostrar');
+      delete modal.dataset.receptorId;
+    }
+
+    // Asignar handlers a botones del modal (si existen)
+    const modalCerrar = document.getElementById('modalMensajeCerrar');
+    const btnCancelarMsg = document.getElementById('btnCancelarMensajeModal');
+    const btnEnviarMsg = document.getElementById('btnEnviarMensajeModal');
+
+    if (modalCerrar) modalCerrar.addEventListener('click', cerrarModalMensaje);
+    if (btnCancelarMsg) btnCancelarMsg.addEventListener('click', cerrarModalMensaje);
+    if (document.getElementById('modalMensaje')) {
+      document.getElementById('modalMensaje').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalMensaje')) cerrarModalMensaje();
+      });
+    }
+
+    if (btnEnviarMsg) {
+      btnEnviarMsg.addEventListener('click', async () => {
+        const modal = document.getElementById('modalMensaje');
+        const txt = document.getElementById('mensajeModalTexto');
+        const feedback = document.getElementById('modalMensajeFeedback');
+        if (!modal || !txt) return;
+        const contenido = txt.value.trim();
+        if (!contenido) { alert('Escribe un mensaje antes de enviar.'); return; }
+
+        // Obtener id del emisor (intentos: sessionStorage IdUsuario, usuarioActualId, cookie, servidor)
+        let emisor = null;
+        try { emisor = sessionStorage.getItem('IdUsuario') || sessionStorage.getItem('usuarioActualId') || window.usuarioActualId || null; } catch (e) { emisor = null; }
+
+        if (!emisor) {
+          // Intentar obtener desde servidor
+          try {
+            const r = await fetch('/proyecto/public/php/get_current_user.php');
+            const j = await r.json();
+            if (j.ok && j.id) emisor = j.id;
+          } catch (e) { console.warn('No se pudo obtener usuario desde servidor', e); }
+        }
+
+        if (!emisor) { alert('No se pudo determinar tu usuario. Inicia sesión e intenta de nuevo.'); return; }
+
+        const receptor = modal.dataset.receptorId;
+        if (!receptor) { alert('No se pudo determinar el receptor del mensaje.'); return; }
+
+        // Enviar al backend vía POST form-urlencoded (coincide con mensajeController.php)
+        try {
+          const form = new URLSearchParams();
+          form.append('accion', 'enviarMensaje');
+          form.append('contenido', contenido);
+          form.append('emisor', emisor);
+          form.append('receptor', receptor);
+
+          btnEnviarMsg.disabled = true;
+          btnEnviarMsg.textContent = 'Enviando...';
+
+          const resp = await fetch('/proyecto/apps/Controllers/mensajeController.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: form.toString()
+          });
+
+          // Leer como texto para poder manejar respuestas vacías o HTML inesperado
+          const respText = await resp.text();
+          let json = null;
+          try {
+            if (respText && respText.trim() !== '') {
+              json = JSON.parse(respText);
+            }
+          } catch (parseErr) {
+            console.error('Respuesta inválida al enviar mensaje. Status:', resp.status, 'Body:', respText);
+            feedback.style.display = 'block';
+            feedback.style.color = 'red';
+            feedback.textContent = 'Error del servidor al enviar el mensaje. Revisa la consola para más detalles.';
+            return;
+          }
+
+          if (!json) {
+            console.error('Respuesta vacía o no-JSON al enviar mensaje. Status:', resp.status, 'Body:', respText);
+            feedback.style.display = 'block';
+            feedback.style.color = 'red';
+            feedback.textContent = 'Error del servidor: respuesta vacía.';
+            return;
+          }
+
+          if (json.ok) {
+            feedback.style.display = 'block';
+            feedback.style.color = 'green';
+            feedback.textContent = 'Mensaje enviado correctamente.';
+            txt.value = '';
+            setTimeout(() => { cerrarModalMensaje(); }, 900);
+          } else {
+            feedback.style.display = 'block';
+            feedback.style.color = 'red';
+            feedback.textContent = json.error || 'Error al enviar el mensaje';
+          }
+        } catch (err) {
+          console.error('Error enviando mensaje:', err);
+          alert('Error al enviar el mensaje. Revisa la consola para más detalles.');
+        } finally {
+          btnEnviarMsg.disabled = false;
+          btnEnviarMsg.textContent = 'Enviar';
+        }
+      });
+    }
     
     document.querySelector('.btn-perfil')?.addEventListener('click', () => {
-      if (servicio.proveedor?.idUsuario) {
+      const provId = obtenerIdProveedor(servicio.proveedor);
+      if (provId) {
         sessionStorage.setItem('vistaOrigen', 'cliente');
-        window.location.href = `../../apps/Views/verPerfil.html?id=${servicio.proveedor.idUsuario}`;
+        window.location.href = `../../apps/Views/verPerfil.html?id=${provId}`;
       } else {
         alert('No se puede ver el perfil en este momento');
       }

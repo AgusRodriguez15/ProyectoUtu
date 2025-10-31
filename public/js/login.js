@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Guardar información relevante en sessionStorage
                     sessionStorage.setItem('usuario_rol', data.rol);
+                    sessionStorage.setItem('rol', data.rol);
                     sessionStorage.setItem('usuario_nombre', data.nombre);
                     sessionStorage.setItem('IdUsuario', data.idUsuario);
                     

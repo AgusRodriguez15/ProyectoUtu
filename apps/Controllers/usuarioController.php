@@ -384,6 +384,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 exit;
 
+            case 'crearAdmin':
+                // Crear un nuevo administrador desde el panel (POST: nombre, apellido, email, contrasena)
+                $nombre = trim($_POST['nombre'] ?? '');
+                $apellido = trim($_POST['apellido'] ?? '');
+                $email = trim($_POST['email'] ?? '');
+                $contrasena = $_POST['contrasena'] ?? '';
+                if (empty($nombre) || empty($apellido) || empty($email) || empty($contrasena)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+                    exit;
+                }
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => 'Email inválido']);
+                    exit;
+                }
+                // Evitar duplicados
+                if (usuario::obtenerPor('Email', $email) !== null) {
+                    http_response_code(409);
+                    echo json_encode(['success' => false, 'message' => 'El email ya está registrado']);
+                    exit;
+                }
+
+                // Crear objeto usuario con rol Administrador
+                $usuario = new usuario(null, $nombre, $apellido, $email, $contrasena, null, null, null, null, null, usuario::ROL_ADMIN, null);
+                $ok = $usuario->registrarUsuario();
+                if ($ok) {
+                    echo json_encode(['success' => true, 'message' => 'Administrador creado correctamente', 'IdUsuario' => $usuario->getIdUsuario()]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Error al crear administrador']);
+                }
+                exit;
+
             case 'editarCompleto':
                 // Editar perfil completo: Nombre, Apellido, Descripcion, Foto (subida o eliminar), IdUbicacion, Contactos, Habilidades
                 $id = intval($_POST['id'] ?? 0);
@@ -496,6 +530,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $descripcionAccion = 'Edición de perfil: ' . $campos;
                     $idAdmin = is_numeric($actor) ? intval($actor) : null;
                     accion::crear('editar_perfil', $descripcionAccion, $id, $idAdmin);
+
+                    // Registrar también en Gestion (auditoría centralizada)
+                    try {
+                        require_once __DIR__ . '/../Models/gestion.php';
+                        $g = new Gestion('editar_perfil', $descripcionAccion, $idAdmin ?? 0, 0);
+                        $g->guardar();
+                    } catch (Exception $e) {
+                        error_log('usuarioController::editarCompleto - error registrando en Gestion: ' . $e->getMessage());
+                    }
 
                     echo json_encode(['success'=>true,'message'=>'Perfil actualizado']);
                 } else {

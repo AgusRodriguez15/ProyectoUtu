@@ -193,7 +193,13 @@ function guardarCambios() {
     })
     .then(data => {
       if (!data.success) throw new Error(data.message || data.error || 'No se pudo actualizar');
-      alert('Servicio actualizado correctamente');
+      // Si el servidor devolvió advertencias, mostrarlas pero considerar la operación como exitosa
+      if (data.warnings && Array.isArray(data.warnings) && data.warnings.length > 0) {
+        console.warn('Advertencias del servidor al guardar:', data.warnings);
+        alert('Servicio guardado con advertencias:\n' + data.warnings.join('\n'));
+      } else {
+        alert('Servicio actualizado correctamente');
+      }
       window.location.href = '../Views/PANTALLA_PUBLICAR.html';
     })
     .catch(err => {

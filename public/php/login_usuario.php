@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if ($email && $password) {
-        $conn = new ClaseConexion();
+        $conn = new ConexionDB();
         $db = $conn->getConexion();
         
         // Obtener datos básicos del usuario

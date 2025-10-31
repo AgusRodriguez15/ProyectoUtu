@@ -10,7 +10,7 @@ START TRANSACTION;
 
 -- 1) Añadir columna temporal con los nuevos valores
 ALTER TABLE `Gestion` 
-  ADD COLUMN `tipo_new` ENUM('ver','editar','banear','desbanear','cambiar_contrasena','cambiar_email') NULL;
+  ADD COLUMN `tipo_new` ENUM('ver','editar','banear','desbanear','cambiar_contrasena','cambiar_email','habilitar') NULL;
 
 -- 2) Mapear valores existentes a los nuevos valores (heurística basada en texto)
 UPDATE `Gestion` SET `tipo_new` = CASE
@@ -20,6 +20,7 @@ UPDATE `Gestion` SET `tipo_new` = CASE
   WHEN LOWER(tipo) LIKE '%desban%' OR LOWER(tipo) LIKE '%desbane%' THEN 'desbanear'
   WHEN LOWER(tipo) LIKE '%contras%' OR LOWER(tipo) LIKE '%contrase%' OR LOWER(tipo) LIKE '%password%' THEN 'cambiar_contrasena'
   WHEN LOWER(tipo) LIKE '%email%' OR LOWER(tipo) LIKE '%gmail%' OR LOWER(tipo) LIKE '%mail%' THEN 'cambiar_email'
+  WHEN LOWER(tipo) LIKE '%habil%' THEN 'habilitar'
   ELSE NULL
 END;
 
@@ -28,7 +29,7 @@ UPDATE `Gestion` SET `tipo_new` = 'ver' WHERE `tipo_new` IS NULL;
 
 -- 4) Reemplazar la columna antigua por la nueva
 ALTER TABLE `Gestion` DROP COLUMN `tipo`;
-ALTER TABLE `Gestion` CHANGE `tipo_new` `tipo` ENUM('ver','editar','banear','desbanear','cambiar_contrasena','cambiar_email') NOT NULL;
+ALTER TABLE `Gestion` CHANGE `tipo_new` `tipo` ENUM('ver','editar','banear','desbanear','cambiar_contrasena','cambiar_email','habilitar') NOT NULL;
 
 COMMIT;
 

@@ -2,32 +2,54 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mensajería</title>
-  <link rel="stylesheet" href="../../public/CSS/style_message.css">
+  <link rel="stylesheet" href="/proyecto/public/CSS/style_message.css">
+  <style>
+    /* Minimal overrides to ensure layout */
+    .container{display:flex;gap:16px;padding:12px;font-family:Arial,Helvetica,sans-serif}
+    .chat-list{width:260px;border-right:1px solid #ddd;padding-right:12px}
+    .chat-list-users .user{display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;border-radius:6px}
+    .chat-list-users .user:hover{background:#f5f5f5}
+    .main-chat{flex:1;display:flex;flex-direction:column;height:80vh}
+    .chat-header{display:flex;align-items:center;gap:12px;padding:8px;border-bottom:1px solid #eee}
+    .chat-messages{flex:1;overflow:auto;padding:12px;background:#fafafa}
+    .chat-input{display:flex;gap:8px;padding:8px;border-top:1px solid #eee}
+    /* Mensajes: mostrar en bloque (uno arriba de otro) */
+    .message{display:block;max-width:78%;clear:both}
+    .message.sent{text-align:right;color:#fff;background:#2b8aef;padding:8px;border-radius:12px;margin:8px 0 8px auto;display:block}
+    .message.received{text-align:left;color:#333;background:#e6e6e6;padding:8px;border-radius:12px;margin:8px auto 8px 0;display:block}
+    .message .message-text{white-space:pre-wrap}
+    .message-image{border-radius:8px;max-width:100%;height:auto;display:block;margin-top:6px}
+  </style>
 </head>
 <body>
-  <aside class="chat-list">
-    <div class="chat-list-header">
-      <div class="chat-list-search">
-        <input type="text" id="buscadorUsuario" placeholder="Buscar usuario...">
-        <button id="buscarUsuarioBtn">Buscar</button>
-      </div>
-    </div>
-    <div id="chatListUsers" class="chat-list-users"></div>
-  </aside>
-  <main class="main-chat">
-    <div class="chat-header" id="chatHeader">
-      <img src="../../public/recursos/imagenes/perfil/default.png" id="chatUserFoto" alt="Foto" />
-      <span class="chat-title" id="chatUserNombre">Selecciona un chat</span>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <form class="chat-input" id="chatInputForm" enctype="multipart/form-data">
-      <input type="text" id="mensajeInput" placeholder="Escribe un mensaje...">
-      <input type="file" id="fotoInput" accept="image/*">
-      <label for="fotoInput">📷 Foto</label>
-      <button type="submit">Enviar</button>
-    </form>
-  </main>
-  <script src="../../public/js/mensajeria.js"></script>
+  <div class="container">
+    <aside class="chat-list">
+      <header class="chat-list-header"><h2>Chats</h2></header>
+      <div id="chatListUsers" class="chat-list-users">Cargando...</div>
+    </aside>
+
+    <main class="main-chat">
+      <header class="chat-header">
+        <img src="/proyecto/public/recursos/default/user-default.png" id="chatUserFoto" alt="Foto" width="56" height="56" style="border-radius:50%">
+        <div class="chat-header-info">
+          <h3 id="chatUserNombre">Selecciona un chat</h3>
+          <span id="chatUserEstado" style="color:green;display:none">En línea</span>
+        </div>
+      </header>
+
+      <div id="chatMessages" class="chat-messages"></div>
+
+      <form id="chatInputForm" class="chat-input" enctype="multipart/form-data">
+        <input type="text" id="mensajeInput" name="contenido" placeholder="Escribe un mensaje..." style="flex:1;padding:8px">
+        <label class="foto-label" for="mensajeFile" title="Adjuntar foto" style="cursor:pointer;padding:6px 10px;background:#28a745;color:#fff;border-radius:6px">📷</label>
+        <input type="file" id="mensajeFile" name="imagen" accept="image/*" style="display:none">
+        <button type="submit">Enviar</button>
+      </form>
+    </main>
+  </div>
+
+  <script src="/proyecto/public/js/mensajeria_simple.js"></script>
 </body>
 </html>

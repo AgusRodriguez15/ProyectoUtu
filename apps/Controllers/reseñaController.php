@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 session_start();
 require_once __DIR__ . '/../Models/reseña.php';
 require_once __DIR__ . '/../Models/accion.php';
+require_once __DIR__ . '/../Models/servicio.php';
 
 // Limpiar cualquier salida previa
 ob_clean();
@@ -89,21 +90,31 @@ function cancelarResenasPorServicio() {
 
     try {
         require_once __DIR__ . '/../Models/reseña.php';
+        error_log('[cancelarResenasPorServicio] Llamando a Resena::eliminarPorServicio con idServicio=' . $idServicio);
         $ok = Resena::eliminarPorServicio($idServicio);
+        error_log('[cancelarResenasPorServicio] Resultado eliminarPorServicio: ' . var_export($ok, true));
         if ($ok) {
             // Registrar la acción en Accion (cancelar_reseñas)
             try {
                 require_once __DIR__ . '/../Models/servicio.php';
+                require_once __DIR__ . '/../Models/gestion.php';
                 $serv = Servicio::obtenerPorId($idServicio);
                 $idProv = $serv ? $serv->IdProveedor : 0;
                 $motivo = $_POST['motivo'] ?? '';
-                accion::crear('cancelar_reseñas', $motivo, $idProv ? intval($idProv) : 0, $_SESSION['IdUsuario']);
+                error_log('[cancelarResenasPorServicio] Registrando en Accion: tipo=cancelar_reseñas, motivo=' . $motivo . ', idProv=' . $idProv . ', idAdmin=' . $_SESSION['IdUsuario']);
+                $accionId = accion::crear('cancelar_reseñas', $motivo, $idProv ? intval($idProv) : 0, $_SESSION['IdUsuario']);
+                error_log('[cancelarResenasPorServicio] Resultado accion::crear: ' . var_export($accionId, true));
+                // Registrar en Gestion (auditoría admin)
+                error_log('[cancelarResenasPorServicio] Registrando en Gestion: idAdmin=' . $_SESSION['IdUsuario'] . ', idServicio=' . $idServicio . ', motivo=' . $motivo);
+                $gestionId = Gestion::registrarCancelarResenias($_SESSION['IdUsuario'], $idServicio, $motivo);
+                error_log('[cancelarResenasPorServicio] Resultado Gestion::registrarCancelarResenias: ' . var_export($gestionId, true));
             } catch (Exception $e) {
-                error_log('Error registrando Accion (cancelar_reseñas): ' . $e->getMessage());
+                error_log('Error registrando Accion/Gestion (cancelar_reseñas): ' . $e->getMessage());
             }
 
             enviarRespuesta(true, 'Reseñas canceladas/eliminadas para el servicio');
         } else {
+            error_log('[cancelarResenasPorServicio] No se pudieron eliminar las reseñas o no había reseñas');
             enviarRespuesta(false, 'No se pudieron eliminar las reseñas o no había reseñas');
         }
     } catch (Exception $e) {
@@ -167,6 +178,17 @@ function agregarResena() {
 
     if ($idServicio <= 0) {
         enviarRespuesta(false, 'ID de servicio no válido');
+    }
+
+    // Verificar que el usuario no sea el proveedor del servicio
+    try {
+        $servObj = Servicio::obtenerPorId($idServicio);
+        if ($servObj && isset($servObj->IdProveedor) && intval($servObj->IdProveedor) === intval($idUsuario)) {
+            enviarRespuesta(false, 'No puedes dejar una reseña en tu propio servicio');
+        }
+    } catch (Exception $e) {
+        // Si falla la comprobación no bloqueamos por seguridad, pero lo logueamos
+        error_log('advertencia: no se pudo verificar propietario del servicio: ' . $e->getMessage());
     }
 
     // Verificar que el usuario no haya reseñado ya este servicio

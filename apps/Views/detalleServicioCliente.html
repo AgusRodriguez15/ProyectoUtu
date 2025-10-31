@@ -132,7 +132,7 @@
         
         <div class="servicio-acciones">
           <button class="btn-primary btn-contratar">🛒 Contratar Servicio</button>
-          <button class="btn-secondary btn-mensaje">💬 Enviar Mensaje</button>
+          <button class="btn-secondary btn-mensaje" id="btnAbrirModalMensaje">💬 Enviar Mensaje</button>
           <button class="btn-terciary btn-perfil">👤 Ver Perfil</button>
         </div>
       </div>
@@ -233,6 +233,21 @@
           <button type="button" class="btn-secondary btn-cancelar-reserva">Cancelar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal de Mensaje (simple) -->
+  <div id="modalMensaje" class="modal" style="display: none;">
+    <div class="modal-contenido">
+      <span class="modal-cerrar" id="modalMensajeCerrar">&times;</span>
+      <h2>💬 Enviar mensaje</h2>
+      <p id="modalMensajeProveedorNombre" style="font-weight:600;margin-bottom:8px"></p>
+      <textarea id="mensajeModalTexto" rows="4" placeholder="Escribe tu mensaje..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px"></textarea>
+      <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="btnCancelarMensajeModal" class="btn-secondary">Cancelar</button>
+        <button id="btnEnviarMensajeModal" class="btn-primary">Enviar</button>
+      </div>
+      <div id="modalMensajeFeedback" style="display:none;margin-top:8px;color:green"></div>
     </div>
   </div>
 

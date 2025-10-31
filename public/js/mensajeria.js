@@ -1,194 +1,164 @@
-// Actualización automática de mensajes cada 3 segundos
-setInterval(cargarMensajes, 3000);
-// mensajeria.js
-// Lógica para la nueva interfaz de mensajería
-
-const chatListUsers = document.getElementById('chatListUsers');
-const buscadorUsuario = document.getElementById('buscadorUsuario');
-const buscarUsuarioBtn = document.getElementById('buscarUsuarioBtn');
-const chatHeader = document.getElementById('chatHeader');
-const chatUserFoto = document.getElementById('chatUserFoto');
-const chatUserNombre = document.getElementById('chatUserNombre');
-const chatMessages = document.getElementById('chatMessages');
-const chatInputForm = document.getElementById('chatInputForm');
-const mensajeInput = document.getElementById('mensajeInput');
-const fotoInput = document.getElementById('fotoInput');
-
-let usuarioActualId = 1; // Cambia esto por el usuario logueado
-let chatSeleccionado = null;
-let chatSeleccionadoData = null;
-
-// Listeners y funciones deben ir después de la inicialización de los elementos
-
-// Buscar usuarios
-buscarUsuarioBtn.addEventListener('click', buscarUsuarios);
-buscadorUsuario.addEventListener('keyup', function(e) {
-  if (e.key === 'Enter') buscarUsuarios();
-});
-
-// Enviar con el botón
-const enviarBtn = document.querySelector('.chat-input button');
-if (enviarBtn) {
-  enviarBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    chatInputForm.dispatchEvent(new Event('submit'));
-  });
+// Obtener el ID del usuario logueado de forma dinámica y, si hace falta, pedirlo al servidor
+let usuarioActual = null;
+// 1. Intentar obtener de sessionStorage
+if (sessionStorage.getItem('usuarioActualId')) {
+  usuarioActual = parseInt(sessionStorage.getItem('usuarioActualId'));
+}
+// 2. Si no está en sessionStorage, intentar obtener de variable global
+if (!usuarioActual && window.usuarioActualId) {
+  usuarioActual = parseInt(window.usuarioActualId);
+}
+// 3. Si no está, intentar obtener de cookie
+if (!usuarioActual) {
+  const match = document.cookie.match(/(?:^|; )usuarioActualId=(\d+)/);
+  if (match) usuarioActual = parseInt(match[1]);
 }
 
-// Enviar con la tecla Enter
-mensajeInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    chatInputForm.dispatchEvent(new Event('submit'));
-  }
-});
+// Función para inicializar la mensajería una vez tengamos usuarioActual
+let miIdUsuario = null;
+let chatActivoId = null;
 
-function buscarUsuarios() {
-  const q = buscadorUsuario.value.trim();
-  if (!q) {
-    chatListUsers.innerHTML = '';
+async function inicializarMensajeria() {
+  let chatTargetFromServer = null;
+  if (!usuarioActual) {
+    // Intentar obtener desde el servidor (usa la sesión PHP)
+    try {
+      const resp = await fetch('/proyecto/public/php/get_current_user.php');
+      const json = await resp.json();
+      if (json.ok && json.id) {
+        usuarioActual = parseInt(json.id);
+        try { sessionStorage.setItem('usuarioActualId', usuarioActual); } catch (e) {}
+        if (json.chatTarget) chatTargetFromServer = json.chatTarget;
+      }
+    } catch (e) {
+      console.warn('No se pudo obtener usuario desde servidor', e);
+    }
+  }
+
+  if (!usuarioActual) {
+    alert('No se pudo obtener el ID del usuario logueado. Inicia sesión e intenta de nuevo.');
+    // Desactivar formulario si existe
+    const form = document.getElementById('chatInputForm');
+    if (form) form.querySelectorAll('input,button').forEach(el => el.disabled = true);
     return;
   }
-  fetch(`../Controllers/usuarioController.php?action=buscar&q=${encodeURIComponent(q)}`)
-    .then(res => {
-      console.log('Respuesta usuarioController:', res);
-      return res.text();
-    })
-    .then(texto => {
-      console.log('Texto recibido:', texto);
-      let data;
-      try {
-        data = JSON.parse(texto);
-      } catch (err) {
-        console.error('Error al parsear JSON:', err, texto);
-        chatListUsers.innerHTML = '<div style="color:red;">Error al procesar respuesta del servidor.</div>';
-        return;
-      }
-      if (!Array.isArray(data) || data.length === 0) {
-        chatListUsers.innerHTML = '<div style="text-align:center;color:#888;">No se encontraron usuarios.</div>';
-        return;
-      }
-      chatListUsers.innerHTML = data.map(u => `
-        <div class='chat-list-user' data-id='${u.IdUsuario}'>
-          <img src='../../public/recursos/imagenes/perfil/${u.FotoPerfil || "default.png"}' alt='Foto' />
-          <div class='user-info'>
-            <span class='user-name'>${u.Nombre} ${u.Apellido}</span>
-            <span class='user-email'>${u.Email}</span>
-            <span class='user-rol'>${u.Rol}</span>
-          </div>
-        </div>
-      `).join('');
-      document.querySelectorAll('.chat-list-user').forEach(el => {
-        el.onclick = () => seleccionarChat(el.dataset.id, data.find(u => u.IdUsuario == el.dataset.id));
-      });
-    });
-}
 
-// Cargar chats existentes
-function cargarChats() {
-  fetch(`../Controllers/mensajeController.php?action=chats&idUsuario=${usuarioActualId}`)
-    .then(res => {
-      console.log('Respuesta mensajeController (chats):', res);
-      return res.text();
-    })
-    .then(texto => {
-      console.log('Texto recibido (chats):', texto);
-      let chats;
-      try {
-        chats = JSON.parse(texto);
-      } catch (err) {
-        console.error('Error al parsear JSON (chats):', err, texto);
-        chatListUsers.innerHTML = '<div style="color:red;">Error al procesar respuesta del servidor.</div>';
-        return;
-      }
-      if (!Array.isArray(chats) || chats.length === 0) {
-        chatListUsers.innerHTML = '<div style="text-align:center;color:#888;">No tienes chats.</div>';
-        return;
-      }
-      chatListUsers.innerHTML = chats.map(chat => `
-        <div class='chat-list-user' data-id='${chat.id}'>
-          <img src='../../public/recursos/imagenes/perfil/${chat.foto || "default.png"}' alt='Foto' />
-          <div class='user-info'>
-            <span class='user-name'>Usuario ${chat.id}</span>
-          </div>
-        </div>
-      `).join('');
-      document.querySelectorAll('.chat-list-user').forEach(el => {
-        el.onclick = () => seleccionarChat(el.dataset.id, { IdUsuario: el.dataset.id, FotoPerfil: chat.foto, Nombre: 'Usuario', Apellido: chat.id });
-      });
-    });
-}
+  miIdUsuario = usuarioActual;
 
-// Seleccionar chat
-function seleccionarChat(id, userData) {
-  chatSeleccionado = id;
-  chatSeleccionadoData = userData;
-  chatUserFoto.src = `../../public/recursos/imagenes/perfil/${userData.FotoPerfil || "default.png"}`;
-  chatUserNombre.textContent = `${userData.Nombre} ${userData.Apellido}`;
-  cargarMensajes();
-}
+  // Cargar lista de chats y establecer refresco
+  await cargarChats();
+  setInterval(() => { if (chatActivoId) cargarMensajes(); }, 3000);
 
-// Cargar mensajes del chat seleccionado
-function cargarMensajes() {
-  if (!chatSeleccionado) {
-    chatMessages.innerHTML = '<div style="text-align:center;color:#888;">Selecciona un chat.</div>';
-    return;
+  // Si el servidor indicó un chat target por POST, abrirlo
+  if (chatTargetFromServer) {
+    // buscar en la lista de chats
+    const userDiv = Array.from(document.querySelectorAll('.user')).find(div => div.dataset.id == chatTargetFromServer);
+    if (userDiv) {
+      userDiv.click();
+    } else {
+      // No está en la lista: abrir directamente (nombre desconocido por ahora)
+      abrirChat(chatTargetFromServer, 'Proveedor', null);
+    }
+  } else {
+    // Si no hay target en sesión, verificar si URL tiene id
+    const params = new URLSearchParams(window.location.search);
+    const idFromUrl = params.get('id');
+    if (idFromUrl) {
+      const userDiv2 = Array.from(document.querySelectorAll('.user')).find(div => div.dataset.id == idFromUrl);
+      if (userDiv2) userDiv2.click();
+      else abrirChat(idFromUrl, 'Proveedor', null);
+    }
   }
-  fetch(`../Controllers/mensajeController.php?action=listar&id1=${usuarioActualId}&id2=${chatSeleccionado}`)
-    .then(res => {
-      console.log('Respuesta mensajeController (listar):', res);
-      return res.text();
-    })
-    .then(texto => {
-      console.log('Texto recibido (listar):', texto);
-      let mensajes;
+
+  // Configurar envío de mensajes
+  const form = document.getElementById('chatInputForm');
+  if (form) {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const contenido = document.getElementById('mensajeInput').value.trim();
+      if (!contenido || !chatActivoId) return;
       try {
-        mensajes = JSON.parse(texto);
+        const res = await fetch('/proyecto/apps/Controllers/mensajeController.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contenido, idEmisor: miIdUsuario, idReceptor: chatActivoId })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('mensajeInput').value = '';
+          agregarMensaje(contenido, 'sent', new Date().toLocaleString());
+        } else {
+          alert(data.error || 'Error al enviar mensaje');
+        }
       } catch (err) {
-        console.error('Error al parsear JSON (listar):', err, texto);
-        chatMessages.innerHTML = '<div style="color:red;">Error al procesar respuesta del servidor.</div>';
-        return;
+        console.error('Error enviando mensaje', err);
       }
-      if (!Array.isArray(mensajes) || mensajes.length === 0) {
-        chatMessages.innerHTML = '<div style="text-align:center;color:#888;">¡Manda tu primer mensaje!</div>';
-        return;
-      }
-      chatMessages.innerHTML = mensajes.map(m => `
-        <div class='message ${m.IdEmisor == usuarioActualId ? "sent" : "received"}'>
-          <div class='message-content'>${m.Contenido}
-            ${m.Foto ? `<br><img src='../../public/recursos/imagenes/mensajes/${m.Foto}' class='message-photo' />` : ''}
-          </div>
-        </div>
-      `).join('');
-      chatMessages.scrollTop = chatMessages.scrollHeight;
     });
+  }
 }
 
-// Enviar mensaje o foto
-chatInputForm.addEventListener('submit', function(e) {
-  e.preventDefault();
-  if (!chatSeleccionado) return;
-  const contenido = mensajeInput.value.trim();
-  const foto = fotoInput.files[0];
-  if (!contenido && !foto) return;
-  const formData = new FormData();
-  formData.append('contenido', contenido);
-  formData.append('idEmisor', usuarioActualId);
-  formData.append('idReceptor', chatSeleccionado);
-  if (foto) formData.append('foto', foto);
-  fetch('../Controllers/mensajeController.php', {
-    method: 'POST',
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.ok) {
-        mensajeInput.value = '';
-        fotoInput.value = '';
-        cargarMensajes();
-      }
-    });
-});
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', inicializarMensajeria);
 
-// Inicializar
-cargarChats();
+// Funciones de chat: cargarChats, abrirChat, cargarMensajes, agregarMensaje
+async function cargarChats() {
+  try {
+    const res = await fetch(`/proyecto/apps/Controllers/mensajeController.php?action=chats&idUsuario=${miIdUsuario}`);
+    const data = await res.json();
+    const chatList = document.getElementById('chatListUsers');
+    if (!chatList) return;
+    chatList.innerHTML = '';
+    (data || []).forEach(u => {
+      const div = document.createElement('div');
+      div.className = 'user';
+      div.dataset.id = u.id;
+      div.innerHTML = `<img src="/proyecto/public/recursos/imagenes/perfil/${u.foto || 'default.png'}" alt=""><div class="user-info"><strong>${u.nombre || ''} ${u.apellido || ''}</strong></div>`;
+      div.addEventListener('click', () => abrirChat(u.id, `${u.nombre || ''} ${u.apellido || ''}`, u.foto));
+      chatList.appendChild(div);
+    });
+  } catch (e) {
+    console.error('Error cargando chats', e);
+  }
+}
+
+async function abrirChat(id, nombre, foto) {
+  chatActivoId = id;
+  const chatUserNombre = document.getElementById('chatUserNombre');
+  const chatUserFoto = document.getElementById('chatUserFoto');
+  const chatUserEstado = document.getElementById('chatUserEstado');
+  if (chatUserNombre) chatUserNombre.textContent = nombre;
+  if (chatUserFoto) chatUserFoto.src = `/proyecto/public/recursos/imagenes/perfil/${foto || 'default.png'}`;
+  // Actualizar estado: si el proveedor está disponible lo marcamos En línea, si no dejar en vacío
+  if (chatUserEstado) {
+    chatUserEstado.textContent = 'En línea';
+    chatUserEstado.classList.add('online');
+  }
+  await cargarMensajes();
+}
+
+async function cargarMensajes() {
+  if (!chatActivoId) return;
+  try {
+    const res = await fetch(`/proyecto/apps/Controllers/mensajeController.php?id1=${miIdUsuario}&id2=${chatActivoId}`);
+    const json = await res.json();
+    const mensajes = json || [];
+    const chatBox = document.getElementById('chatMessages');
+    if (!chatBox) return;
+    chatBox.innerHTML = '';
+    mensajes.forEach(m => {
+      agregarMensaje(m.Contenido, m.IdUsuarioEmisor == miIdUsuario ? 'sent' : 'received', m.Fecha);
+    });
+  } catch (e) {
+    console.error('Error cargando mensajes', e);
+  }
+}
+
+function agregarMensaje(contenido, tipo, fecha) {
+  const chatBox = document.getElementById('chatMessages');
+  if (!chatBox) return;
+  const div = document.createElement('div');
+  div.classList.add('message', tipo);
+  div.innerHTML = `${contenido}<small>${fecha || ''}</small>`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}

@@ -155,18 +155,25 @@ class Resena {
 
         $resenas = [];
         while ($fila = $resultado->fetch_assoc()) {
+            // Normalizar tipos y formatos para facilitar el consumo en el frontend
+            $puntuacion = isset($fila['Puntuacion']) ? (int)$fila['Puntuacion'] : 0;
+            $fechaRaw = $fila['Fecha'] ?? null;
+            // Convertir 'YYYY-MM-DD HH:MM:SS' a 'YYYY-MM-DDTHH:MM:SS' (ISO-ish) para JS
+            $fechaIso = $fechaRaw ? str_replace(' ', 'T', $fechaRaw) : null;
+            $fotoPerfil = $fila['FotoPerfil'] ?? '';
+
             $resenas[] = [
                 'idResena' => $fila['IdResenia'],
                 'comentario' => $fila['Comentario'],
-                'puntuacion' => $fila['Puntuacion'],
-                'fecha' => $fila['Fecha'],
+                'puntuacion' => $puntuacion,
+                'fecha' => $fechaIso,
                 'idUsuario' => $fila['IdUsuario'],
                 'idServicio' => $fila['IdServicio'],
                 'usuario' => [
                     'nombre' => $fila['Nombre'],
                     'apellido' => $fila['Apellido'],
                     'nombreCompleto' => $fila['Nombre'] . ' ' . $fila['Apellido'],
-                    'foto' => $fila['FotoPerfil']
+                    'foto' => $fotoPerfil
                 ]
             ];
         }

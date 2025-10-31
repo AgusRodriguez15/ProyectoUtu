@@ -11,7 +11,7 @@
   <header class="header">
     <div class="logo"><h1>Plataforma de Oficios</h1></div>
     <nav class="nav">
-      <a href="#">Servicios</a>
+      <a href="PANTALLA_ADMIN.html">Panel Admin</a>
       <a href="perfilUsuario.html">Mi Perfil</a>
       <a href="#">Mensajes</a>
     </nav>
@@ -37,10 +37,15 @@
           <h3>Crear Admin</h3>
           <p>Agregar un nuevo administrador del sistema.</p>
         </a>
-        <a class="action-card" href="gestionarArchivos.html">
-          <span class="icon">📁</span>
-          <h3>Archivos</h3>
-          <p>Gestiona subidas y elimina archivos obsoletos.</p>
+        <a class="action-card" href="gestionesAdmin.html">
+          <span class="icon">📋</span>
+          <h3>Ver gestiones</h3>
+          <p>Consultar gestiones realizadas por administradores.</p>
+        </a>
+        <a class="action-card" href="gestionarCategorias.html">
+          <span class="icon">🏷️</span>
+          <h3>Categorías</h3>
+          <p>Ver y editar categorías del sistema.</p>
         </a>
       </div>
     </div>
@@ -70,10 +75,10 @@
         </div>
       </section>
 
-      <section id="archivos" class="panel-section">
-        <h3>Gestión de Archivos</h3>
-        <p>Accede a la página de archivos para gestionar subidas / eliminar archivos.</p>
-        <button class="btn" onclick="window.location.href='gestionarArchivos.html'">Ir a Archivos</button>
+      <section id="categorias" class="panel-section">
+        <h3>Gestión de Categorías</h3>
+        <p>Accede a la página de categorías para ver y gestionar las categorías disponibles.</p>
+        <button class="btn" onclick="window.location.href='gestionarCategorias.html'">Ir a Categorías</button>
       </section>
 
       <section id="crear-admin" class="panel-section">
@@ -92,5 +97,19 @@
 
   <script src="../../public/js/inicio.js"></script>
   <script src="../../public/js/admin.js"></script>
+  <script>
+    // Guardar id de usuario si viene en la URL (desde login)
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        try { sessionStorage.setItem('usuarioActualId', id); } catch(e){}
+        try { document.cookie = 'usuarioActualId=' + id + '; path=/'; } catch(e){}
+        params.delete('id');
+        const newUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+        history.replaceState({}, '', newUrl);
+      }
+    })();
+  </script>
 </body>
 </html>

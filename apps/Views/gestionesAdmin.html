@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestiones de Administradores</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <style>
+    .container { max-width: 900px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,0.06);}
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f5f5f5; }
+    .btn { background: #27ae60; color: white; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <nav class="nav">
+      <a href="PANTALLA_ADMIN.html">Panel Admin</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+      <a href="#">Mensajes</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h2>Gestiones de Administradores</h2>
+    <table id="tablaGestiones">
+      <thead>
+        <tr>
+          <th>ID Gestión</th>
+          <th>ID Administrador</th>
+          <th>Acción</th>
+          <th>Fecha</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Las filas se llenarán por JS -->
+      </tbody>
+    </table>
+  </main>
+  <script src="../../public/js/gestionesAdmin.js"></script>
+  <div id="modalMensaje" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:32px 24px; border-radius:10px; box-shadow:0 2px 16px rgba(0,0,0,0.12); max-width:350px; text-align:center; margin:auto;">
+      <h3>¿Quieres enviar un mensaje?</h3>
+      <p>Puedes comunicarte con otros usuarios desde la mensajería.</p>
+      <button id="irMensajeria" style="background:#27ae60; color:#fff; border:none; padding:10px 18px; border-radius:6px; margin-top:12px; cursor:pointer;">Ir a Mensajería</button>
+      <br><br>
+      <button id="cerrarModalMensaje" style="background:#eee; color:#333; border:none; padding:7px 14px; border-radius:6px; cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+  <script>
+    document.getElementById('btnMensajes').addEventListener('click', function(e) {
+      e.preventDefault();
+      var modal = document.getElementById('modalMensaje');
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+    });
+    document.getElementById('cerrarModalMensaje').onclick = function() {
+      document.getElementById('modalMensaje').style.display = 'none';
+    };
+    document.getElementById('irMensajeria').onclick = function() {
+      window.location.href = 'PANTALLA_MENSAJERIA.html';
+    };
+  </script>
+</body>
+</html>

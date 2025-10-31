@@ -219,7 +219,7 @@ INSERT INTO `foto` (`IdFoto`, `IdServicio`, `Foto`) VALUES
 
 CREATE TABLE `gestion` (
   `IdGestion` int(11) NOT NULL,
-  `tipo` enum('baneo','desbaneo','eliminar_usuario','editar_perfil','cambiar_gmail','cambiar_contraseña') NOT NULL,
+  `tipo` enum('baneo','desbaneo','eliminar_usuario','editar_perfil','cambiar_gmail','cambiar_contraseña','habilitar') NOT NULL,
   `descripcion` text DEFAULT NULL,
   `fecha` datetime DEFAULT NULL,
   `IdAdministrador` int(11) DEFAULT NULL,

@@ -43,5 +43,20 @@
   </section>
 
   <script src="../../public/js/inicio.js"></script>
+  <script>
+    // Guardar id de usuario si viene en la URL (desde login)
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        try { sessionStorage.setItem('usuarioActualId', id); } catch(e){}
+        try { document.cookie = 'usuarioActualId=' + id + '; path=/'; } catch(e){}
+        // limpiar el param de la URL sin recargar
+        params.delete('id');
+        const newUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+        history.replaceState({}, '', newUrl);
+      }
+    })();
+  </script>
 </body>
 </html>

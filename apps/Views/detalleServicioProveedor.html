@@ -19,9 +19,35 @@
 
   <div class="detalle-container">
     <button class="btn-volver" onclick="history.back()">← Volver</button>
-    
     <div id="contenidoDetalle">
       <p class="cargando">Cargando detalles del servicio...</p>
+    </div>
+  </div>
+
+  <!-- Reviews section templates (solo lectura para proveedor) -->
+  <template id="template-comentario-item-prov">
+    <div class="comentario-item">
+      <div class="comentario-header">
+        <div class="usuario-info">
+          <img class="usuario-foto" alt="" src="">
+          <strong class="usuario-nombre"></strong>
+        </div>
+        <div class="comentario-rating"></div>
+      </div>
+      <p class="comentario-texto"></p>
+      <span class="comentario-fecha"></span>
+    </div>
+  </template>
+
+  <template id="template-sin-comentarios-prov">
+    <p class="sin-comentarios">Aún no hay comentarios.</p>
+  </template>
+
+  <!-- Contenedor global de reseñas para la vista proveedor -->
+  <div id="contenedorResenasProveedor" style="max-width:1100px;margin:20px auto;padding:0 1rem;display:none;">
+    <h3>Reseñas del servicio</h3>
+    <div id="listaComentariosProveedor">
+      <p class="cargando-comentarios">Cargando comentarios...</p>
     </div>
   </div>
 

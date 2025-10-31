@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestionar Categorías - Plataforma de Oficios</title>
+  <link rel="stylesheet" href="../../public/CSS/styleStart.css">
+  <link rel="stylesheet" href="../../public/CSS/gestionarCategorias.css">
+  <style>
+    .center { max-width:900px; margin:40px auto; background:white; padding:24px; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,0.06);} 
+    .categoria-item { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><h1>Plataforma de Oficios</h1></div>
+    <nav class="nav">
+      <a href="PANTALLA_ADMIN.html">Panel Admin</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+      <a href="#">Mensajes</a>
+    </nav>
+  </header>
+
+  <main class="grid-section">
+    <div class="center">
+      <h2>Gestión de Categorías</h2>
+      <p>Desde aquí puedes ver las categorías existentes. Para agregar o eliminar categorías usa las acciones disponibles (si tu usuario tiene permisos).</p>
+
+      <h3 style="margin-top:18px">Categorías disponibles</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div></div>
+        <div>
+          <button id="btnAgregarCategoria" class="btn">Añadir categoría</button>
+        </div>
+      </div>
+      <div id="categoriasList">Cargando...</div>
+
+      <!-- Formulario inline eliminado: la creación ahora se hace mediante el botón "Añadir categoría" y una llamada AJAX -->
+    </div>
+  </main>
+
+  <script>
+    async function fetchCategorias() {
+      const container = document.getElementById('categoriasList');
+      try {
+  const res = await fetch('/proyecto/apps/Controllers/categoriaController.php?action=obtenerTodasConConteo');
+        const txt = await res.text();
+        const data = JSON.parse(txt);
+        if (!data.success) throw new Error(data.message || 'Error al obtener categorías');
+        const cats = data.data || [];
+        if (cats.length === 0) { container.innerHTML = '<p>No hay categorías.</p>'; return; }
+        // Construir tabla
+        let html = `<table class="tabla-admin" style="width:100%; border-collapse:collapse">
+          <thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">ID</th><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Categoría</th><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Servicios que la usan</th><th style="text-align:left;padding:8px;border-bottom:1px solid #eee">Acciones</th></tr></thead><tbody>`;
+        cats.forEach(c => {
+          html += `<tr>
+            <td style="padding:8px;border-bottom:1px solid #f5f5f5">${c.IdCategoria}</td>
+            <td style="padding:8px;border-bottom:1px solid #f5f5f5"><strong>${c.Nombre}</strong><div style="font-size:12px;color:#666">${c.Descripcion || ''}</div></td>
+            <td style="padding:8px;border-bottom:1px solid #f5f5f5">${c.serviciosCount || 0}</td>
+            <td style="padding:8px;border-bottom:1px solid #f5f5f5">
+              <button class="btn small" data-id="${c.IdCategoria}" onclick="editarCategoria(${c.IdCategoria})">Editar</button>
+              <button class="btn small danger" data-id="${c.IdCategoria}" onclick="eliminarCategoria(${c.IdCategoria})">Eliminar</button>
+            </td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<p>Error cargando categorías: ' + err.message + '</p>';
+      }
+    }
+
+    function editarCategoria(id) {
+      const nuevo = prompt('Nuevo nombre de la categoría (dejar en blanco para cancelar):');
+      if (!nuevo) return;
+      alert('Editar no implementado en backend en esta versión (id=' + id + ', nuevo=' + nuevo + ')');
+    }
+
+    async function eliminarCategoria(id) {
+      if (!confirm('Eliminar categoría ' + id + '?')) return;
+      try {
+        const body = new URLSearchParams();
+        body.append('id', id);
+        const res = await fetch('/proyecto/apps/Controllers/categoriaController.php?action=eliminar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString()
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert('No se pudo eliminar: ' + (data.message || 'error'));
+          return;
+        }
+        alert('Categoría eliminada correctamente');
+        fetchCategorias();
+      } catch (err) {
+        alert('Error al eliminar categoría: ' + err.message);
+      }
+    }
+
+    document.getElementById('btnAgregarCategoria').addEventListener('click', async () => {
+      const nombre = prompt('Nombre de la nueva categoría:');
+      if (!nombre) return;
+      const descripcion = prompt('Descripción (opcional):') || '';
+      try {
+        const body = new URLSearchParams();
+        body.append('nombre', nombre);
+        body.append('descripcion', descripcion);
+        const res = await fetch('/proyecto/apps/Controllers/categoriaController.php?action=crear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString()
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert('Error creando categoría: ' + (data.message || 'respuesta inválida'));
+          return;
+        }
+        alert('Categoría creada correctamente.');
+        fetchCategorias();
+      } catch (err) {
+        alert('Error creando categoría: ' + err.message);
+      }
+    });
+
+    fetchCategorias();
+  </script>
+</body>
+</html>

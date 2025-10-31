@@ -16,14 +16,15 @@
   <header class="header">
     <div class="logo"><h1>Plataforma de Oficios - Admin</h1></div>
     <nav class="nav">
-      <a href="PANTALLA_ADMIN.html">Volver al panel</a>
+      <a href="PANTALLA_ADMIN.html">Panel Admin</a>
+      <a href="perfilUsuario.html">Mi Perfil</a>
+      <a href="#">Mensajes</a>
     </nav>
   </header>
 
   <main class="grid-section">
     <div class="container">
       <h2>Gestión de Servicios</h2>
-      <p>Lista de servicios publicados. Puedes revisar detalles y moderar.</p>
 
       <div id="status">Cargando servicios...</div>
       <div class="table-responsive">
@@ -36,6 +37,16 @@
   </main>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const infoRol = document.getElementById('info-rol');
+      const rol = sessionStorage.getItem('rol');
+      if (rol === 'admin') {
+        infoRol.textContent = 'ℹ️ Como administrador, puedes ver y gestionar todos los servicios.';
+      } else if (rol === 'proveedor') {
+        infoRol.textContent = 'ℹ️ Como proveedor, puedes ver servicios pero no contratarlos.';
+      }
+    });
+
     async function cargarServicios() {
       const status = document.getElementById('status');
       const tabla = document.querySelector('#tablaServicios tbody');
@@ -58,19 +69,16 @@
             <td>${s.ProveedorNombre || '—'}</td>
             <td class="estado">${s.Estado || '—'}</td>
             <td class="actions">
-              <select class="service-actions" data-id="${s.IdServicio}">
-                <option value="">Acciones...</option>
-                <option value="ver">Ver</option>
-                <option value="editar">Editar</option>
-                <option value="cambiarEstado">${s.Estado === 'DISPONIBLE' ? 'Deshabilitar' : 'Habilitar'}</option>
-                <option value="cancelarResenas">Cancelar reseñas</option>
-                <option value="borrar">Borrar</option>
-              </select>
+                  <select class="service-actions" data-id="${s.IdServicio}">
+                    <option value="">Acciones...</option>
+                    <option value="ver">Ver</option>
+                    <option value="cambiarEstado">${s.Estado === 'DISPONIBLE' ? 'Deshabilitar' : 'Habilitar'}</option>
+                    <!-- opción borrar reseñas eliminada -->
+                  </select>
             </td>
           </tr>
         `).join('');
 
-        // Attach change listeners to selects (desplegable similar a gestionarUsuarios)
         document.querySelectorAll('.service-actions').forEach(sel => {
           sel.addEventListener('change', function () {
             const action = this.value;
@@ -101,31 +109,17 @@
             const actual = estadoEl ? estadoEl.textContent.trim() : '';
             const nuevo = (actual === 'DISPONIBLE') ? 'SUSPENDIDO' : 'DISPONIBLE';
             if (!confirm('Cambiar estado del servicio a ' + nuevo + ' ?')) return;
-            const fd = new FormData(); fd.append('cambiarEstado','1'); fd.append('idServicio', id); fd.append('Estado', nuevo);
+            const fd = new FormData();
+            fd.append('cambiarEstado','1');
+            fd.append('idServicio', id);
+            fd.append('Estado', nuevo);
             const res = await fetch('/proyecto/apps/Controllers/servicioController.php', { method: 'POST', body: fd });
             const json = await res.json();
             alert(json.message || (json.success ? 'OK' : 'Error'));
             await cargarServicios();
             return;
           }
-          case 'cancelarResenas': {
-            if (!confirm('Eliminar todas las reseñas de este servicio?')) return;
-            const fd = new FormData(); fd.append('idServicio', id);
-            const res = await fetch('/proyecto/apps/Controllers/reseñaController.php?accion=cancelarPorServicio', { method: 'POST', body: fd });
-            const json = await res.json();
-            alert(json.mensaje || (json.success ? 'OK' : 'Error'));
-            await cargarServicios();
-            return;
-          }
-          case 'borrar': {
-            if (!confirm('¿Borrar este servicio permanentemente?')) return;
-            const fd = new FormData(); fd.append('eliminarAdmin','1'); fd.append('idServicio', id);
-            const res = await fetch('/proyecto/apps/Controllers/servicioController.php', { method: 'POST', body: fd });
-            const json = await res.json();
-            alert(json.message || (json.success ? 'OK' : 'Error'));
-            await cargarServicios();
-            return;
-          }
+          // opción borrar reseñas eliminada
           default:
             console.warn('Acción desconocida:', action);
         }

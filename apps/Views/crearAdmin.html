@@ -11,13 +11,16 @@
     input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
     .btn { display: inline-block; background: #27ae60; color: white; padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; }
     .msg { margin-top: 12px; font-weight: 600; }
+    /* Soporte básico para el botón 'ojito' dentro de .input-group */
+    .input-group { position: relative; }
+    .input-group .btn-toggle-pass { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.1rem; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="logo"><h1>Plataforma de Oficios</h1></div>
     <nav class="nav">
-      <a href="#">Servicios</a>
+      <a href="PANTALLA_ADMIN.html">Panel Admin</a>
       <a href="perfilUsuario.html">Mi Perfil</a>
       <a href="#">Mensajes</a>
     </nav>
@@ -25,28 +28,26 @@
 
   <main class="grid-section">
     <div class="container">
-      <h2>Crear Administrador (temporal)</h2>
-      <p>Este formulario llama a un endpoint temporal que sólo acepta conexiones desde localhost.</p>
+  <h2>Crear Administrador</h2>
 
-      <!-- Envío directo al controlador de usuarios para crear administrador -->
-      <form id="crearAdminForm" action="/proyecto/apps/Controllers/usuarioController.php" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="Rol" value="Administrador">
-        <div class="form-row"><input type="text" name="Nombre" placeholder="Nombre" required value="Administrador"></div>
-        <div class="form-row"><input type="text" name="Apellido" placeholder="Apellido" required value="Sistema"></div>
-        <div class="form-row"><input type="email" name="Email" placeholder="Email" required value="admin@ejemplo.com"></div>
-        <div class="form-row"><input type="password" name="ContrasenaHash" placeholder="Contraseña" required value="admin"></div>
-        <div class="form-row"><input type="password" name="ConfirmarContrasena" placeholder="Confirmar contraseña" required value="admin"></div>
+      <!-- Formulario definitivo: usa el endpoint central /usuarioController.php?action=crearAdmin -->
+      <form id="crearAdminForm" enctype="multipart/form-data">
+        <div class="form-row"><input type="text" name="nombre" placeholder="Nombre" required></div>
+        <div class="form-row"><input type="text" name="apellido" placeholder="Apellido" required></div>
+        <div class="form-row"><input type="email" name="email" placeholder="Email" required></div>
+        <div class="form-row input-group"><input type="password" name="contrasena" placeholder="Contraseña" required></div>
+        <div class="form-row input-group"><input type="password" name="confirmarContrasena" placeholder="Confirmar contraseña" required></div>
         <div class="form-row" style="display:flex;gap:8px;">
           <button type="button" id="btnCrear" class="btn">Crear Administrador</button>
-          <button type="button" id="btnCrearVerGestiones" class="btn">Crear y ver gestiones</button>
         </div>
       </form>
 
       <div id="msg" class="msg" aria-live="polite"></div>
-      <p style="margin-top:12px; font-size:0.9rem; color:#666">Nota: Después de crear el administrador elimina o mueve `crearAdminTemporal.php` por seguridad.</p>
+  <p style="margin-top:12px; font-size:0.9rem; color:#666">Nota: esta acción creará un usuario con rol Administrador. Mantén acceso restringido al panel.</p>
     </div>
   </main>
 
+  <script src="/proyecto/public/js/botonContraseña.js"></script>
   <script src="/proyecto/public/js/crearAdmin.js"></script>
 </body>
 </html>

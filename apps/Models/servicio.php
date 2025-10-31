@@ -3,8 +3,72 @@ require_once "ConexionDB.php";
 require_once "Foto.php";
 require_once "Categoria.php";
 
-class Servicio
-{
+class Servicio{
+    /**
+     * Deshabilita el servicio (cambia estado a 'SUSPENDIDO')
+     * @return bool true si se actualizó correctamente
+     */
+    public function deshabilitar($idAdmin = null, $descripcion = null) {
+        self::conectar();
+        $sql = "UPDATE Servicio SET Estado = 'SUSPENDIDO' WHERE IdServicio = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) return false;
+        $stmt->bind_param('i', $this->IdServicio);
+        $ok = $stmt->execute();
+        $stmt->close();
+        // Registrar en Gestion si se provee administrador
+        if ($ok && $idAdmin !== null) {
+            require_once __DIR__ . '/gestion.php';
+            try { Gestion::registrarDeshabilitar(intval($idAdmin), intval($this->IdServicio), $descripcion); } catch (Exception $e) { error_log('Servicio::deshabilitar - Error registrando gestion: '.$e->getMessage()); }
+        }
+        return $ok;
+    }
+
+    /**
+     * Habilita el servicio (cambia estado a 'DISPONIBLE')
+     * @return bool true si se actualizó correctamente
+     */
+    public function habilitar($idAdmin = null, $descripcion = null) {
+        self::conectar();
+        $sql = "UPDATE Servicio SET Estado = 'DISPONIBLE' WHERE IdServicio = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) return false;
+        $stmt->bind_param('i', $this->IdServicio);
+        $ok = $stmt->execute();
+        $stmt->close();
+        // Registrar en Gestion si se provee administrador
+        if ($ok && $idAdmin !== null) {
+            require_once __DIR__ . '/gestion.php';
+            try { Gestion::registrarHabilitar(intval($idAdmin), intval($this->IdServicio), $descripcion); } catch (Exception $e) { error_log('Servicio::habilitar - Error registrando gestion: '.$e->getMessage()); }
+        }
+        return $ok;
+    }
+
+
+    /**
+     * Cancela todas las reseñas asociadas a este servicio
+     * Cambia el estado de las reseñas a 'cancelada' (o elimina si se requiere)
+     * @return int Número de reseñas afectadas
+     */
+    public function cancelarTodasResenias($idAdmin = null, $descripcion = null) {
+        self::conectar();
+    $sql = "UPDATE Resenia r INNER JOIN Reserva rv ON r.IdReserva = rv.IdReserva SET r.Estado = 'cancelada' WHERE rv.IdServicio = ?";
+        $stmt = self::$conexion->prepare($sql);
+        if (!$stmt) return 0;
+        $stmt->bind_param('i', $this->IdServicio);
+        $stmt->execute();
+        $afectadas = $stmt->affected_rows;
+        $stmt->close();
+
+        // Registrar en Gestion si se provee administrador
+        if ($idAdmin !== null) {
+            require_once __DIR__ . '/gestion.php';
+            try { Gestion::registrarCancelarResenias(intval($idAdmin), intval($this->IdServicio), $descripcion); } catch (Exception $e) { error_log('Servicio::cancelarTodasResenias - Error registrando gestion: '.$e->getMessage()); }
+        }
+
+        return $afectadas;
+    }
+    
     public $IdServicio;
     public $Nombre;
     public $Descripcion;
@@ -153,12 +217,22 @@ class Servicio
         }
         
         // 2. Eliminar reseñas (antes de eliminar reservas porque Resena depende de Reserva)
-        $sqlResenas = "DELETE Resena FROM Resena INNER JOIN Reserva ON Resena.IdReserva = Reserva.IdReserva WHERE Reserva.IdServicio = ?";
-        $stmtResenas = self::$conexion->prepare($sqlResenas);
-        if ($stmtResenas) {
-            $stmtResenas->bind_param("i", $idServicio);
-            $stmtResenas->execute();
-            $stmtResenas->close();
+        // 2. Eliminar reseñas que dependan de reservas y reseñas que referencien directamente el servicio
+        // 2.a Reseñas asociadas a reservas del servicio
+    $sqlResenasReservas = "DELETE FROM Resenia WHERE IdReserva IN (SELECT IdReserva FROM Reserva WHERE IdServicio = ?)";
+        $stmtResenasReservas = self::$conexion->prepare($sqlResenasReservas);
+        if ($stmtResenasReservas) {
+            $stmtResenasReservas->bind_param("i", $idServicio);
+            $stmtResenasReservas->execute();
+            $stmtResenasReservas->close();
+        }
+        // 2.b Reseñas que referencian directamente al servicio (si existe la columna IdServicio en Resena)
+    $sqlResenasDirectas = "DELETE FROM Resenia WHERE IdServicio = ?";
+        $stmtResenasDirectas = self::$conexion->prepare($sqlResenasDirectas);
+        if ($stmtResenasDirectas) {
+            $stmtResenasDirectas->bind_param("i", $idServicio);
+            $stmtResenasDirectas->execute();
+            $stmtResenasDirectas->close();
         }
         
         // 3. Eliminar reservas
@@ -410,3 +484,4 @@ public static function obtenerPorProveedor(int $idProveedor): array
 }
     
 }
+?>
